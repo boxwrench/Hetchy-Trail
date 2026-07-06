@@ -4,7 +4,7 @@ extends Node
 ## campaign flags. Emits signals when state changes; never touches UI.
 ##
 ## Metric model (per the historical mapping brief):
-##   Funds/Bonds      int, starts at 10, no cap. 1 point ~ one major
+##   Funds/Bonds      int, starts at START_FUNDS, no cap. 1 point ~ one major
 ##                    appropriation. Below zero = bond crisis (loss).
 ##   Public Support   int 0-10. Zero = project cancelled (loss).
 ##   Water Readiness  int, accumulates toward READINESS_TARGET as structures
