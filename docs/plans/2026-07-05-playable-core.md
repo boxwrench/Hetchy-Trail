@@ -143,17 +143,26 @@ func _check_deck() -> void:
 
 
 func _check_flag_closure() -> void:
-	# Every flag guaranteed by the fixed spine = granted by EVERY choice of some fixed card.
+	# A flag is guaranteed by the fixed spine when some fixed card grants it on
+	# EVERY terminal choice. A repeat_card choice returns the card to the deck
+	# instead of exiting, so it is not an escape path and is excluded; a card
+	# whose only choices repeat guarantees nothing.
 	var guaranteed := {}
 	for card in EventManager.deck:
 		if not card.is_fixed or card.choices.is_empty():
 			continue
+		var terminal: Array = []
+		for choice in card.choices:
+			if not choice.repeat_card:
+				terminal.append(choice)
+		if terminal.is_empty():
+			continue
 		var common := {}
-		for flag in card.choices[0].granted_flags:
+		for flag in terminal[0].granted_flags:
 			common[flag] = true
-		for i in range(1, card.choices.size()):
+		for i in range(1, terminal.size()):
 			var keep := {}
-			for flag in card.choices[i].granted_flags:
+			for flag in terminal[i].granted_flags:
 				if common.has(flag):
 					keep[flag] = true
 			common = keep
