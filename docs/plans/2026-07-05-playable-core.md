@@ -17,7 +17,7 @@ Every task inherits these. Violating one is a task failure even if the code runs
 - **One-node .tscn shells only.** Every `.tscn` in this plan is exactly 5 lines (shell template in Task 4). All children are created in `_ready()`.
 - **Do not edit files in `data/`** (cards and segments are authored historical content) except when Task 1's parse-repair step explicitly requires a mechanical syntax fix. Balance tuning happens only in the named constants at the top of `autoload/game_state.gd` and `event_chance` in `event_manager.gd`.
 - **Do not modify** `docs/Hetchy Trail Historical Game Mapping.pdf`, anything in `assets/art/archival/` without a CREDITS.md row, or the two autoloads' public method signatures.
-- **Harness gate:** after every task, `smoke_test` and `sim_test` must exit 0 before committing. Never weaken a check to make it pass; fix the cause.
+- **Harness gate:** after every task, `smoke_test`, `sim_test`, and `layout_test` must exit 0 before committing. Never weaken a check to make it pass; fix the cause. (`layout_test` instantiates the real Journey scene, awaits layout, and asserts the interactive panels render within the viewport — it catches off-screen/zero-size UI that the data-only smoke test cannot see.)
 - **Two-strike rule:** if the same verification fails twice after your best fix, stop and report to the user with the exact error output.
 - Keep every new file under ~150 lines, one responsibility each.
 - `$godot` in commands below means the Godot executable path found in Task 1. Run all commands from the repository root.
@@ -412,6 +412,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	# Bottom-anchored containers grow downward by default, which pushes the bar
+	# off the bottom edge; grow upward so it sits on-screen above the edge.
+	panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	add_child(panel)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
