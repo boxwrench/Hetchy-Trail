@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RouteSegment" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/route_segment.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+segment_name = "Bay and Peninsula"
+phase_id = &"phase_6"
+start_mile = 126
+end_mile = 167
+year_start = 1922
+year_end = 1934
+build_rate_modifier = 1.2
+winter_sensitive = false
+completion_flag = &"pulgas_connected"
+blurb = "Irvington to Pulgas and Crystal Springs: bay mud, borrowed money, and the last connections of one continuous system."

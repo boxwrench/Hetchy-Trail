@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RouteSegment" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/route_segment.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+segment_name = "Coast Range"
+phase_id = &"phase_5"
+start_mile = 97
+end_mile = 126
+year_start = 1927
+year_end = 1934
+build_rate_modifier = 0.45
+winter_sensitive = false
+completion_flag = &"coast_range_tunnel_complete"
+blurb = "Tesla Portal to Alameda Creek: the longest, hardest bore of the project, through gas and squeezing ground."

@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_wait"]
+script = ExtResource("2")
+label = "Wait for favorable conditions"
+outcome_text = "Crews set timber piles, jacket the pipe in concrete and fit relief valves. The river crossing goes in right the first time."
+funds_delta = -2
+crew_wellbeing_delta = 1
+water_readiness_delta = 2
+time_delta_seasons = 1
+
+[sub_resource type="Resource" id="choice_push"]
+script = ExtResource("2")
+label = "Treat it as a simple surface crossing"
+outcome_text = "The work pushes through the wet season. It gets done, but the crews fight water and mud for every foot below grade."
+funds_delta = -2
+crew_wellbeing_delta = -2
+water_readiness_delta = 2
+
+[resource]
+script = ExtResource("1")
+event_id = &"under_the_san_joaquin"
+title = "Under the San Joaquin"
+phase_id = &"phase_4"
+location_name = "San Joaquin River and Elliott Cut"
+mile_start = 60
+mile_end = 95
+historical_year_start = 1931
+historical_year_end = 1932
+event_description = "Wait for favorable conditions, install deep foundations and include pressure relief equipment rather than treating the valley as a simple surface crossing."
+historical_fact = "Portions of the pipelines descended below sea level and passed beneath the San Joaquin River and Elliott Cut. Pipes were supported on timber piles and protected with concrete jackets. Relief valves were included to control excess pressure."
+choices = Array[ExtResource("2")]([SubResource("choice_wait"), SubResource("choice_push")])
+canonical_choice = 0
+is_fixed = false
+weight = 2.0
+required_flags = Array[StringName]([&"row_acquired"])
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "The brief expresses skipping the favorable season as 'Crew -2 and Time +1' relative effects; the rushed choice here trades the season of waiting for the crew cost."

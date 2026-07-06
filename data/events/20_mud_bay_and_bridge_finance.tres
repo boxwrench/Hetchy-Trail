@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_accept"]
+script = ExtResource("2")
+label = "Accept the interim financing"
+outcome_text = "Spring Valley's advance keeps hundreds of trained workers on the payroll. The pipeline goes down through the bay mud, seventy-five feet below the water in places."
+public_support_delta = -1
+water_readiness_delta = 2
+time_delta_seasons = -2
+granted_flags = Array[StringName]([&"bay_crossing_complete"])
+
+[sub_resource type="Resource" id="choice_refuse"]
+script = ExtResource("2")
+label = "Refuse private money and wait for city funds"
+outcome_text = "The city keeps its independence and loses its momentum. Crews scatter during the shutdown, and reassembling them costs dearly."
+funds_delta = -2
+crew_wellbeing_delta = -2
+water_readiness_delta = 2
+time_delta_seasons = 2
+granted_flags = Array[StringName]([&"bay_crossing_complete"])
+
+[resource]
+script = ExtResource("1")
+event_id = &"mud_bay_and_bridge_finance"
+title = "Mud, Bay and Bridge Finance"
+phase_id = &"phase_6"
+location_name = "Newark Slough and the Bay Crossing"
+mile_start = 140
+mile_end = 167
+historical_year_start = 1924
+historical_year_end = 1925
+event_description = "City funds are exhausted. Accept interim financing to retain hundreds of trained workers, then bury the large steel pipeline through the southern bay crossing."
+historical_fact = "When city funds were exhausted, the Spring Valley Water Company advanced financing that helped prevent a prolonged shutdown and layoffs. Bay Crossing Pipeline No. 1 was placed in a trench through bay mud, reaching approximately 75 feet below the water surface in places. It was completed in 1925 and immediately used for local water transfers."
+choices = Array[ExtResource("2")]([SubResource("choice_accept"), SubResource("choice_refuse")])
+canonical_choice = 0
+is_fixed = true
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "Historically the Bay Crossing was finished in 1925, years before the Coast Range Tunnel - construction was simultaneous, not sequential. The game's mile-order compresses this; the card text and years preserve the real chronology. The brief's separate finance and construction effects are combined into the accept choice; refusing the advance is a gameplay counterfactual."

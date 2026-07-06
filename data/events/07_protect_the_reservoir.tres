@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_coordinate"]
+script = ExtResource("2")
+label = "Build it as one coordinated system"
+outcome_text = "Rattlesnake Creek is diverted, the reservoir fills clean, and water drops 1,316 feet through the penstocks. In August 1925 Moccasin Powerhouse enters commercial operation."
+funds_delta = -2
+public_support_delta = 1
+water_readiness_delta = 2
+time_delta_seasons = 1
+granted_flags = Array[StringName]([&"moccasin_power_available"])
+
+[resource]
+script = ExtResource("1")
+event_id = &"protect_the_reservoir"
+title = "Protect the Reservoir, Harness the Drop"
+phase_id = &"phase_2"
+location_name = "Priest Reservoir and Moccasin"
+mile_start = 32
+mile_end = 49
+historical_year_start = 1923
+historical_year_end = 1925
+event_description = "Complete the creek diversion, reservoir and penstocks as one coordinated system. This costs time but improves water quality and turns elevation into useful power."
+historical_fact = "Priest Reservoir received Mountain Tunnel water. Rattlesnake Creek was diverted to reduce contamination risk. Water then descended approximately 1,316 feet through penstocks to Moccasin Powerhouse. Mountain Tunnel water reached Priest in June 1925, and Moccasin entered commercial operation that August."
+choices = Array[ExtResource("2")]([SubResource("choice_coordinate")])
+canonical_choice = 0
+is_fixed = true
+required_flags = Array[StringName]([&"mountain_tunnel_complete"])
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "Single choice: the coordinated build is presented as the only responsible engineering option, as the brief describes."

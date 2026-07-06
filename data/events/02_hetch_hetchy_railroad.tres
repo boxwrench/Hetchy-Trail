@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_build"]
+script = ExtResource("2")
+label = "Build the railroad"
+outcome_text = "Sixty-eight miles of standard gauge climb toward the dam site. Cement, machinery, and workers now move in any season."
+funds_delta = -3
+crew_wellbeing_delta = 1
+time_delta_seasons = -2
+granted_flags = Array[StringName]([&"railroad_operational"])
+
+[sub_resource type="Resource" id="choice_roads"]
+script = ExtResource("2")
+label = "Rely on mountain roads"
+outcome_text = "The money stays in the treasury, but every winter storm can now close the only way in."
+time_delta_seasons = 1
+
+[resource]
+script = ExtResource("1")
+event_id = &"hetch_hetchy_railroad"
+title = "Build the Railroad"
+phase_id = &"phase_1"
+location_name = "Hetch Hetchy Junction to the mountain project"
+mile_start = 0
+mile_end = 20
+historical_year_start = 1915
+historical_year_end = 1917
+event_description = "Spend heavily now to remove recurring freight delays. An operational railroad keeps supplies moving through winters that block the mountain roads."
+historical_fact = "The city constructed a 68-mile standard-gauge railroad from Hetch Hetchy Junction to the mountain project. It was completed in 1917 and carried cement, equipment, workers and supplies. It operated in winter when mountain roads could be blocked by snow."
+choices = Array[ExtResource("2")]([SubResource("choice_build"), SubResource("choice_roads")])
+canonical_choice = 0
+is_fixed = false
+weight = 3.0
+required_flags = Array[StringName]([&"high_sierra_access_complete"])
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "Historically the railroad was built; declining it is a gameplay counterfactual. Without the railroad_operational flag, winter build rates in Sierra segments collapse and the Sierra Snows card stays in the deck."

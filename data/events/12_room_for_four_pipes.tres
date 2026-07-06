@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_wide"]
+script = ExtResource("2")
+label = "Buy the full hundred-foot corridor"
+outcome_text = "The city acquires room for four parallel pipelines across the valley. Only one will be built now, but the corridor will serve San Francisco for a century."
+funds_delta = -2
+water_readiness_delta = 1
+granted_flags = Array[StringName]([&"row_acquired", &"row_expansion_secured"])
+
+[sub_resource type="Resource" id="choice_narrow"]
+script = ExtResource("2")
+label = "Buy only what Pipeline No. 1 needs"
+outcome_text = "A narrower strip saves money today. Any future pipeline will have to negotiate the valley all over again."
+funds_delta = -1
+granted_flags = Array[StringName]([&"row_acquired"])
+
+[resource]
+script = ExtResource("1")
+event_id = &"room_for_four_pipes"
+title = "Leave Room for Four Pipes"
+phase_id = &"phase_4"
+location_name = "Oakdale Portal to Tesla Portal right-of-way"
+mile_start = 49
+mile_end = 97
+historical_year_start = 1930
+historical_year_end = 1931
+event_description = "Acquire more land than Pipeline No. 1 immediately requires. The larger purchase reduces current funds but creates future expansion capacity."
+historical_fact = "The city obtained a right-of-way approximately 100 feet wide, providing room for as many as four parallel San Joaquin pipelines."
+choices = Array[ExtResource("2")]([SubResource("choice_wide"), SubResource("choice_narrow")])
+canonical_choice = 0
+is_fixed = true
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "The brief's 'permanent Expansion Capacity +2' is recorded as the row_expansion_secured flag and acknowledged in the end-of-game summary rather than tracked as a sixth live resource."

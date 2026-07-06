@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_all"]
+script = ExtResource("2")
+label = "Open every heading"
+outcome_text = "Portals, adits and deep shafts put twelve faces to work at once. The mountain gives way faster, at the cost of money, supervision, and tired crews."
+funds_delta = -3
+crew_wellbeing_delta = -1
+water_readiness_delta = 2
+time_delta_seasons = -2
+granted_flags = Array[StringName]([&"mountain_tunnel_complete"])
+
+[sub_resource type="Resource" id="choice_reduced"]
+script = ExtResource("2")
+label = "Work fewer headings"
+outcome_text = "A smaller, steadier operation spends less and treats the crews better, but the tunnel takes longer to hole through."
+funds_delta = -1
+crew_wellbeing_delta = 1
+water_readiness_delta = 2
+time_delta_seasons = 2
+granted_flags = Array[StringName]([&"mountain_tunnel_complete"])
+
+[resource]
+script = ExtResource("1")
+event_id = &"twelve_faces_one_line"
+title = "Twelve Faces, One Line"
+phase_id = &"phase_2"
+location_name = "Mountain Tunnel"
+mile_start = 30
+mile_end = 49
+historical_year_start = 1917
+historical_year_end = 1925
+event_description = "Open additional shafts and headings to attack the tunnel simultaneously. More faces accelerate excavation but require more equipment, surveying and supervision."
+historical_fact = "Mountain Tunnel was excavated from 12 faces. Access included the 786-foot Second Garrote shaft and 646-foot Big Creek shaft. The tunnel was completed in 1925."
+choices = Array[ExtResource("2")]([SubResource("choice_all"), SubResource("choice_reduced")])
+canonical_choice = 0
+is_fixed = true
+required_flags = Array[StringName]([&"construction_power_available"])
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "The brief lists Water Readiness +2 only for the all-headings choice; both choices grant it here because the tunnel is completed either way, only slower."

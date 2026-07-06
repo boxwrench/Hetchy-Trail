@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RouteSegment" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/route_segment.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+segment_name = "Western Foothills"
+phase_id = &"phase_3"
+start_mile = 33
+end_mile = 49
+year_start = 1925
+year_end = 1929
+build_rate_modifier = 0.8
+winter_sensitive = true
+completion_flag = &"foothill_tunnel_complete"
+blurb = "Moccasin to Oakdale Portal: six remote camps carry the tunnel through broken foothill country."

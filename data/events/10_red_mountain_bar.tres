@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_now"]
+script = ExtResource("2")
+label = "Race the rising water"
+outcome_text = "The cableway swings the 770-foot steel siphon sections into place and crews anchor them in bedrock before the canyon changes forever."
+funds_delta = -2
+crew_wellbeing_delta = -1
+water_readiness_delta = 1
+time_delta_seasons = -1
+
+[sub_resource type="Resource" id="choice_delay"]
+script = ExtResource("2")
+label = "Delay the crossing"
+outcome_text = "The reservoir creeps up the canyon walls. The crossing still gets built, but access is harder and costlier for every remaining load."
+funds_delta = -3
+crew_wellbeing_delta = -1
+water_readiness_delta = 1
+time_delta_seasons = 1
+
+[resource]
+script = ExtResource("1")
+event_id = &"red_mountain_bar"
+title = "Beat the Rising Reservoir"
+phase_id = &"phase_3"
+location_name = "Red Mountain Bar"
+mile_start = 36
+mile_end = 48
+historical_year_start = 1926
+historical_year_end = 1929
+event_description = "Complete the cableway and lower the siphon sections before access to the canyon becomes more difficult."
+historical_fact = "The aqueduct crossed Red Mountain Bar through a 770-foot steel inverted siphon anchored in bedrock and concrete. The crossing was necessary because the canyon would be affected by the filling of Don Pedro Reservoir. A long cableway transported workers and loads across the canyon."
+choices = Array[ExtResource("2")]([SubResource("choice_now"), SubResource("choice_delay")])
+canonical_choice = 0
+is_fixed = false
+weight = 2.0
+required_flags = Array[StringName]([&"foothill_camps_established"])
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "The brief expresses the delay as 'adds Time +2 and Funds -1' on top of the base cost; here the delay choice folds those into its totals."

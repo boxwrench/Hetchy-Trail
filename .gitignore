@@ -1,3 +1,6 @@
+# Godot 4 editor cache
+.godot/
+
 # Node.js modules (if you ever use npm for dev tools)
 node_modules/
 

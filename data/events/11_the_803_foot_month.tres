@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_record"]
+script = ExtResource("2")
+label = "Chase the record"
+outcome_text = "The heading advances 803 feet in a single September. The pace makes headlines and finishes the bore early, but the crews pay for every foot."
+funds_delta = 1
+crew_wellbeing_delta = -2
+time_delta_seasons = -2
+granted_flags = Array[StringName]([&"foothill_tunnel_complete"])
+
+[sub_resource type="Resource" id="choice_sustainable"]
+script = ExtResource("2")
+label = "Hold a sustainable pace"
+outcome_text = "No records, no headlines - just steady footage, rested crews, and a tunnel finished without burning anyone out."
+funds_delta = -1
+crew_wellbeing_delta = 2
+granted_flags = Array[StringName]([&"foothill_tunnel_complete"])
+
+[resource]
+script = ExtResource("1")
+event_id = &"the_803_foot_month"
+title = "The 803-Foot Month"
+phase_id = &"phase_3"
+location_name = "Hetch Hetchy Junction heading, Foothill Tunnel"
+mile_start = 46
+mile_end = 60
+historical_year_start = 1926
+historical_year_end = 1929
+event_description = "Management challenges the crew to pursue another excavation record. Choose between maximum advance and a sustainable production schedule."
+historical_fact = "City crews and contractors competed for tunneling progress. A heading advanced 803 feet during September 1926, following another 781-foot month earlier that year. The Foothill Tunnel was completed in 1929."
+choices = Array[ExtResource("2")]([SubResource("choice_record"), SubResource("choice_sustainable")])
+canonical_choice = 0
+is_fixed = true
+required_flags = Array[StringName]([&"foothill_camps_established"])
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "The record pace is marked canonical because the record months genuinely happened; the sustainable choice is the gameplay counterfactual. Both choices complete the Foothill Tunnel division."

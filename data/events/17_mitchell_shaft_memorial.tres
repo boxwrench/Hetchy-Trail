@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_standdown"]
+script = ExtResource("2")
+label = "Order a full safety stand-down"
+outcome_text = "Work stops. The dead are accounted for and their families supported. Ventilation is reviewed and gas monitoring reinforced at every heading before a single shift resumes."
+funds_delta = -1
+crew_wellbeing_delta = -2
+time_delta_seasons = 2
+granted_flags = Array[StringName]([&"mitchell_memorial_observed"])
+
+[sub_resource type="Resource" id="choice_brief"]
+script = ExtResource("2")
+label = "Hold a brief review and resume"
+outcome_text = "The headings restart within weeks. The crews go back underground carrying the memory of Mitchell Shaft with them."
+public_support_delta = -1
+crew_wellbeing_delta = -3
+time_delta_seasons = 2
+granted_flags = Array[StringName]([&"mitchell_memorial_observed"])
+
+[resource]
+script = ExtResource("1")
+event_id = &"mitchell_shaft_memorial"
+title = "Mitchell Shaft Memorial"
+phase_id = &"phase_5"
+location_name = "Mitchell Shaft, Coast Range Tunnel"
+mile_start = 105
+mile_end = 126
+historical_year_start = 1931
+historical_year_end = 1931
+event_description = "An explosion at Mitchell Shaft has killed twelve workers. This is a fixed historical event, not a random or preventable player failure. Stop work, account for the dead, support the crews, and decide how thoroughly to review ventilation and gas monitoring before excavation resumes."
+historical_fact = "Methane was encountered during Coast Range Tunnel construction. On July 17, 1931, an explosion at Mitchell Shaft killed 12 workers. Investigations documented existing safety precautions but did not establish one conclusive cause."
+choices = Array[ExtResource("2")]([SubResource("choice_standdown"), SubResource("choice_brief")])
+canonical_choice = 0
+is_fixed = true
+required_flags = Array[StringName]([&"coast_range_committed"])
+historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+assumption_note = "Per the brief, this event always occurs and cannot be prevented by play. The immediate losses (Crew -3, Time +2, Support -1) are baked into both choices; the full stand-down partially offsets them (Funds -1, Crew +1, Support +1), matching the brief's structure."

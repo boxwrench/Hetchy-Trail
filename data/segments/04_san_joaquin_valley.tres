@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RouteSegment" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/route_segment.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+segment_name = "San Joaquin Valley"
+phase_id = &"phase_4"
+start_mile = 49
+end_mile = 97
+year_start = 1931
+year_end = 1932
+build_rate_modifier = 1.6
+winter_sensitive = false
+completion_flag = &"san_joaquin_pipeline_complete"
+blurb = "Oakdale Portal to Tesla Portal: nearly forty-eight miles of steel pipe laid fast across the valley floor."

@@ -1,0 +1,21 @@
+; Engine configuration file.
+; Generated ahead of the first editor open; Godot will extend this on save.
+
+config_version=5
+
+[application]
+
+config/name="Hetchy Trail"
+config/description="A historical resource-management journey: build the 167-mile Hetch Hetchy aqueduct from the Sierra Nevada to San Francisco, 1914-1934."
+config/features=PackedStringArray("4.7")
+
+[autoload]
+
+GameState="*res://autoload/game_state.gd"
+EventManager="*res://autoload/event_manager.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
