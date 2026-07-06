@@ -34,7 +34,7 @@ const HISTORICAL_FINISH_YEAR := 1934  # first water reached Pulgas October 24, 1
 const FINAL_DEADLINE_YEAR := 1940     # hard loss: the city turns elsewhere
 
 # --- Tuning knobs -----------------------------------------------------------
-const START_FUNDS := 10
+const START_FUNDS := 25
 const START_SUPPORT := 6
 const START_CREW := 7
 const METER_MAX := 10                 # cap for support and crew
