@@ -8,6 +8,7 @@ config_version=5
 config/name="Hetchy Trail"
 config/description="A historical resource-management journey: build the 167-mile Hetch Hetchy aqueduct from the Sierra Nevada to San Francisco, 1914-1934."
 config/features=PackedStringArray("4.7")
+run/main_scene="res://scenes/journey/journey.tscn"
 
 [autoload]
 

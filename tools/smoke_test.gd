@@ -11,6 +11,7 @@ func _ready() -> void:
 	_check_deck()
 	_check_flag_closure()
 	_check_first_turn()
+	_check_ui_scenes()
 	if failures.is_empty():
 		print("SMOKE PASS (%d checks)" % passed)
 	else:
@@ -94,5 +95,23 @@ func _check_first_turn() -> void:
 		EventManager.resolve_choice(card, card.canonical_choice)
 		check(GameState.has_flag(&"high_sierra_access_complete"),
 			"resolving the road card grants high_sierra_access_complete")
+	GameState.new_game()
+	EventManager.reset()
+
+
+func _check_ui_scenes() -> void:
+	GameState.new_game()
+	EventManager.reset()
+	var journey: Node = load("res://scenes/journey/journey.tscn").instantiate()
+	add_child(journey)
+	check(journey.hud != null and journey.hud.labels.size() == 6, "Journey builds HUD with 6 labels")
+	check(journey.decision_panel.end_button != null, "Journey builds DecisionPanel")
+	check(not journey.event_panel.visible, "EventPanel starts hidden")
+	journey._on_decisions(GameState.Pace.STEADY, &"none")
+	check(GameState.miles_built > 0.0, "one turn advances the construction front")
+	check(journey.event_panel.visible, "turn 1 shows the first fixed card")
+	journey.event_panel._on_choice(0)
+	check(GameState.has_flag(&"high_sierra_access_complete"), "resolving via UI grants the flag")
+	journey.queue_free()
 	GameState.new_game()
 	EventManager.reset()
