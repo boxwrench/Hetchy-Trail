@@ -19,6 +19,15 @@ const EVENTS_DIR := "res://data/events"
 
 @export_range(0.0, 1.0) var event_chance := 0.6
 
+# --- Pace-risk tuning (Task 10 balance pass may adjust these) ---------------
+const PUSHED_INJURY_CHANCE := 0.30      # base chance of an injury on a PUSHED season
+const REST_IMPATIENCE_CHANCE := 0.35    # base chance of impatience on a REST season
+const STEADY_MISHAP_CHANCE := 0.10      # low baseline on a STEADY season
+const LOW_CREW_THRESHOLD := 4           # crew at/below this amplifies injury risk
+const LOW_SUPPORT_THRESHOLD := 4        # support at/below this amplifies impatience
+const LOW_METER_RISK_BONUS := 0.25      # added chance when the relevant meter is low
+# ----------------------------------------------------------------------------
+
 var deck: Array[EventCard] = []
 var drawn_ids: Dictionary = {}        # StringName -> true
 
@@ -41,6 +50,12 @@ func try_draw() -> EventCard:
 	for card in available:
 		if card.is_fixed:
 			return _draw(card)
+	# Pace-risk: the season just worked may trigger a hazard before texture cards.
+	var risk := _risk_for(GameState.work_pace)
+	if randf() < float(risk["chance"]):
+		var hazard := _pick_hazard(risk["kind"])
+		if hazard != null:
+			return _draw(hazard)
 	if available.is_empty() or randf() > event_chance:
 		return null
 	return _draw(_weighted_pick(available))
@@ -86,6 +101,58 @@ func _weighted_pick(pool: Array[EventCard]) -> EventCard:
 		if roll <= 0.0:
 			return card
 	return pool.back()
+
+
+## The dominant hazard kind and roll chance for a pace, given current state.
+func _risk_for(pace: int) -> Dictionary:
+	match pace:
+		GameState.Pace.PUSHED:
+			var c := PUSHED_INJURY_CHANCE
+			if GameState.crew_wellbeing <= LOW_CREW_THRESHOLD:
+				c += LOW_METER_RISK_BONUS
+			return {"kind": &"injury", "chance": c}
+		GameState.Pace.REST:
+			var c := REST_IMPATIENCE_CHANCE
+			if GameState.public_support <= LOW_SUPPORT_THRESHOLD:
+				c += LOW_METER_RISK_BONUS
+			return {"kind": &"impatience", "chance": c}
+		_:
+			# STEADY: a low chance, aimed at whichever meter is currently weaker.
+			if GameState.crew_wellbeing <= GameState.public_support:
+				return {"kind": &"injury", "chance": STEADY_MISHAP_CHANCE}
+			return {"kind": &"impatience", "chance": STEADY_MISHAP_CHANCE}
+
+
+## Read-only telegraph for the DecisionPanel (Task 4). No side effects.
+func risk_preview(pace: int) -> Dictionary:
+	var risk := _risk_for(pace)
+	var chance: float = risk["chance"]
+	var level: StringName = &"low"
+	if chance >= 0.40:
+		level = &"high"
+	elif chance >= 0.25:
+		level = &"elevated"
+	return {"kind": risk["kind"], "level": level}
+
+
+func _hazard_pool(kind: StringName) -> Array[EventCard]:
+	var is_winter := GameState.season == GameState.Season.WINTER
+	var out: Array[EventCard] = []
+	for card in deck:
+		if card.hazard_kind != kind:
+			continue
+		if drawn_ids.has(card.event_id):
+			continue
+		if card.is_available(GameState.miles_built, is_winter, GameState.flags):
+			out.append(card)
+	return out
+
+
+func _pick_hazard(kind: StringName) -> EventCard:
+	var pool := _hazard_pool(kind)
+	if pool.is_empty():
+		return null
+	return _weighted_pick(pool)
 
 
 func _load_deck() -> void:
