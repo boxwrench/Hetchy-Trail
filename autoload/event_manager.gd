@@ -61,6 +61,8 @@ func _available_cards() -> Array[EventCard]:
 	var is_winter := GameState.season == GameState.Season.WINTER
 	var out: Array[EventCard] = []
 	for card in deck:
+		if card.hazard_kind != &"":
+			continue   # hazards are drawn only by the pace-risk roll (see try_draw)
 		if drawn_ids.has(card.event_id):
 			continue
 		if card.is_available(GameState.miles_built, is_winter, GameState.flags):

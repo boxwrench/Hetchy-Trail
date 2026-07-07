@@ -9,6 +9,7 @@ var failures: Array[String] = []
 func _ready() -> void:
 	_check_segments()
 	_check_deck()
+	_check_hazards()
 	_check_flag_closure()
 	_check_first_turn()
 	_check_ui_scenes()
@@ -39,7 +40,7 @@ func _check_segments() -> void:
 
 
 func _check_deck() -> void:
-	check(EventManager.deck.size() == 21, "exactly 21 event cards loaded (got %d)" % EventManager.deck.size())
+	check(EventManager.deck.size() == 26, "exactly 26 event cards loaded (got %d)" % EventManager.deck.size())
 	for card in EventManager.deck:
 		check(card.event_id != StringName(), "card '%s' has an event_id" % card.title)
 		check(card.choices.size() >= 1, "card %s has at least one choice" % card.event_id)
@@ -97,6 +98,26 @@ func _check_first_turn() -> void:
 			"resolving the road card grants high_sierra_access_complete")
 	GameState.new_game()
 	EventManager.reset()
+
+
+func _check_hazards() -> void:
+	var kinds := {&"injury": 0, &"impatience": 0}
+	for card in EventManager.deck:
+		if card.hazard_kind == &"":
+			continue
+		check(kinds.has(card.hazard_kind),
+			"hazard %s has a valid kind (injury/impatience)" % card.event_id)
+		if kinds.has(card.hazard_kind):
+			kinds[card.hazard_kind] += 1
+		check(card.choices.size() == 1, "hazard %s has exactly one choice" % card.event_id)
+		if card.choices.size() == 1:
+			check(card.choices[0].repeat_card,
+				"hazard %s re-arms itself (repeat_card)" % card.event_id)
+			check(card.choices[0].outcome_text != "",
+				"hazard %s has outcome_text for the consequence beat" % card.event_id)
+		check(not card.is_fixed, "hazard %s is not a fixed spine card" % card.event_id)
+	check(kinds[&"injury"] == 3, "exactly 3 injury hazards (got %d)" % kinds[&"injury"])
+	check(kinds[&"impatience"] == 2, "exactly 2 impatience hazards (got %d)" % kinds[&"impatience"])
 
 
 func _check_ui_scenes() -> void:

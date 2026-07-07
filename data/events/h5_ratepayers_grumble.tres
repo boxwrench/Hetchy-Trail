@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_weather"]
+script = ExtResource("2")
+label = "Weather the grumbling"
+outcome_text = "Ratepayers ask what they are paying for while the mountains stay silent. Support slips a little; the work will have to speak for itself."
+public_support_delta = -1
+repeat_card = true
+
+[resource]
+script = ExtResource("1")
+event_id = &"hazard_ratepayers"
+title = "Ratepayers Grumble"
+phase_id = &"hazard"
+location_name = "San Francisco"
+mile_start = 0
+mile_end = 167
+historical_year_start = 1914
+historical_year_end = 1934
+event_description = "With no water flowing yet, the public wonders where the years are going."
+historical_fact = "San Franciscans paid for the project for twenty years before a drop of Hetch Hetchy water arrived, and public patience was not unlimited during the long build."
+choices = Array[ExtResource("2")]([SubResource("choice_weather")])
+canonical_choice = 0
+is_fixed = false
+weight = 1.0
+hazard_kind = &"impatience"
+historical_source_note = "SFPUC historical materials; the project's public-financing history."
+assumption_note = "A representative expression of public impatience, not a specific documented episode."

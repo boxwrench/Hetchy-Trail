@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EventCard" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
+[ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
+
+[sub_resource type="Resource" id="choice_press_on"]
+script = ExtResource("2")
+label = "Absorb the setback"
+outcome_text = "A charge lets go before the heading is clear. Two men are pulled out hurt; both will mend, but the shift is lost and the camp is shaken."
+funds_delta = -1
+crew_wellbeing_delta = -2
+repeat_card = true
+
+[resource]
+script = ExtResource("1")
+event_id = &"hazard_powder_blast"
+title = "Premature Blast"
+phase_id = &"hazard"
+location_name = "A tunnel heading"
+mile_start = 0
+mile_end = 167
+historical_year_start = 1914
+historical_year_end = 1934
+event_description = "A powder charge detonates before the crew is clear of the heading."
+historical_fact = "Drill-and-blast tunneling was the most dangerous work on the aqueduct. Premature detonations, misfires, and falling rock injured and killed workers throughout the project's two decades."
+choices = Array[ExtResource("2")]([SubResource("choice_press_on")])
+canonical_choice = 0
+is_fixed = false
+weight = 1.0
+hazard_kind = &"injury"
+historical_source_note = "SFPUC historical materials; the project's general construction-safety record."
+assumption_note = "A representative hazard, not a specific documented incident. It stands in for the routine dangers of drill-and-blast work and is kept deliberately distinct from the named Mitchell Shaft memorial."

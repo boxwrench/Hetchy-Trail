@@ -35,6 +35,9 @@ extends Resource
 @export var required_flags: Array[StringName] = []
 @export var blocked_by_flags: Array[StringName] = []
 @export var winter_only: bool = false
+## Empty for a normal card. "injury" or "impatience" marks a repeatable
+## hazard drawn only by EventManager's pace-risk roll, never the normal deck.
+@export var hazard_kind: StringName = &""
 
 @export_group("Historical Notes")
 @export_multiline var historical_source_note: String = ""
