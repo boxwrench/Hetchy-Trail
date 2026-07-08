@@ -18,7 +18,8 @@ func _ready() -> void:
 	# --- Canonical winnability run (STEADY) ---
 	GameState.new_game()
 	EventManager.reset()
-	GameState.game_ended.connect(func(r: StringName): result = r)
+	var on_ended := func(r: StringName): result = r
+	GameState.game_ended.connect(on_ended)
 	var count_hazards := func(card: EventCard):
 		if card.hazard_kind != &"":
 			hazards_seen += 1
@@ -44,6 +45,10 @@ func _ready() -> void:
 	EventManager.event_drawn.disconnect(count_hazards)
 	var final_result := result
 	var final_year := GameState.year
+	# Cache the grade while GameState still holds the canonical end state; the
+	# probes below call new_game() and would otherwise pollute completion_grade().
+	var final_grade := GameState.completion_grade()
+	GameState.game_ended.disconnect(on_ended)
 	print("SIM RESULT: %s | %s %d | mile %.0f | readiness %d | funds %d | support %d | crew %d | %d turns | %d hazards"
 		% [final_result, SEASONS[GameState.season], final_year, GameState.miles_built,
 		GameState.water_readiness, GameState.funds, GameState.public_support,
@@ -56,7 +61,7 @@ func _ready() -> void:
 
 	var win := final_result == &"system_complete" and final_year <= 1940
 	if win and injuries > 0 and impatience > 0:
-		print("SIM PASS: system_complete, grade=%s" % GameState.completion_grade())
+		print("SIM PASS: system_complete, grade=%s" % final_grade)
 		get_tree().quit(0)
 	else:
 		print("SIM FAIL")
