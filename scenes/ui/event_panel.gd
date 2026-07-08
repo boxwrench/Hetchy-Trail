@@ -1,6 +1,8 @@
 extends Control
 ## Displays one EventCard: description, choices, and the teaching layer
 ## ("What really happened" + assumption note + optional archival photo).
+## On a choice, shows the outcome_text + metric changes as a consequence beat,
+## then emits choice_selected only after the player presses Continue.
 
 signal choice_selected(index: int)
 
@@ -10,6 +12,7 @@ var photo_rect: TextureRect
 var fact_label: Label
 var note_label: Label
 var buttons_box: VBoxContainer
+var current_card: EventCard
 
 
 func _ready() -> void:
@@ -48,6 +51,7 @@ func _add_label(parent: Node) -> Label:
 
 
 func show_card(card: EventCard) -> void:
+	current_card = card
 	title_label.text = "%s — %s, %d" % [card.title, card.location_name, card.historical_year_start]
 	body_label.text = card.event_description
 	photo_rect.texture = card.archival_photo
@@ -65,6 +69,41 @@ func show_card(card: EventCard) -> void:
 	show()
 
 
+## First press: swap the choice buttons for the consequence beat.
 func _on_choice(index: int) -> void:
+	var choice: EventChoice = current_card.choices[index]
+	for child in buttons_box.get_children():
+		child.queue_free()
+	var outcome := _add_label(buttons_box)
+	outcome.text = choice.outcome_text
+	var deltas := _add_label(buttons_box)
+	deltas.text = _deltas_text(choice)
+	var cont := Button.new()
+	cont.text = "Continue"
+	cont.pressed.connect(_on_continue.bind(index))
+	buttons_box.add_child(cont)
+
+
+## Second press: hide and report the choice so it is applied.
+func _on_continue(index: int) -> void:
 	hide()
 	choice_selected.emit(index)
+
+
+func _deltas_text(choice: EventChoice) -> String:
+	var parts: Array[String] = []
+	if choice.funds_delta != 0:
+		parts.append("Funds %+d" % choice.funds_delta)
+	if choice.public_support_delta != 0:
+		parts.append("Support %+d" % choice.public_support_delta)
+	if choice.water_readiness_delta != 0:
+		parts.append("Readiness %+d" % choice.water_readiness_delta)
+	if choice.crew_wellbeing_delta != 0:
+		parts.append("Crew %+d" % choice.crew_wellbeing_delta)
+	if choice.time_delta_seasons > 0:
+		parts.append("lost %d season(s)" % choice.time_delta_seasons)
+	elif choice.time_delta_seasons < 0:
+		parts.append("banked %d season(s)" % -choice.time_delta_seasons)
+	if parts.is_empty():
+		return "No change to the ledger."
+	return "   ".join(parts)

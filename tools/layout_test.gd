@@ -19,9 +19,12 @@ func _ready() -> void:
 	await get_tree().process_frame
 	var vp := get_viewport().get_visible_rect().size
 	_check_on_screen("DecisionPanel bar", _first_control_child(journey.decision_panel), vp)
-	journey.event_panel.show()
+	journey.event_panel.show_card(EventManager.deck[0])
 	await get_tree().process_frame
 	_check_on_screen("EventPanel body", _first_control_child(journey.event_panel), vp)
+	journey.event_panel._on_choice(0)
+	await get_tree().process_frame
+	_check_on_screen("Consequence beat", _first_control_child(journey.event_panel), vp)
 	if failures.is_empty():
 		print("LAYOUT PASS (%d checks)" % passed)
 	else:

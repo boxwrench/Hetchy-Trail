@@ -132,7 +132,10 @@ func _check_ui_scenes() -> void:
 	check(GameState.miles_built > 0.0, "one turn advances the construction front")
 	check(journey.event_panel.visible, "turn 1 shows the first fixed card")
 	journey.event_panel._on_choice(0)
-	check(GameState.has_flag(&"high_sierra_access_complete"), "resolving via UI grants the flag")
+	check(GameState.miles_built > 0.0 and not GameState.has_flag(&"high_sierra_access_complete"),
+		"choosing shows the consequence beat but does not resolve yet")
+	journey.event_panel._on_continue(0)
+	check(GameState.has_flag(&"high_sierra_access_complete"), "Continue resolves and grants the flag")
 	journey.queue_free()
 	GameState.new_game()
 	EventManager.reset()
