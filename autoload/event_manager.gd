@@ -51,6 +51,9 @@ func try_draw() -> EventCard:
 		if card.is_fixed:
 			return _draw(card)
 	# Pace-risk: the season just worked may trigger a hazard before texture cards.
+	# A due fixed spine card returns above and skips this roll, so on milestone
+	# turns the real hazard chance is 0 -- the DecisionPanel telegraph is worded
+	# "if the season passes quietly" to stay honest about that.
 	var risk := _risk_for(GameState.work_pace)
 	if randf() < float(risk["chance"]):
 		var hazard := _pick_hazard(risk["kind"])

@@ -75,4 +75,6 @@ func refresh_affordability() -> void:
 func _refresh_risk() -> void:
 	var preview: Dictionary = EventManager.risk_preview(pace_select.selected)
 	var noun := "injury" if preview["kind"] == &"injury" else "public impatience"
-	risk_label.text = "This season's risk: %s chance of %s" % [String(preview["level"]), noun]
+	# Worded as a conditional: on turns a fixed milestone card is due, the hazard
+	# roll is skipped entirely, so this is the risk only "if the season passes quietly".
+	risk_label.text = "If the season passes quietly: %s chance of %s" % [String(preview["level"]), noun]

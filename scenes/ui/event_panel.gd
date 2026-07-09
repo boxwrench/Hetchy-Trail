@@ -104,6 +104,10 @@ func _deltas_text(choice: EventChoice) -> String:
 		parts.append("lost %d season(s)" % choice.time_delta_seasons)
 	elif choice.time_delta_seasons < 0:
 		parts.append("banked %d season(s)" % -choice.time_delta_seasons)
+	# NOTE: granted_flags are intentionally not narrated here. Every authored choice
+	# today also carries a metric delta, so this fallback never fires on a flag-
+	# granting choice. If a flag-ONLY choice is ever authored, add flag narration --
+	# otherwise it would misreport as "No change to the ledger."
 	if parts.is_empty():
 		return "No change to the ledger."
 	return "   ".join(parts)
