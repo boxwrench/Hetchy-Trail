@@ -85,6 +85,9 @@ const OUTREACH_FUNDS_COST := 1
 const OUTREACH_SUPPORT_GAIN := 2
 const CAMP_FUNDS_COST := 1
 const CAMP_CREW_GAIN := 2
+## Each use of a repeatable action raises the price of the next use of that
+## same action, so topping up a meter is a decision rather than bookkeeping.
+const ACTION_COST_ESCALATION := 1
 # ----------------------------------------------------------------------------
 
 ## Delivered Hetch Hetchy water requires every one of these flags -- each
@@ -113,6 +116,7 @@ var turn: int = 0                     # player decisions taken
 var work_pace: int = Pace.STEADY
 var flags: Dictionary = {}            # StringName -> true
 var bonds_issued: int = 0
+var action_uses: Dictionary = {}      # StringName -> int
 var game_over: bool = false
 
 var segments: Array[RouteSegment] = []
@@ -134,6 +138,7 @@ func new_game() -> void:
 	work_pace = Pace.STEADY
 	flags = {}
 	bonds_issued = 0
+	action_uses = {}
 	game_over = false
 	_emit_all()
 
@@ -154,32 +159,53 @@ func advance_turn() -> void:
 	_check_end_conditions()
 
 
-## Applies one optional per-turn action from the DecisionPanel.
-## Returns false when the action is not currently affordable/allowed.
-func take_action(action: StringName) -> bool:
+## Current funds price of a repeatable action, rising with each prior use.
+## issue_bond is not priced in funds -- it is gated by MAX_BOND_ISSUES.
+func action_cost(action: StringName) -> int:
+	var uses: int = action_uses.get(action, 0)
+	match action:
+		&"outreach":
+			return OUTREACH_FUNDS_COST + uses * ACTION_COST_ESCALATION
+		&"improve_camp":
+			return CAMP_FUNDS_COST + uses * ACTION_COST_ESCALATION
+		_:
+			return 0
+
+
+## Whether the action is currently allowed. The DecisionPanel renders from this
+## so affordability rules live in one place.
+func can_take_action(action: StringName) -> bool:
 	if game_over:
 		return false
 	match action:
 		&"issue_bond":
-			if public_support < BOND_MIN_SUPPORT:
-				return false
-			if bonds_issued >= MAX_BOND_ISSUES:
-				return false
+			return bonds_issued < MAX_BOND_ISSUES and public_support >= BOND_MIN_SUPPORT
+		&"outreach", &"improve_camp":
+			return funds >= action_cost(action)
+		_:
+			return false
+
+
+## Applies one optional per-turn action from the DecisionPanel.
+## Returns false when the action is not currently affordable/allowed.
+func take_action(action: StringName) -> bool:
+	if not can_take_action(action):
+		return false
+	var cost := action_cost(action)
+	match action:
+		&"issue_bond":
 			bonds_issued += 1
 			_set_funds(funds + BOND_FUNDS_GAIN)
 			_set_support(public_support - BOND_SUPPORT_COST)
 		&"outreach":
-			if funds < OUTREACH_FUNDS_COST:
-				return false
-			_set_funds(funds - OUTREACH_FUNDS_COST)
+			_set_funds(funds - cost)
 			_set_support(public_support + OUTREACH_SUPPORT_GAIN)
 		&"improve_camp":
-			if funds < CAMP_FUNDS_COST:
-				return false
-			_set_funds(funds - CAMP_FUNDS_COST)
+			_set_funds(funds - cost)
 			_set_crew(crew_wellbeing + CAMP_CREW_GAIN)
 		_:
 			return false
+	action_uses[action] = int(action_uses.get(action, 0)) + 1
 	_check_end_conditions()
 	return true
 

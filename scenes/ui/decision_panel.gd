@@ -8,9 +8,11 @@ signal decisions_confirmed(pace: int, action: StringName)
 const ACTIONS: Array[StringName] = [&"none", &"issue_bond", &"outreach", &"improve_camp"]
 const ACTION_LABELS := [
 	"No special action",
-	"Issue bond (+3 funds, -1 support)",
-	"Community outreach (-1 funds, +2 support)",
-	"Improve the camps (-1 funds, +2 crew)",
+	# Placeholder text only -- refresh_affordability() rewrites all three from
+	# the live GameState constants and the current escalated costs.
+	"Issue bond",
+	"Community outreach",
+	"Improve the camps",
 ]
 
 var pace_select: OptionButton
@@ -45,7 +47,7 @@ func _ready() -> void:
 		action_select.add_item(action_label)
 	row.add_child(action_select)
 	end_button = Button.new()
-	end_button.text = "End season"
+	end_button.text = "End phase"
 	end_button.pressed.connect(_on_end_pressed)
 	row.add_child(end_button)
 	risk_label = Label.new()
@@ -66,9 +68,16 @@ func set_enabled(on: bool) -> void:
 
 
 func refresh_affordability() -> void:
-	action_select.set_item_disabled(1, GameState.public_support < GameState.BOND_MIN_SUPPORT)
-	action_select.set_item_disabled(2, GameState.funds < GameState.OUTREACH_FUNDS_COST)
-	action_select.set_item_disabled(3, GameState.funds < GameState.CAMP_FUNDS_COST)
+	action_select.set_item_disabled(1, not GameState.can_take_action(&"issue_bond"))
+	action_select.set_item_disabled(2, not GameState.can_take_action(&"outreach"))
+	action_select.set_item_disabled(3, not GameState.can_take_action(&"improve_camp"))
+	var bonds_left := GameState.MAX_BOND_ISSUES - GameState.bonds_issued
+	action_select.set_item_text(1, "Issue bond (+%d funds, -%d support) - %d left"
+		% [GameState.BOND_FUNDS_GAIN, GameState.BOND_SUPPORT_COST, bonds_left])
+	action_select.set_item_text(2, "Community outreach (-%d funds, +%d support)"
+		% [GameState.action_cost(&"outreach"), GameState.OUTREACH_SUPPORT_GAIN])
+	action_select.set_item_text(3, "Improve the camps (-%d funds, +%d crew)"
+		% [GameState.action_cost(&"improve_camp"), GameState.CAMP_CREW_GAIN])
 	_refresh_risk()
 
 
@@ -76,5 +85,5 @@ func _refresh_risk() -> void:
 	var preview: Dictionary = EventManager.risk_preview(pace_select.selected)
 	var noun := "injury" if preview["kind"] == &"injury" else "public impatience"
 	# Worded as a conditional: on turns a fixed milestone card is due, the hazard
-	# roll is skipped entirely, so this is the risk only "if the season passes quietly".
-	risk_label.text = "If the season passes quietly: %s chance of %s" % [String(preview["level"]), noun]
+	# roll is skipped entirely, so this is the risk only "if the phase passes quietly".
+	risk_label.text = "If the phase passes quietly: %s chance of %s" % [String(preview["level"]), noun]

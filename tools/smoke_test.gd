@@ -8,6 +8,7 @@ var failures: Array[String] = []
 
 func _ready() -> void:
 	_check_phase_calendar()
+	_check_economy()
 	_check_segments()
 	_check_deck()
 	_check_hazards()
@@ -166,5 +167,26 @@ func _check_phase_calendar() -> void:
 		if s.winter_sensitive:
 			dependent += 1
 	check(dependent == 3, "exactly 3 railroad-dependent segments (got %d)" % dependent)
+	GameState.new_game()
+	EventManager.reset()
+
+
+func _check_economy() -> void:
+	GameState.new_game()
+	check(GameState.action_cost(&"outreach") == GameState.OUTREACH_FUNDS_COST,
+		"first outreach costs the base price")
+	GameState.take_action(&"outreach")
+	check(GameState.action_cost(&"outreach") == GameState.OUTREACH_FUNDS_COST + GameState.ACTION_COST_ESCALATION,
+		"second outreach costs more than the first")
+	GameState.new_game()
+	var issued := 0
+	for i in 10:
+		if GameState.take_action(&"issue_bond"):
+			issued += 1
+		GameState.take_action(&"outreach")
+	check(issued == GameState.MAX_BOND_ISSUES,
+		"bond issuance is capped at %d (got %d)" % [GameState.MAX_BOND_ISSUES, issued])
+	check(not GameState.can_take_action(&"issue_bond"),
+		"issuing the cap exhausts the bond action")
 	GameState.new_game()
 	EventManager.reset()

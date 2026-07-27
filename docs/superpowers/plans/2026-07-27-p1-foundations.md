@@ -1004,7 +1004,7 @@ The fix has two parts: **bond issuance is capped at 2 per campaign**, and
   `GameState.action_cost(action: StringName) -> int`,
   `GameState.can_take_action(action: StringName) -> bool`.
 
-- [ ] **Step 1: Write the failing exploit probe in the sim**
+- [x] **Step 1: Write the failing exploit probe in the sim**
 
 In `tools/sim_test.gd`, add this function at the end of the file:
 
@@ -1051,7 +1051,7 @@ to:
 	win = win and exploit_peak <= GameState.START_FUNDS + (GameState.MAX_BOND_ISSUES * GameState.BOND_FUNDS_GAIN)
 ```
 
-- [ ] **Step 2: Run the sim and confirm the probe fails**
+- [x] **Step 2: Run the sim and confirm the probe fails**
 
 ```bash
 godot --headless res://tools/sim_test.tscn
@@ -1062,7 +1062,7 @@ well above 35>`, followed by `SIM FAIL`. This is the defect reproducing.
 
 Record the number — the reviewer wants it.
 
-- [ ] **Step 3: Add the economy constants and state**
+- [x] **Step 3: Add the economy constants and state**
 
 > **Already done in Task 1:** `MAX_BOND_ISSUES`, `BOND_FUNDS_GAIN := 20`,
 > `var bonds_issued`, its reset in `new_game()`, and the cap check inside
@@ -1102,7 +1102,7 @@ In `new_game()`, immediately after `bonds_issued = 0`, add:
 	action_uses = {}
 ```
 
-- [ ] **Step 4: Add the cost and affordability functions**
+- [x] **Step 4: Add the cost and affordability functions**
 
 Add these two functions immediately above `take_action()`:
 
@@ -1134,7 +1134,7 @@ func can_take_action(action: StringName) -> bool:
 			return false
 ```
 
-- [ ] **Step 5: Rewrite `take_action()` to use them**
+- [x] **Step 5: Rewrite `take_action()` to use them**
 
 Replace the whole of `take_action()`. This is its current text, including the
 bond cap Task 1 added — match it exactly:
@@ -1196,7 +1196,7 @@ func take_action(action: StringName) -> bool:
 	return true
 ```
 
-- [ ] **Step 6: Update the DecisionPanel to render live costs**
+- [x] **Step 6: Update the DecisionPanel to render live costs**
 
 In `scenes/ui/decision_panel.gd`, replace `refresh_affordability()`:
 
@@ -1225,7 +1225,7 @@ func refresh_affordability() -> void:
 	_refresh_risk()
 ```
 
-- [ ] **Step 6b: Fix the two leftover "season" strings**
+- [x] **Step 6b: Fix the two leftover "season" strings**
 
 Task 1 removed the seasonal calendar but could not touch this file. Two
 user-visible strings still contradict the HUD, which now reads "Phase 3 of 24".
@@ -1276,7 +1276,7 @@ with:
 	"Improve the camps",
 ```
 
-- [ ] **Step 7: Add smoke assertions for the cap and escalation**
+- [x] **Step 7: Add smoke assertions for the cap and escalation**
 
 In `tools/smoke_test.gd`, add the call `_check_economy()` in `_ready()`
 immediately after `_check_phase_calendar()`, and add this function at the end:
@@ -1303,7 +1303,7 @@ func _check_economy() -> void:
 	EventManager.reset()
 ```
 
-- [ ] **Step 8: Run the full harness**
+- [x] **Step 8: Run the full harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -1319,7 +1319,7 @@ Expected: `SIM EXPLOIT: peak funds ... = <a number at or below 70>` followed by
 If the canonical run now fails to complete because funds ran out, **STOP and
 report** — do not raise `MAX_BOND_ISSUES` or lower `PHASE_OVERHEAD` on your own.
 
-- [ ] **Step 9: Commit and stop for review**
+- [x] **Step 9: Commit and stop for review**
 
 ```bash
 git add -A

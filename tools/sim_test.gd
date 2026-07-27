@@ -58,7 +58,13 @@ func _ready() -> void:
 	var impatience := _probe(GameState.Pace.REST, &"impatience")
 	print("SIM PROBE: push->injury=%d  rest->impatience=%d" % [injuries, impatience])
 
+	var exploit_peak := _exploit_probe()
+	print("SIM EXPLOIT: peak funds under bond/outreach alternation = %d" % exploit_peak)
 	var win := final_result == &"system_complete" and final_year <= 1940
+	# Regression guard: no repeatable action loop may outrun phase overhead.
+	# Two bonds at BOND_FUNDS_GAIN is the entire authorized income; anything
+	# above that means a repeatable loop is manufacturing funds.
+	win = win and exploit_peak <= GameState.START_FUNDS + (GameState.MAX_BOND_ISSUES * GameState.BOND_FUNDS_GAIN)
 	if win and injuries > 0 and impatience > 0:
 		print("SIM PASS: system_complete, grade=%s" % final_grade)
 		get_tree().quit(0)
@@ -89,3 +95,22 @@ func _probe(pace: int, kind: StringName) -> int:
 			EventManager.resolve_choice(card, card.canonical_choice)
 	EventManager.event_drawn.disconnect(cb)
 	return seen["n"]
+
+
+## Plays the bond/outreach alternation that used to generate unbounded funds.
+## Returns the highest funds value reached.
+func _exploit_probe() -> int:
+	GameState.new_game()
+	EventManager.reset()
+	var peak := GameState.funds
+	for i in 40:
+		if GameState.game_over:
+			break
+		GameState.work_pace = GameState.Pace.STEADY
+		if i % 2 == 0:
+			GameState.take_action(&"issue_bond")
+		else:
+			GameState.take_action(&"outreach")
+		GameState.advance_turn()
+		peak = maxi(peak, GameState.funds)
+	return peak
