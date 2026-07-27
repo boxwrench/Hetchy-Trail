@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="EventCard" format=3]
 
 [ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
 [ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
 
-[sub_resource type="Resource" id="choice_serviced"]
+[sub_resource type="Resource" id="Resource_wceya"]
 script = ExtResource("2")
 label = "Fully service the camps"
 outcome_text = "Water, electricity, telephones and roads reach every camp before the crews spread out. Workers stay, and the tunnel work runs with fewer interruptions."
@@ -12,7 +12,7 @@ crew_wellbeing_delta = 2
 time_delta_seasons = -1
 granted_flags = Array[StringName]([&"foothill_camps_established"])
 
-[sub_resource type="Resource" id="choice_bare"]
+[sub_resource type="Resource" id="Resource_klfp1"]
 script = ExtResource("2")
 label = "Set up bare camps"
 outcome_text = "Tents and cookhouses go up fast and cheap. Workers drift away almost as fast, and every departure slows a heading."
@@ -33,8 +33,7 @@ historical_year_start = 1925
 historical_year_end = 1926
 event_description = "Decide how much infrastructure to provide before distributing the tunneling crews. Well-supplied camps retain workers and reduce future interruptions."
 historical_fact = "Six construction camps supported Foothill Tunnel work. City crews installed camp water, electricity, telephones, roads and other support facilities before and during excavation."
-choices = Array[ExtResource("2")]([SubResource("choice_serviced"), SubResource("choice_bare")])
-canonical_choice = 0
+choices = Array[ExtResource("2")]([SubResource("Resource_wceya"), SubResource("Resource_klfp1")])
 is_fixed = true
 required_flags = Array[StringName]([&"moccasin_power_available"])
 historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."

@@ -1,15 +1,15 @@
-[gd_resource type="Resource" script_class="EventCard" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="EventCard" format=3]
 
 [ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
 [ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
 
-[sub_resource type="Resource" id="choice_install"]
+[sub_resource type="Resource" id="Resource_ymiei"]
 script = ExtResource("2")
 label = "Install the siphon sections"
 outcome_text = "Alameda Creek Siphon No. 1 is completed in February 1934, weeks after the tunnel headings meet. The mountain water now has a path to Irvington."
 funds_delta = -2
-crew_wellbeing_delta = -1
 water_readiness_delta = 2
+crew_wellbeing_delta = -1
 time_delta_seasons = 1
 granted_flags = Array[StringName]([&"alameda_siphon_complete"])
 
@@ -20,13 +20,11 @@ title = "Across Sunol Valley"
 phase_id = &"phase_6"
 location_name = "Alameda Creek and Sunol Valley"
 mile_start = 130
-mile_end = 167
 historical_year_start = 1933
 historical_year_end = 1934
 event_description = "Install the siphon sections and coordinate the crossing with completion of the Coast Range headings."
 historical_fact = "The Coast Range system connected to Irvington through a multiple-pipe inverted siphon across Alameda Creek and the Sunol area. Alameda Creek Siphon No. 1 was completed in February 1934."
-choices = Array[ExtResource("2")]([SubResource("choice_install")])
-canonical_choice = 0
+choices = Array[ExtResource("2")]([SubResource("Resource_ymiei")])
 is_fixed = true
 required_flags = Array[StringName]([&"coast_range_committed"])
 historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."

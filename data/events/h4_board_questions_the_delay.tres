@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="EventCard" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="EventCard" format=3]
 
 [ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
 [ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
 
-[sub_resource type="Resource" id="choice_answer"]
+[sub_resource type="Resource" id="Resource_12prr"]
 script = ExtResource("2")
 label = "Answer the Board"
 outcome_text = "Another season with the headings quiet, and the Board wants to know why. You spend goodwill and a little money keeping the doubters on side."
@@ -17,16 +17,11 @@ event_id = &"hazard_board_impatient"
 title = "The Board Questions the Delay"
 phase_id = &"hazard"
 location_name = "City Hall, San Francisco"
-mile_start = 0
-mile_end = 167
 historical_year_start = 1914
 historical_year_end = 1934
 event_description = "An idle season draws hard questions from the city's overseers."
 historical_fact = "The project ran for two decades under close political and financial scrutiny; long stretches without visible progress fed skepticism about cost and schedule at City Hall and in the press."
-choices = Array[ExtResource("2")]([SubResource("choice_answer")])
-canonical_choice = 0
-is_fixed = false
-weight = 1.0
+choices = Array[ExtResource("2")]([SubResource("Resource_12prr")])
 hazard_kind = &"impatience"
 historical_source_note = "SFPUC historical materials; the project's political and financing history."
 assumption_note = "A representative expression of political impatience, not a specific documented meeting."

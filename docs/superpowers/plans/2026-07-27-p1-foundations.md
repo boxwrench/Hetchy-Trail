@@ -1586,7 +1586,7 @@ smoke assertions still pass against regenerated `.tres` files.
 - Produces: regenerated `data/events/*.tres`. Exits 1 with a file-and-line
   message on any malformed input.
 
-- [ ] **Step 1: Create the scene shell**
+- [x] **Step 1: Create the scene shell**
 
 Create `tools/import_cards.tscn`:
 
@@ -1599,7 +1599,7 @@ Create `tools/import_cards.tscn`:
 script = ExtResource("1")
 ```
 
-- [ ] **Step 2: Write the importer**
+- [x] **Step 2: Write the importer**
 
 Create `tools/import_cards.gd`:
 
@@ -1782,7 +1782,7 @@ func _split(csv: String) -> Array[StringName]:
 	return out
 ```
 
-- [ ] **Step 3: Run the importer**
+- [x] **Step 3: Run the importer**
 
 ```bash
 godot --headless res://tools/import_cards.tscn
@@ -1794,7 +1794,7 @@ If it prints `IMPORT FAIL`, read the named file and line. **Do not edit card
 prose to make it pass** — if the failure is in authored content, STOP and
 report.
 
-- [ ] **Step 4: Prove the round trip is lossless**
+- [x] **Step 4: Prove the round trip is lossless**
 
 The `.tres` files were just regenerated from Markdown. The existing smoke
 assertions must still hold against them.
@@ -1822,7 +1822,7 @@ git diff data/events | grep -E "^[-+].*(historical_fact|assumption_note|outcome_
 Expected: no output, or pairs of `-`/`+` lines that are byte-identical apart
 from escaping. If any prose text actually differs, STOP and report.
 
-- [ ] **Step 5: Add a validation assertion to the smoke test**
+- [x] **Step 5: Add a validation assertion to the smoke test**
 
 In `tools/smoke_test.gd`, add `_check_content_pipeline()` to `_ready()` after
 `_check_economy()`, and add at the end of the file:
@@ -1846,14 +1846,14 @@ func _check_content_pipeline() -> void:
 			"card %s cites a source" % card.event_id)
 ```
 
-- [ ] **Step 6: Run the harness again**
+- [x] **Step 6: Run the harness again**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
 ```
 Expected: `SMOKE PASS`.
 
-- [ ] **Step 7: Commit and stop for review**
+- [x] **Step 7: Commit and stop for review**
 
 ```bash
 git add -A

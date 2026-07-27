@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="EventCard" format=3]
 
 [ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
 [ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
 
-[sub_resource type="Resource" id="choice_campaign"]
+[sub_resource type="Resource" id="Resource_kofp8"]
 script = ExtResource("2")
 label = "Campaign for the bonds"
 outcome_text = "The 1932 bond issue passes. Suspended headings restart, the surveys hold true, and on January 5, 1934 the Mitchell and Mocho headings meet underground."
@@ -13,7 +13,7 @@ water_readiness_delta = 3
 time_delta_seasons = -2
 granted_flags = Array[StringName]([&"coast_range_tunnel_complete"])
 
-[sub_resource type="Resource" id="choice_delay"]
+[sub_resource type="Resource" id="Resource_2faa8"]
 script = ExtResource("2")
 label = "Delay the bond vote"
 outcome_text = "The headings sit idle and crews drift to other work. The vote will have to be attempted again."
@@ -33,8 +33,7 @@ historical_year_start = 1932
 historical_year_end = 1934
 event_description = "Active headings are running out of authorized funding. Conduct a public bond campaign, restart the crews and preserve enough surveying precision for the final breakthrough."
 historical_fact = "Financial shortages temporarily suspended portions of the tunnel work. A 1932 bond issue provided additional money, and the last Coast Range Tunnel connection was made on January 5, 1934, between the Mitchell and Mocho headings."
-choices = Array[ExtResource("2")]([SubResource("choice_campaign"), SubResource("choice_delay")])
-canonical_choice = 0
+choices = Array[ExtResource("2")]([SubResource("Resource_kofp8"), SubResource("Resource_2faa8")])
 is_fixed = true
 required_flags = Array[StringName]([&"mitchell_memorial_observed"])
 historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."

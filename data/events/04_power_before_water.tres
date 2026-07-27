@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="EventCard" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="EventCard" format=3]
 
 [ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
 [ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
 
-[sub_resource type="Resource" id="choice_build"]
+[sub_resource type="Resource" id="Resource_ak2co"]
 script = ExtResource("2")
 label = "Build the powerhouse first"
 outcome_text = "Early Intake begins generating in May 1918. Electricity flows east to the dam site and west toward Moccasin, and surplus power earns the city a little revenue."
@@ -25,8 +25,7 @@ historical_year_start = 1917
 historical_year_end = 1918
 event_description = "Build local generation before expanding round-the-clock drilling. The initial delay produces faster tunnel work and limited revenue during later construction."
 historical_fact = "Construction of Early Intake Powerhouse began in 1917. Generation began in May 1918, supplying electricity east to the dam site and west toward Moccasin. Surplus electricity was also sold commercially."
-choices = Array[ExtResource("2")]([SubResource("choice_build")])
-canonical_choice = 0
+choices = Array[ExtResource("2")]([SubResource("Resource_ak2co")])
 is_fixed = true
 required_flags = Array[StringName]([&"high_sierra_access_complete"])
 historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."

@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="EventCard" format=3]
 
 [ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
 [ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
 
-[sub_resource type="Resource" id="choice_full"]
+[sub_resource type="Resource" id="Resource_pnwcp"]
 script = ExtResource("2")
 label = "Build the full road and sawmill"
 outcome_text = "Crews cut a real supply corridor into the mountains. Later dam and railroad work will move faster, and the camps are better for it."
@@ -12,7 +12,7 @@ crew_wellbeing_delta = 1
 time_delta_seasons = -1
 granted_flags = Array[StringName]([&"high_sierra_access_complete"])
 
-[sub_resource type="Resource" id="choice_minimal"]
+[sub_resource type="Resource" id="Resource_vvsqr"]
 script = ExtResource("2")
 label = "Cut only minimal access"
 outcome_text = "A rough track opens the valley for less money now, but every load of cement and timber will fight it later."
@@ -27,14 +27,12 @@ event_id = &"cut_the_first_road"
 title = "Cut the First Road"
 phase_id = &"phase_1"
 location_name = "Hog Ranch and Canyon Ranch"
-mile_start = 0
 mile_end = 12
 historical_year_start = 1914
 historical_year_end = 1915
 event_description = "Heavy work cannot begin until the city builds mountain access and establishes a local timber supply. Investing fully makes later dam and railroad work faster and improves camp conditions."
 historical_fact = "Road work began around Hog Ranch in 1914. A sawmill at Canyon Ranch began operating in July 1915, approximately 4.5 miles from the dam site. The sawmill and its later replacement at Hog Ranch produced millions of board feet of construction lumber."
-choices = Array[ExtResource("2")]([SubResource("choice_full"), SubResource("choice_minimal")])
-canonical_choice = 0
+choices = Array[ExtResource("2")]([SubResource("Resource_pnwcp"), SubResource("Resource_vvsqr")])
 is_fixed = true
 historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "Resource values are game-balancing numbers, not historical measurements. The brief's 'Time -1 on two later High Sierra cards' is consolidated into a single immediate time gain."

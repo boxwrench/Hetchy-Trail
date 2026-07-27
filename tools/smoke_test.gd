@@ -9,6 +9,7 @@ var failures: Array[String] = []
 func _ready() -> void:
 	_check_phase_calendar()
 	_check_economy()
+	_check_content_pipeline()
 	_check_segments()
 	_check_deck()
 	_check_hazards()
@@ -190,3 +191,21 @@ func _check_economy() -> void:
 		"issuing the cap exhausts the bond action")
 	GameState.new_game()
 	EventManager.reset()
+
+
+func _check_content_pipeline() -> void:
+	var dir := DirAccess.open("res://content/cards")
+	check(dir != null, "content/cards exists")
+	if dir == null:
+		return
+	var md := 0
+	for f in dir.get_files():
+		if f.ends_with(".md"):
+			md += 1
+	check(md == EventManager.deck.size(),
+		"one Markdown source per card (%d md, %d cards)" % [md, EventManager.deck.size()])
+	for card in EventManager.deck:
+		check(card.assumption_note != "",
+			"card %s records its assumptions" % card.event_id)
+		check(card.historical_source_note != "",
+			"card %s cites a source" % card.event_id)

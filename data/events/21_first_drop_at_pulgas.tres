@@ -1,25 +1,25 @@
-[gd_resource type="Resource" script_class="EventCard" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="EventCard" format=3]
 
 [ext_resource type="Script" path="res://resources/event_card.gd" id="1"]
 [ext_resource type="Script" path="res://resources/event_choice.gd" id="2"]
 
-[sub_resource type="Resource" id="choice_ceremony"]
+[sub_resource type="Resource" id="Resource_184lv"]
 script = ExtResource("2")
 label = "Open the system with a public celebration"
 outcome_text = "At 10:12 a.m. on October 24, 1934, Sierra water arrives at Pulgas. Four days later the city celebrates beneath a temporary ceremonial structure, honoring twenty years of work and the people who did it."
 funds_delta = -1
 public_support_delta = 3
-crew_wellbeing_delta = 1
 water_readiness_delta = 5
+crew_wellbeing_delta = 1
 granted_flags = Array[StringName]([&"pulgas_connected", &"hetch_hetchy_water_delivered"])
 
-[sub_resource type="Resource" id="choice_quiet"]
+[sub_resource type="Resource" id="Resource_6s1qv"]
 script = ExtResource("2")
 label = "Open the valves quietly"
 outcome_text = "The water arrives with no speeches and no crowds - just engineers watching a gauge, and a city that will notice only that its taps never run dry."
 public_support_delta = 1
-crew_wellbeing_delta = 1
 water_readiness_delta = 5
+crew_wellbeing_delta = 1
 granted_flags = Array[StringName]([&"pulgas_connected", &"hetch_hetchy_water_delivered"])
 
 [resource]
@@ -29,13 +29,11 @@ title = "The First Drop at Pulgas"
 phase_id = &"phase_6"
 location_name = "Pulgas, San Mateo County"
 mile_start = 165
-mile_end = 167
 historical_year_start = 1934
 historical_year_end = 1934
 event_description = "Confirm that every upstream division is connected, open the system and convert accumulated Water Readiness into delivered water. Optionally hold a public ceremony recognizing the workforce and the completed gravity system."
 historical_fact = "Pulgas Tunnel was begun in 1922 and carried Spring Valley water before the full Hetch Hetchy route was complete. The first Hetch Hetchy water reached Pulgas at 10:12 a.m. on October 24, 1934. A major public celebration followed on October 28."
-choices = Array[ExtResource("2")]([SubResource("choice_ceremony"), SubResource("choice_quiet")])
-canonical_choice = 0
+choices = Array[ExtResource("2")]([SubResource("Resource_184lv"), SubResource("Resource_6s1qv")])
 is_fixed = true
 required_flags = Array[StringName]([&"dam_complete", &"mountain_tunnel_complete", &"foothill_tunnel_complete", &"san_joaquin_pipeline_complete", &"coast_range_tunnel_complete", &"alameda_siphon_complete", &"bay_crossing_complete"])
 historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, sections 5-7."
