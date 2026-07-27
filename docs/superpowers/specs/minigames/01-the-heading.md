@@ -39,6 +39,28 @@ Already in the deck, and the design should reach for these rather than invent:
   — the documented anchor for real danger. **Bust outcomes must not trivialise
   injury or death.** Restraint, as the card already models.
 
+## Bust outcomes come from the existing hazard deck
+
+The three injury hazard cards are already written, already sourced, and already
+carry the teaching layer — reuse them rather than inventing bust text:
+
+- [h1_powder_blast](../../../../content/cards/h1_powder_blast.md) — a premature
+  detonation before the heading is clear.
+- [h2_rockfall_in_the_heading](../../../../content/cards/h2_rockfall_in_the_heading.md)
+- [h3_cave_in](../../../../content/cards/h3_cave_in.md)
+
+**These stay in the campaign deck as well.** The pace-risk roll and the Heading's
+bust are different events at different scales — one is what happens between
+turns, the other is what happens inside a shift — and the campaign one cannot be
+retired, because minigames are optional by invariant. A player who skips every
+minigame must still face risk. See Task 6 of
+[P1](../../plans/2026-07-27-p1-foundations.md), which revived that roll.
+
+The design question this raises, to be answered here: **does a Heading bust draw
+from the same pool, or does the minigame get its own bust text keyed to which
+hazard occurred?** Reusing the cards keeps the sourcing; separate text lets the
+bust describe the specific round the player just gambled on.
+
 ## Must be decided
 
 Answer every one of these before writing the implementation plan.

@@ -2074,6 +2074,352 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 ---
 
+### Task 6: Revive the dead hazard system
+
+**Measured defect.** A canonical campaign runs 20 turns: **15 carry a fixed
+spine card**, 2 a texture card, 3 nothing.
+[event_manager.gd:50](../../../autoload/event_manager.gd#L50) returns a due
+fixed card *before* the pace-risk roll executes, so the roll runs on 5 turns out
+of 20. At STEADY's 10% that is **0.5 expected hazards per campaign** — observed
+0. The pace-risk mechanic, its five authored hazard cards, and the DecisionPanel
+telegraph are all dead weight.
+
+The system was built for a 73-turn campaign with ~50 empty turns. There are now
+3. Suppressing the roll on milestone turns made sense when milestone turns were
+rare; at 75% density it silences the mechanic entirely.
+
+**The fix:** the roll happens every turn. When it hits, the hazard resolves
+*first*, then the milestone card follows in the same turn. `try_draw()` becomes
+a queue so no card is lost and the schedule does not slip — a hazard must not
+cost a turn, or it would push the calendar and break the `matched_history`
+calibration from Task 1b.
+
+Expected after this change: ~2 hazards per campaign at STEADY, ~6 at PUSHED.
+Pace becomes a real decision again.
+
+**Files:**
+- Modify: `autoload/event_manager.gd`
+- Modify: `scenes/journey/journey.gd`
+- Modify: `scenes/ui/decision_panel.gd`
+- Modify: `tools/smoke_test.gd`, `tools/sim_test.gd`
+
+**Interfaces:**
+- Produces: `EventManager.try_draw_queue() -> Array[EventCard]`, returning 0, 1
+  or 2 cards in resolution order (hazard first).
+- `EventManager.try_draw()` is **removed**. All four call sites are updated
+  below.
+
+- [ ] **Step 1: Make the sim assert that hazards actually fire**
+
+In `tools/sim_test.gd`, find the win condition and add a third clause. Replace:
+
+```gdscript
+	# Two bonds at BOND_FUNDS_GAIN is the entire authorized income; anything
+	# above that means a repeatable loop is manufacturing funds.
+	win = win and exploit_peak <= GameState.START_FUNDS + (GameState.MAX_BOND_ISSUES * GameState.BOND_FUNDS_GAIN)
+```
+
+with:
+
+```gdscript
+	# Two bonds at BOND_FUNDS_GAIN is the entire authorized income; anything
+	# above that means a repeatable loop is manufacturing funds.
+	win = win and exploit_peak <= GameState.START_FUNDS + (GameState.MAX_BOND_ISSUES * GameState.BOND_FUNDS_GAIN)
+	# The pace-risk mechanic must be alive in real play, not just in the probes.
+	# This is the guard that would have caught the fixed-spine suppression.
+	win = win and hazards_seen > 0
+```
+
+- [ ] **Step 2: Run the sim and confirm it fails**
+
+```bash
+godot --headless res://tools/sim_test.tscn
+```
+
+Expected: `SIM RESULT` ending in `0 hazards`, then `SIM FAIL`. That is the
+defect reproducing.
+
+- [ ] **Step 3: Replace `try_draw()` with a queue**
+
+In `autoload/event_manager.gd`, replace the whole of `try_draw()`:
+
+```gdscript
+func try_draw() -> EventCard:
+	if GameState.game_over:
+		return null
+	var available := _available_cards()
+	for card in available:
+		if card.is_fixed:
+			return _draw(card)
+	# Pace-risk: the season just worked may trigger a hazard before texture cards.
+	# A due fixed spine card returns above and skips this roll, so on milestone
+	# turns the real hazard chance is 0 -- the DecisionPanel telegraph is worded
+	# "if the season passes quietly" to stay honest about that.
+	var risk := _risk_for(GameState.work_pace)
+	if randf() < float(risk["chance"]):
+		var hazard := _pick_hazard(risk["kind"])
+		if hazard != null:
+			return _draw(hazard)
+	if available.is_empty() or randf() > event_chance:
+		return null
+	return _draw(_weighted_pick(available))
+```
+
+with:
+
+```gdscript
+## Cards to resolve this turn, in order. Empty, one, or two entries.
+##
+## The pace-risk roll runs on EVERY turn, including milestone turns. It used to
+## be skipped whenever a fixed card was due, which silenced it: the fixed spine
+## occupies 15 of a campaign's 20 turns, so the roll fired on 5. A hazard is
+## queued AHEAD of the milestone rather than replacing it, so no card is lost
+## and a hazard never costs the player a turn.
+func try_draw_queue() -> Array[EventCard]:
+	var queue: Array[EventCard] = []
+	if GameState.game_over:
+		return queue
+	var available := _available_cards()
+	var risk := _risk_for(GameState.work_pace)
+	if randf() < float(risk["chance"]):
+		var hazard := _pick_hazard(risk["kind"])
+		if hazard != null:
+			queue.append(_draw(hazard))
+	for card in available:
+		if card.is_fixed:
+			queue.append(_draw(card))
+			return queue
+	# A texture card only when no milestone is due.
+	if available.is_empty() or randf() > event_chance:
+		return queue
+	queue.append(_draw(_weighted_pick(available)))
+	return queue
+```
+
+- [ ] **Step 4: Teach Journey to play a queue**
+
+In `scenes/journey/journey.gd`, replace this line near the top:
+
+```gdscript
+## The only script that calls GameState.advance_turn() and EventManager.try_draw().
+```
+
+with:
+
+```gdscript
+## The only script that calls GameState.advance_turn() and
+## EventManager.try_draw_queue().
+```
+
+Replace:
+
+```gdscript
+var current_card: EventCard
+```
+
+with:
+
+```gdscript
+var current_card: EventCard
+var pending: Array[EventCard] = []
+```
+
+Replace the tail of `_on_decisions()`:
+
+```gdscript
+	current_card = EventManager.try_draw()
+	if current_card != null:
+		event_panel.show_card(current_card)
+	else:
+		_begin_decide()
+```
+
+with:
+
+```gdscript
+	pending = EventManager.try_draw_queue()
+	_show_next()
+```
+
+Replace the whole of `_on_event_choice()`:
+
+```gdscript
+func _on_event_choice(index: int) -> void:
+	var card := current_card
+	current_card = null
+	EventManager.resolve_choice(card, index)
+	if not GameState.game_over:
+		_begin_decide()
+```
+
+with:
+
+```gdscript
+func _on_event_choice(index: int) -> void:
+	var card := current_card
+	current_card = null
+	EventManager.resolve_choice(card, index)
+	_show_next()
+
+
+## Shows the next queued card, or hands the turn back to the player when the
+## queue is empty. A hazard that ends the game stops the queue here.
+func _show_next() -> void:
+	if GameState.game_over:
+		pending.clear()
+		return
+	if pending.is_empty():
+		_begin_decide()
+		return
+	current_card = pending.pop_front()
+	event_panel.show_card(current_card)
+```
+
+- [ ] **Step 5: Make the telegraph honest**
+
+The hedge in `scenes/ui/decision_panel.gd` existed only because of the
+suppression this task removes. Replace:
+
+```gdscript
+	# Worded as a conditional: on turns a fixed milestone card is due, the hazard
+	# roll is skipped entirely, so this is the risk only "if the phase passes quietly".
+	risk_label.text = "If the phase passes quietly: %s chance of %s" % [String(preview["level"]), noun]
+```
+
+with:
+
+```gdscript
+	# The pace-risk roll now runs every turn, milestone or not, so this reads
+	# as a plain statement rather than a conditional.
+	risk_label.text = "This phase: %s chance of %s" % [String(preview["level"]), noun]
+```
+
+- [ ] **Step 6: Update the two harness call sites**
+
+In `tools/sim_test.gd` there are two. Replace both occurrences of:
+
+```gdscript
+		var card := EventManager.try_draw()
+		if card != null:
+			EventManager.resolve_choice(card, card.canonical_choice)
+```
+
+with:
+
+```gdscript
+		for card in EventManager.try_draw_queue():
+			if GameState.game_over:
+				break
+			EventManager.resolve_choice(card, card.canonical_choice)
+```
+
+In `tools/smoke_test.gd`, replace the body of `_check_first_turn()`:
+
+```gdscript
+	var card := EventManager.try_draw()
+	check(card != null and card.event_id == &"cut_the_first_road",
+		"first fixed card is Cut the First Road")
+	if card != null:
+		EventManager.resolve_choice(card, card.canonical_choice)
+		check(GameState.has_flag(&"high_sierra_access_complete"),
+			"resolving the road card grants high_sierra_access_complete")
+```
+
+with:
+
+```gdscript
+	# The turn may queue a hazard ahead of the milestone, so the spine card is
+	# the LAST entry, not necessarily the only one.
+	var queue := EventManager.try_draw_queue()
+	check(not queue.is_empty() and queue.back().event_id == &"cut_the_first_road",
+		"the first milestone card is Cut the First Road")
+	for card in queue:
+		EventManager.resolve_choice(card, card.canonical_choice)
+	check(GameState.has_flag(&"high_sierra_access_complete"),
+		"resolving turn 1 grants high_sierra_access_complete")
+```
+
+- [ ] **Step 7: Update the UI scene check for queued turns**
+
+Still in `tools/smoke_test.gd`, inside `_check_ui_scenes()`, replace:
+
+```gdscript
+	check(journey.event_panel.visible, "turn 1 shows the first fixed card")
+	journey.event_panel._on_choice(0)
+	check(GameState.miles_built > 0.0 and not GameState.has_flag(&"high_sierra_access_complete"),
+		"choosing shows the consequence beat but does not resolve yet")
+	journey.event_panel._on_continue(0)
+	check(GameState.has_flag(&"high_sierra_access_complete"), "Continue resolves and grants the flag")
+```
+
+with:
+
+```gdscript
+	check(journey.event_panel.visible, "turn 1 shows a card")
+	journey.event_panel._on_choice(0)
+	check(not GameState.has_flag(&"high_sierra_access_complete"),
+		"choosing shows the consequence beat but does not resolve yet")
+	# Turn 1 may queue a hazard ahead of the milestone; drain the whole queue.
+	var guard := 0
+	while journey.event_panel.visible and guard < 5:
+		guard += 1
+		journey.event_panel._on_choice(0)
+		journey.event_panel._on_continue(0)
+	check(guard < 5, "the turn-1 queue drains instead of looping")
+	check(GameState.has_flag(&"high_sierra_access_complete"),
+		"draining turn 1 resolves the milestone and grants its flag")
+```
+
+- [ ] **Step 8: Confirm no `try_draw` references survive**
+
+```bash
+grep -rn "try_draw()" --include=*.gd .
+```
+Expected: **no output.** If anything prints, update it and re-run.
+
+- [ ] **Step 9: Run the full harness**
+
+```bash
+godot --headless res://tools/smoke_test.tscn
+```
+Expected: `SMOKE PASS`.
+
+```bash
+godot --headless res://tools/sim_test.tscn
+```
+Expected: `SIM PASS`, with a hazard count **greater than 0** in `SIM RESULT`.
+
+Then confirm the calibration survived:
+
+- `grade=matched_history` must still hold. If it has slipped to
+  `behind_history`, **STOP and report** — a hazard has cost a turn somewhere,
+  which this design forbids. Do not adjust `CALENDAR_PHASES` to compensate.
+
+- [ ] **Step 10: Commit**
+
+```bash
+git add -A
+git commit -m "fix: revive the pace-risk mechanic the compressed campaign silenced
+
+The fixed spine occupies 15 of a campaign's 20 turns, and a due fixed card
+returned before the hazard roll ran -- so the roll fired on 5 turns and produced
+0.5 expected hazards. The mechanic, its five authored hazard cards, and the
+DecisionPanel telegraph were all dead weight.
+
+try_draw() becomes try_draw_queue(). The roll now runs every turn and a hazard
+is queued ahead of the milestone rather than replacing it, so no card is lost
+and a hazard never costs a turn -- which would otherwise push the calendar and
+break the matched_history calibration.
+
+sim_test now asserts hazards_seen > 0: the guard that would have caught this.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+```
+
+**STOP. Report the SIM RESULT line including the hazard count and grade.**
+
+---
+
 ## Definition of done for P1
 
 All five boxes below must be true before P2 begins:

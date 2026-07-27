@@ -44,6 +44,14 @@ is the single most likely thing to make a first-time player quit.
    the same question; answer both together.
 6. **Tier thresholds** for `poor` / `fair` / `strong`.
 
+## Shared vocabulary with the hazard deck
+
+What a probe hole *finds* should read like the hazards it is looking for —
+[h2_rockfall_in_the_heading](../../../../content/cards/h2_rockfall_in_the_heading.md)
+and [h3_cave_in](../../../../content/cards/h3_cave_in.md) are already written and
+sourced. A survey that spots bad ground and a Heading that hits it unprepared
+should describe the same geology in the same voice.
+
 ## Historical grounding to confirm with the historian
 
 - Actual probe-drilling practice on the Coast Range and Mountain tunnels: how
