@@ -84,6 +84,22 @@ bug, debug the root cause — reproduce, isolate, fix.
 against the worker's summary. Re-run the harness yourself. Check that ticked
 boxes correspond to work that actually landed.
 
+### Minigames are stub-first — never hand a placeholder to a worker
+
+A weak worker can implement a fully-specified module reliably. It cannot design
+one. So every minigame ships first as a **stub**: a screen with the card's
+context and a Resolve button, returning a valid result. The game stays complete
+and playable throughout, and stubs are replaced one at a time.
+
+The five slots live in
+[specs/minigames/](superpowers/specs/minigames/). Each is a **placeholder** —
+a list of open design questions — until a strong model fills it in.
+
+**A placeholder is not an instruction.** Handed one, a worker will invent
+answers to its open questions. The order is always: strong model writes the slot
+design → strong model writes the implementation plan → worker executes it under
+review.
+
 ### Verification harness
 
 ```bash

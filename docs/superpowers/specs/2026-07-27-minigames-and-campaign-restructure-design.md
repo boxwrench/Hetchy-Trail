@@ -301,30 +301,75 @@ tally — none of which requires a drag-and-drop card table. It would also be th
 project's first third-party dependency, with unverified Godot 4.7
 compatibility. Evaluate during implementation; do not commit now.
 
-### §5 — Water readiness as build quality  ⚠️ OPEN DECISION
-
-**Recommended, but not yet confirmed by the user — see
-[Open decisions](#open-decisions).**
+### §5 — Water readiness as build quality  ✅ DECIDED
 
 `water_readiness` becomes the score for *how well* the aqueduct was built, fed
-by minigame performance. Survey carefully and lay clean pipe and it climbs;
-skip the minigames or scrape through them and the system still gets finished —
-passive accrual, campaign completes — but readiness stays low, and the ending
-grades a system that works against one that leaks.
+by minigame performance. It is the only metric the player is trying to
+**maximize** — every other one is a constraint they are avoiding failing, or a
+schedule they are racing. A showcase piece needs something to be good at, and
+the design currently has nothing.
 
-Three things follow. Minigames matter even when the player is not desperate for
-a resource, so there is a reason to keep playing them past the novelty. The
-player who skips everything still finishes, preserving the invariant that
-minigames are never a gate. And the game gains a **score**, which is what makes
-a showcase piece replayable and gives people something to post.
+**The mechanic, in three parts:**
 
-It is also true to the history: the aqueduct's reputation rests on having been
-built well, not merely finished.
+1. **Completing a division grants a readiness floor.** You built it; it works.
+   This happens whether or not the player touched a minigame.
+2. **Minigame performance adds on top of that floor.** Strong play raises
+   readiness; poor play simply does not raise it. **Failing a minigame never
+   subtracts** — otherwise skipping would beat trying, which inverts the point.
+3. **The ending reads two axes** — completion date against October 1934, and
+   readiness against `READINESS_TARGET`.
 
-**The alternative** is to leave readiness as a display number and let miles be
-the only minigame output. Simpler, but leaves a dead metric on the HUD and
-removes the campaign-level reason to engage with minigames after the novelty
-wears off.
+`completion_grade()` currently returns a single ahead/matched/behind value.
+Crossed with three readiness bands it becomes a nine-cell ending matrix, and the
+off-diagonal cells are the interesting ones: *fast but fragile*, *late but built
+to last*. That is a better conversation for staff who know this system than a
+binary finish.
+
+The invariant holds: a player who skips every minigame still finishes and still
+earns a legitimate ending — "the system works" rather than "built to last."
+
+**Balance trap to watch in P3:** if the division floor is set too low, skipping
+minigames reads as punished rather than merely unrewarded. The floor must be
+generous enough that skipping is a valid, unglamorous way to play.
+
+It is also the historically honest measure. Hetch Hetchy's reputation does not
+rest on finishing in 1934; it rests on still delivering water by gravity ninety
+years later. A game that grades only the date measures the wrong achievement.
+
+### §5a — Stub-first minigame delivery
+
+**The constraint this solves:** implementation is executed by a weak worker
+model under review. A weak model can implement a fully-specified module
+reliably; it cannot design one. But specifying all five minigames now would be
+speculative — four would be rewritten once The Heading teaches us what the
+contract actually needs.
+
+**Therefore: every minigame ships as a stub first.** A stub is a screen that
+presents the card's context and a single Resolve button, and returns a valid
+`MinigameResult` with `tier = &"fair"`. Play is identical to today's button
+click. The five stubs are near-identical, so a weak worker can produce them
+mechanically from one worked example.
+
+This gives four properties worth having:
+
+- **The game is complete and playable at every point.** There is never a broken
+  or half-wired minigame slot.
+- **The contract gets exercised five times before any real minigame is built**,
+  so contract defects surface early and cheaply.
+- **Art and content can target real slots** immediately, in parallel.
+- **Design happens just-in-time.** Each stub is replaced by a real minigame one
+  at a time, in any order, and any one can be dropped without disturbing the
+  others.
+
+**Process for replacing a stub:** a strong model writes a short per-minigame
+design spec in `docs/superpowers/specs/minigames/`, then an implementation plan
+in the same explicit style as P1, then the weak worker executes it under review.
+Placeholder specs for all five live there already, each recording what is
+already decided and what a designer must still decide.
+
+**The Heading goes first** because it is the hardest case — press-your-luck
+tuning is the one genuinely uncertain item on the slate. If the contract is
+going to be wrong, that is where it shows.
 
 ### §6 — Historian-editable content pipeline
 
@@ -395,12 +440,13 @@ and art production — before any minigame work begins.
 
 ## Open decisions
 
-1. **§5, water readiness as build quality.** Recommended and written into this
-   spec as the default. Confirm, or choose the simpler alternative (readiness
-   stays a display number; miles is the only minigame output).
-2. **Press-your-luck tuning parameters (§4.1)** are set by the research in
+1. **Press-your-luck tuning parameters (§4.1)** are set by the research in
    appendix A plus the `minigame_sim` band-check. Not blocking P1 or the
    framework half of P2.
+2. **Per-minigame design** is deliberately deferred under §5a. Each stub's
+   replacement spec is written just before its implementation plan, not now.
+
+**Resolved:** §5 (water readiness as build quality) — confirmed 2026-07-27.
 
 ## Appendix A — Press-your-luck research prompt
 
