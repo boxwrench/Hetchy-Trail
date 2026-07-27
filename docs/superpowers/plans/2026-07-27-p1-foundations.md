@@ -1355,7 +1355,7 @@ task only **writes** Markdown — the game still loads `.tres`. Nothing breaks.
 - Produces: `content/cards/<basename>.md` for each `data/events/<basename>.tres`.
   The basename is shared, which is how Task 4 knows where to write back.
 
-- [ ] **Step 1: Create the scene shell**
+- [x] **Step 1: Create the scene shell**
 
 Create `tools/export_cards.tscn` with exactly this content:
 
@@ -1368,7 +1368,7 @@ Create `tools/export_cards.tscn` with exactly this content:
 script = ExtResource("1")
 ```
 
-- [ ] **Step 2: Write the exporter**
+- [x] **Step 2: Write the exporter**
 
 Create `tools/export_cards.gd`:
 
@@ -1457,7 +1457,7 @@ func _join(flags: Array) -> String:
 	return ", ".join(parts)
 ```
 
-- [ ] **Step 3: Run the exporter**
+- [x] **Step 3: Run the exporter**
 
 ```bash
 godot --headless res://tools/export_cards.tscn
@@ -1467,7 +1467,7 @@ Expected: `EXPORT OK: wrote 26 card files to res://content/cards`
 
 If it prints any `EXPORT FAIL`, STOP and report.
 
-- [ ] **Step 4: Spot-check one generated file**
+- [x] **Step 4: Spot-check one generated file**
 
 Open `content/cards/11_the_803_foot_month.md` and confirm all four are true:
 
@@ -1479,7 +1479,7 @@ Open `content/cards/11_the_803_foot_month.md` and confirm all four are true:
 
 If any is false, STOP and report which.
 
-- [ ] **Step 5: Write the historian's instructions**
+- [x] **Step 5: Write the historian's instructions**
 
 Create `content/README.md`:
 
@@ -1537,7 +1537,7 @@ If anything in a file is malformed, that command stops and names the file and
 line, so a mistake is always caught rather than silently ignored.
 ```
 
-- [ ] **Step 6: Confirm the harness is untouched**
+- [x] **Step 6: Confirm the harness is untouched**
 
 This task changed no game code, so both must still pass unchanged.
 
@@ -1551,7 +1551,7 @@ godot --headless res://tools/sim_test.tscn
 ```
 Expected: `SIM PASS`.
 
-- [ ] **Step 7: Commit and stop for review**
+- [x] **Step 7: Commit and stop for review**
 
 ```bash
 git add -A
