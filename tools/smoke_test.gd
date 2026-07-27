@@ -10,6 +10,7 @@ func _ready() -> void:
 	_check_phase_calendar()
 	_check_economy()
 	_check_content_pipeline()
+	_check_card_art()
 	_check_segments()
 	_check_deck()
 	_check_hazards()
@@ -209,3 +210,12 @@ func _check_content_pipeline() -> void:
 			"card %s records its assumptions" % card.event_id)
 		check(card.historical_source_note != "",
 			"card %s cites a source" % card.event_id)
+
+
+func _check_card_art() -> void:
+	for card in EventManager.deck:
+		# Art is optional during production; the contract is that a missing
+		# image degrades to empty rather than erroring.
+		var path := card.art_path()
+		check(path == "" or ResourceLoader.exists(path),
+			"card %s art path resolves or is empty" % card.event_id)

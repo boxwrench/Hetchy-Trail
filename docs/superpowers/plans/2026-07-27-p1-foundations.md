@@ -1894,7 +1894,7 @@ art is added by dropping a file into a folder.
   `EventCard.load_art() -> Texture2D` (returns `null` when no file exists).
 - `EventCard.archival_photo` is **removed**.
 
-- [ ] **Step 1: Add the convention lookup to EventCard**
+- [x] **Step 1: Add the convention lookup to EventCard**
 
 In `resources/event_card.gd`, delete this line:
 
@@ -1927,7 +1927,7 @@ func load_art() -> Texture2D:
 	return res if res is Texture2D else null
 ```
 
-- [ ] **Step 2: Point the EventPanel at it**
+- [x] **Step 2: Point the EventPanel at it**
 
 In `scenes/ui/event_panel.gd` there are exactly two edits.
 
@@ -1959,7 +1959,7 @@ with:
 ## event_id convention from assets/art/cards/).
 ```
 
-- [ ] **Step 3: Drop the removed property from the exporter**
+- [x] **Step 3: Drop the removed property from the exporter**
 
 In `tools/export_cards.gd`, confirm `_render()` does not reference
 `archival_photo`. It does not in the Task 3 listing — if you added it, remove
@@ -1972,7 +1972,7 @@ mkdir -p assets/art/cards
 touch assets/art/cards/.gitkeep
 ```
 
-- [ ] **Step 4: Add a smoke assertion**
+- [x] **Step 4: Add a smoke assertion**
 
 In `tools/smoke_test.gd`, add `_check_card_art()` to `_ready()` after
 `_check_content_pipeline()`, and add at the end:
@@ -1987,7 +1987,7 @@ func _check_card_art() -> void:
 			"card %s art path resolves or is empty" % card.event_id)
 ```
 
-- [ ] **Step 5: Update the art documentation**
+- [x] **Step 5: Update the art documentation**
 
 In `docs/art_assets.md`, replace this sentence in section 3a:
 
@@ -2024,7 +2024,7 @@ with:
    editor step is needed — the card finds it by name.
 ```
 
-- [ ] **Step 6: Run the full harness**
+- [x] **Step 6: Run the full harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -2036,7 +2036,7 @@ godot --headless res://tools/sim_test.tscn
 ```
 Expected: `SIM PASS`.
 
-- [ ] **Step 7: Verify art actually loads end to end**
+- [x] **Step 7: Verify art actually loads end to end**
 
 ```bash
 godot --headless res://tools/export_cards.tscn
@@ -2054,7 +2054,7 @@ godot --headless res://tools/smoke_test.tscn
 Expected: `SMOKE PASS`. This confirms the full pipeline survives the property
 removal.
 
-- [ ] **Step 8: Commit and stop for review**
+- [x] **Step 8: Commit and stop for review**
 
 ```bash
 git add -A
@@ -2078,15 +2078,15 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 All five boxes below must be true before P2 begins:
 
-- [ ] `godot --headless res://tools/smoke_test.tscn` prints `SMOKE PASS`.
-- [ ] `godot --headless res://tools/sim_test.tscn` prints `SIM PASS` with
+- [x] `godot --headless res://tools/smoke_test.tscn` prints `SMOKE PASS`.
+- [x] `godot --headless res://tools/sim_test.tscn` prints `SIM PASS` with
   `turns` between 20 and 28, `grade=matched_history`, and `SIM EXPLOIT` peak
   funds at or below 70.
-- [ ] Editing prose in a `content/cards/*.md` file and running
+- [x] Editing prose in a `content/cards/*.md` file and running
   `import_cards.tscn` changes what the game shows.
-- [ ] Dropping `assets/art/cards/<event_id>.png` makes that image appear on the
+- [x] Dropping `assets/art/cards/<event_id>.png` makes that image appear on the
   card, with no editor step.
-- [ ] `docs/ROADMAP.md` P1 row is marked Done.
+- [x] `docs/ROADMAP.md` P1 row is marked Done.
 
 ## Deferred out of P1 (do not do these here)
 

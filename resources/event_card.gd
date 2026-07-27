@@ -20,7 +20,6 @@ extends Resource
 
 @export_multiline var event_description: String = ""
 @export_multiline var historical_fact: String = ""
-@export var archival_photo: Texture2D
 
 @export var choices: Array[EventChoice] = []
 ## Index into choices marking what actually happened historically.
@@ -55,3 +54,25 @@ func is_available(miles: float, flags: Dictionary) -> bool:
 		if flags.has(flag):
 			return false
 	return true
+
+
+## Card art resolves by event_id convention rather than a stored reference, so
+## images and card text never collide in the same file. Final art wins over a
+## generated placeholder.
+func art_path() -> String:
+	var final_art := "res://assets/art/cards/%s.png" % event_id
+	if ResourceLoader.exists(final_art):
+		return final_art
+	var placeholder := "res://assets/art/cards/%s.placeholder.png" % event_id
+	if ResourceLoader.exists(placeholder):
+		return placeholder
+	return ""
+
+
+## The card's texture, or null when no art has been produced yet.
+func load_art() -> Texture2D:
+	var path := art_path()
+	if path == "":
+		return null
+	var res := load(path)
+	return res if res is Texture2D else null

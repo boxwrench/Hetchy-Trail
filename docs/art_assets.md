@@ -80,9 +80,14 @@ generation for the gaps.
 
 ### 3a. Event card imagery — the biggest bucket (21 cards)
 
-Each `EventCard` already has an `archival_photo: Texture2D` slot, and the
-EventPanel (plan Task 6) renders it above the description. Target one image per
-card. Priority subjects, grouped by division:
+Card art resolves **by filename convention** — no engine editing required.
+Drop an image at `assets/art/cards/<event_id>.png` and the card picks it up;
+`<event_id>.placeholder.png` is used until final art arrives. The `event_id`
+for each card is the first line of its file in `content/cards/`.
+
+This means art and historical content are fully parallel: images are added by
+dropping files in a folder, touching nothing the historian is editing. Target
+one image per card. Priority subjects, grouped by division:
 
 | Card | Suggested image | Archival photo likely? |
 |------|-----------------|------------------------|
@@ -199,8 +204,8 @@ When the SFPUC historian provides images:
    before it ships** — file, subject, date, source/archive, and rights. This is a
    hard rule already baked into the repo.
 3. Duotone it to the palette so it sits with the generated art.
-4. In the Godot Inspector, set the matching card's `archival_photo` property to
-   the imported texture.
+4. Name the file `<event_id>.png` and place it in `assets/art/cards/`. No
+   editor step is needed — the card finds it by name.
 5. If you crop, retouch, or colorize, note that in the card's `assumption_note`
    — the visual record gets the same honesty as the factual text.
 

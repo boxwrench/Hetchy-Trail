@@ -119,7 +119,7 @@ Both must exit 0. A failing harness is never committed.
 | M0 | Toolchain & harness | Project imports; smoke + sim run headless | `smoke_test`, `sim_test` exit 0 | **Done** |
 | M1 | First playable loop | HUD, DecisionPanel, EventPanel, Journey | Harness + manual playthrough | **Done** |
 | M1.5 | Decision weight | Pace-risk, hazard deck, risk telegraph, HUD warnings | Harness + sim hazard probes | **Done** |
-| P1 | Foundations | 24-turn restructure, economy fix, content pipeline, art decoupling | Harness + exploit probe + historian can edit a card | Next |
+| P1 | Foundations | 24-turn restructure, economy fix, content pipeline, art decoupling | Harness + exploit probe + historian can edit a card | **Done** |
 | P2 | Minigame framework + The Heading | Module contract, arcade mode, press-your-luck tuning | Harness + `minigame_sim` band check | After P1 |
 | P3 | The remaining four | Minesweeper, Pipe Dream, lane-dodge, Bond Vote set piece | Harness + per-minigame sim | After P2 |
 | M2 | The lighting map | Six divisions drawn, lighting as flags land | Harness + visual check | Deferred behind P1–P3 |

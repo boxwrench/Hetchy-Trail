@@ -1,6 +1,7 @@
 extends Control
 ## Displays one EventCard: description, choices, and the teaching layer
-## ("What really happened" + assumption note + optional archival photo).
+## ("What really happened" + assumption note + optional card art, resolved by
+## event_id convention from assets/art/cards/).
 ## On a choice, shows the outcome_text + metric changes as a consequence beat,
 ## then emits choice_selected only after the player presses Continue.
 
@@ -54,8 +55,9 @@ func show_card(card: EventCard) -> void:
 	current_card = card
 	title_label.text = "%s — %s, %d" % [card.title, card.location_name, card.historical_year_start]
 	body_label.text = card.event_description
-	photo_rect.texture = card.archival_photo
-	photo_rect.visible = card.archival_photo != null
+	var art := card.load_art()
+	photo_rect.texture = art
+	photo_rect.visible = art != null
 	fact_label.text = "What really happened: " + card.historical_fact
 	note_label.text = card.assumption_note
 	note_label.visible = card.assumption_note != ""
