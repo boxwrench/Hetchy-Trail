@@ -955,6 +955,35 @@ func refresh_affordability() -> void:
 	_refresh_risk()
 ```
 
+- [ ] **Step 6b: Fix the two leftover "season" strings**
+
+Task 1 removed the seasonal calendar but could not touch this file. Two
+user-visible strings still contradict the HUD, which now reads "Phase 3 of 24".
+
+Replace line 48:
+
+```gdscript
+	end_button.text = "End season"
+```
+
+with:
+
+```gdscript
+	end_button.text = "End phase"
+```
+
+Replace line 80:
+
+```gdscript
+	risk_label.text = "If the season passes quietly: %s chance of %s" % [String(preview["level"]), noun]
+```
+
+with:
+
+```gdscript
+	risk_label.text = "If the phase passes quietly: %s chance of %s" % [String(preview["level"]), noun]
+```
+
 - [ ] **Step 7: Add smoke assertions for the cap and escalation**
 
 In `tools/smoke_test.gd`, add the call `_check_economy()` in `_ready()`
