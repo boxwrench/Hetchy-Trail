@@ -5,9 +5,8 @@ extends Node
 ## PASS = system complete by 1940 AND injuries fire under push, impatience under
 ## rest. Deterministic (fixed seed). Never weaken a check to make it pass.
 
-const MAX_TURNS := 160
-const PROBE_TURNS := 25
-const SEASONS := ["Winter", "Spring", "Summer", "Fall"]
+const MAX_TURNS := 40
+const PROBE_TURNS := 12
 
 var result: StringName = &""
 var hazards_seen := 0
@@ -44,13 +43,13 @@ func _ready() -> void:
 			EventManager.resolve_choice(card, card.canonical_choice)
 	EventManager.event_drawn.disconnect(count_hazards)
 	var final_result := result
-	var final_year := GameState.year
+	var final_year := GameState.current_year()
 	# Cache the grade while GameState still holds the canonical end state; the
 	# probes below call new_game() and would otherwise pollute completion_grade().
 	var final_grade := GameState.completion_grade()
 	GameState.game_ended.disconnect(on_ended)
-	print("SIM RESULT: %s | %s %d | mile %.0f | readiness %d | funds %d | support %d | crew %d | %d turns | %d hazards"
-		% [final_result, SEASONS[GameState.season], final_year, GameState.miles_built,
+	print("SIM RESULT: %s | phase %d | %d | mile %.0f | readiness %d | funds %d | support %d | crew %d | %d turns | %d hazards"
+		% [final_result, GameState.phase, final_year, GameState.miles_built,
 		GameState.water_readiness, GameState.funds, GameState.public_support,
 		GameState.crew_wellbeing, turns, hazards_seen])
 

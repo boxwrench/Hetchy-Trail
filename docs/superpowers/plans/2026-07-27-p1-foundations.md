@@ -458,7 +458,7 @@ In `autoload/event_manager.gd`, delete both `var is_winter := ...` lines (in
 		if card.is_available(GameState.miles_built, GameState.flags):
 ```
 
-- [ ] **Step 8: Update the HUD and the harness, then tune**
+- [x] **Step 8: Update the HUD and the harness, then tune**
 
 In `scenes/ui/hud.gd` there are exactly four edits.
 
@@ -558,7 +558,7 @@ Also replace `PROBE_TURNS := 25` with `PROBE_TURNS := 12`.
 **Do not run the sim yet.** Step 9 must land first or it will fail. Go to
 Step 9.
 
-- [ ] **Step 9: Rebalance the funds economy for 24 phases**
+- [x] **Step 9: Rebalance the funds economy for 24 phases**
 
 > **Why this step exists.** Compressing 73 turns to 24 cut the number of
 > income opportunities by two thirds while leaving costs untouched. Measured
@@ -641,7 +641,7 @@ with:
 			_set_support(public_support - BOND_SUPPORT_COST)
 ```
 
-- [ ] **Step 10: Run the sim and tune mileage**
+- [x] **Step 10: Run the sim and tune mileage**
 
 ```bash
 godot --headless res://tools/sim_test.tscn
@@ -674,7 +674,7 @@ the campaign — the fixed card spine now fires on most turns and suppresses the
 hazard roll — and it is a design question, not something to fix by changing
 constants.
 
-- [ ] **Step 11: Run the full harness**
+- [x] **Step 11: Run the full harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -689,7 +689,7 @@ Expected: `SIM PASS`, with `turns` between 20 and 28.
 
 If either fails, STOP and report.
 
-- [ ] **Step 12: Commit and stop for review**
+- [x] **Step 12: Commit and stop for review**
 
 ```bash
 git add -A

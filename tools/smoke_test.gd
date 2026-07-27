@@ -7,6 +7,7 @@ var failures: Array[String] = []
 
 
 func _ready() -> void:
+	_check_phase_calendar()
 	_check_segments()
 	_check_deck()
 	_check_hazards()
@@ -137,5 +138,28 @@ func _check_ui_scenes() -> void:
 	journey.event_panel._on_continue(0)
 	check(GameState.has_flag(&"high_sierra_access_complete"), "Continue resolves and grants the flag")
 	journey.queue_free()
+	GameState.new_game()
+	EventManager.reset()
+
+
+func _check_phase_calendar() -> void:
+	GameState.new_game()
+	check(GameState.PHASES_TOTAL == 24, "campaign is 24 phases")
+	check(GameState.phase == 0, "new game starts at phase 0")
+	check(GameState.current_year() == 1914, "phase 0 is 1914")
+	check(GameState.phases_remaining() == 24, "24 phases remain at start")
+	for i in 24:
+		GameState.work_pace = GameState.Pace.STEADY
+		GameState.advance_turn()
+	check(GameState.phase == 24, "24 advances reach phase 24 (got %d)" % GameState.phase)
+	check(GameState.current_year() == 1934,
+		"phase 24 lands on 1934 (got %d)" % GameState.current_year())
+	# Two Sierra divisions must stay railroad-dependent; renaming the export
+	# would silently drop this from the .tres files.
+	var dependent := 0
+	for s in GameState.segments:
+		if s.winter_sensitive:
+			dependent += 1
+	check(dependent == 3, "exactly 3 railroad-dependent segments (got %d)" % dependent)
 	GameState.new_game()
 	EventManager.reset()

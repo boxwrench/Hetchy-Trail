@@ -101,9 +101,9 @@ func _deltas_text(choice: EventChoice) -> String:
 	if choice.crew_wellbeing_delta != 0:
 		parts.append("Crew %+d" % choice.crew_wellbeing_delta)
 	if choice.time_delta_seasons > 0:
-		parts.append("lost %d season(s)" % choice.time_delta_seasons)
+		parts.append("lost %d phase(s)" % choice.time_delta_seasons)
 	elif choice.time_delta_seasons < 0:
-		parts.append("banked %d season(s)" % -choice.time_delta_seasons)
+		parts.append("banked %d phase(s)" % -choice.time_delta_seasons)
 	# NOTE: granted_flags are intentionally not narrated here. Every authored choice
 	# today also carries a metric delta, so this fallback never fires on a flag-
 	# granting choice. If a flag-ONLY choice is ever authored, add flag narration --

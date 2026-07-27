@@ -22,10 +22,9 @@ signal readiness_changed(value: int)
 signal crew_changed(value: int)
 signal miles_changed(value: float)
 signal flag_granted(flag: StringName)
-signal turn_advanced(year: int, season: int)
+signal turn_advanced(year: int, phase: int)
 signal game_ended(result: StringName)
 
-enum Season { WINTER, SPRING, SUMMER, FALL }
 enum Pace { REST, STEADY, PUSHED }
 
 const TOTAL_MILES := 167.0
@@ -33,28 +32,44 @@ const START_YEAR := 1914
 const HISTORICAL_FINISH_YEAR := 1934  # first water reached Pulgas October 24, 1934
 const FINAL_DEADLINE_YEAR := 1940     # hard loss: the city turns elsewhere
 
+## One turn is one construction phase, not a calendar season: six divisions,
+## four phases each. Seasons survive only as narrative framing inside card
+## prose -- the campaign does not simulate weather. Each affected card records
+## this in its assumption_note.
+const PHASES_TOTAL := 24
+const YEARS_SPAN := HISTORICAL_FINISH_YEAR - START_YEAR   # 20 years over 24 phases
+
 # --- Tuning knobs -----------------------------------------------------------
-const START_FUNDS := 25
+const START_FUNDS := 30
 const START_SUPPORT := 6
 const START_CREW := 7
 const METER_MAX := 10                 # cap for support and crew
 const READINESS_TARGET := 30          # display scale for water readiness
 
-const MILES_PER_SEASON := {
+## TUNING KNOB. Task 1 Step 10 adjusts STEADY only; PUSHED is always
+## STEADY * 1.6, rounded to one decimal.
+const MILES_PER_PHASE := {
 	Pace.REST: 0.0,
-	Pace.STEADY: 2.5,
-	Pace.PUSHED: 4.0,
+	Pace.STEADY: 6.5,
+	Pace.PUSHED: 10.4,
 }
-const PUSHED_CREW_DRIFT := -1         # crew change per pushed season
-const REST_CREW_DRIFT := 1            # crew change per rest season
-const WINTER_PAYROLL := 1             # funds spent every winter turn
-const PUMPING_SURCHARGE := 1          # extra winter cost if pumps were chosen
-const SNOWBOUND_FACTOR := 0.3         # winter rate in Sierra segments, no railroad
-const RAILROAD_WINTER_FACTOR := 0.8   # winter rate in Sierra segments with railroad
+const PUSHED_CREW_DRIFT := -1         # crew change per pushed phase
+const REST_CREW_DRIFT := 1            # crew change per rest phase
+const PHASE_OVERHEAD := 1             # funds spent every phase
+const PUMPING_SURCHARGE := 1          # extra per-phase cost if pumps were chosen
+## Sierra divisions build at this fraction until the railroad is operational.
+## Division-scoped, not calendar-scoped -- it is what makes the railroad worth
+## building now that the game no longer tracks winter.
+const NO_RAILROAD_FACTOR := 0.4
 
 const BOND_MIN_SUPPORT := 4           # support needed to issue a bond
-const BOND_FUNDS_GAIN := 3
+## A campaign authorizes two major bond measures, echoing the 1910 and 1928
+## issues -- large and rare, not an unlimited supply of small ones. This is
+## what funds a 24-phase campaign against -34 funds of canonical card costs
+## and -24 of phase overhead.
+const BOND_FUNDS_GAIN := 20
 const BOND_SUPPORT_COST := 1
+const MAX_BOND_ISSUES := 2
 const OUTREACH_FUNDS_COST := 1
 const OUTREACH_SUPPORT_GAIN := 2
 const CAMP_FUNDS_COST := 1
@@ -82,10 +97,10 @@ var public_support: int = START_SUPPORT
 var water_readiness: int = 0
 var crew_wellbeing: int = START_CREW
 var miles_built: float = 0.0
-var year: int = START_YEAR
-var season: int = Season.SPRING
+var phase: int = 0
 var work_pace: int = Pace.STEADY
 var flags: Dictionary = {}            # StringName -> true
+var bonds_issued: int = 0
 var game_over: bool = false
 
 var segments: Array[RouteSegment] = []
@@ -102,15 +117,15 @@ func new_game() -> void:
 	water_readiness = 0
 	crew_wellbeing = START_CREW
 	miles_built = 0.0
-	year = START_YEAR
-	season = Season.SPRING
+	phase = 0
 	work_pace = Pace.STEADY
 	flags = {}
+	bonds_issued = 0
 	game_over = false
 	_emit_all()
 
 
-## Advances one season: build, crew drift, winter payroll, calendar, end check.
+## Advances one phase: build, crew drift, phase overhead, calendar, end check.
 ## Called once per turn by Journey, after the player's decisions are applied.
 func advance_turn() -> void:
 	if game_over:
@@ -134,6 +149,9 @@ func take_action(action: StringName) -> bool:
 		&"issue_bond":
 			if public_support < BOND_MIN_SUPPORT:
 				return false
+			if bonds_issued >= MAX_BOND_ISSUES:
+				return false
+			bonds_issued += 1
 			_set_funds(funds + BOND_FUNDS_GAIN)
 			_set_support(public_support - BOND_SUPPORT_COST)
 		&"outreach":
@@ -162,9 +180,9 @@ func apply_choice(choice: EventChoice) -> void:
 	_set_crew(crew_wellbeing + choice.crew_wellbeing_delta)
 	for flag in choice.granted_flags:
 		grant_flag(flag)
-	# Positive time deltas are lost seasons: the calendar advances with winter
-	# payroll but no construction. Negative deltas are schedule gains, banked
-	# as immediate bonus mileage at the steady rate.
+	# Positive time deltas are lost phases: the calendar advances with
+	# overhead but no construction. Negative deltas are schedule gains,
+	# banked as immediate bonus mileage at the steady rate.
 	if choice.time_delta_seasons > 0:
 		for i in choice.time_delta_seasons:
 			_advance_calendar()
@@ -198,26 +216,38 @@ func current_segment() -> RouteSegment:
 	return segments.back() if not segments.is_empty() else null
 
 
+## Display year derived from the phase counter: 24 phases span 1914-1934.
+## Overrunning the campaign keeps advancing the year toward FINAL_DEADLINE_YEAR.
+func current_year() -> int:
+	return START_YEAR + int(floor(float(phase) * float(YEARS_SPAN) / float(PHASES_TOTAL)))
+
+
+## Phases left before the historical finish. Negative once the player overruns.
+func phases_remaining() -> int:
+	return PHASES_TOTAL - phase
+
+
 ## Win-screen grade against the historical finish of October 1934.
 func completion_grade() -> String:
-	if year < HISTORICAL_FINISH_YEAR:
+	var y := current_year()
+	if y < HISTORICAL_FINISH_YEAR:
 		return "ahead_of_history"
-	if year == HISTORICAL_FINISH_YEAR:
+	if y == HISTORICAL_FINISH_YEAR:
 		return "matched_history"
 	return "behind_history"
 
 
 # --- internals ---------------------------------------------------------------
 
-func _build_miles(season_count: int) -> void:
+func _build_miles(phase_count: int) -> void:
 	var segment := current_segment()
 	if segment == null:
 		return
-	var rate: float = MILES_PER_SEASON[work_pace] * segment.build_rate_modifier
+	var rate: float = MILES_PER_PHASE[work_pace] * segment.build_rate_modifier
 	rate *= _crew_factor()
-	if season == Season.WINTER and segment.winter_sensitive:
-		rate *= RAILROAD_WINTER_FACTOR if has_flag(&"railroad_operational") else SNOWBOUND_FACTOR
-	miles_built = minf(miles_built + rate * season_count, TOTAL_MILES)
+	if segment.winter_sensitive and not has_flag(&"railroad_operational"):
+		rate *= NO_RAILROAD_FACTOR
+	miles_built = minf(miles_built + rate * phase_count, TOTAL_MILES)
 	miles_changed.emit(miles_built)
 
 
@@ -227,14 +257,12 @@ func _crew_factor() -> float:
 
 
 func _advance_calendar() -> void:
-	season = (season + 1) % 4
-	if season == Season.WINTER:
-		year += 1
-		var payroll := WINTER_PAYROLL
-		if has_flag(&"pumped_alternative_chosen"):
-			payroll += PUMPING_SURCHARGE
-		_set_funds(funds - payroll)
-	turn_advanced.emit(year, season)
+	phase += 1
+	var overhead := PHASE_OVERHEAD
+	if has_flag(&"pumped_alternative_chosen"):
+		overhead += PUMPING_SURCHARGE
+	_set_funds(funds - overhead)
+	turn_advanced.emit(current_year(), phase)
 
 
 func _check_end_conditions() -> void:
@@ -248,7 +276,7 @@ func _check_end_conditions() -> void:
 		_end_game(&"project_cancelled")
 	elif crew_wellbeing <= 0:
 		_end_game(&"work_halted")
-	elif year > FINAL_DEADLINE_YEAR:
+	elif current_year() > FINAL_DEADLINE_YEAR:
 		_end_game(&"city_moves_on")
 
 
@@ -283,7 +311,7 @@ func _emit_all() -> void:
 	readiness_changed.emit(water_readiness)
 	crew_changed.emit(crew_wellbeing)
 	miles_changed.emit(miles_built)
-	turn_advanced.emit(year, season)
+	turn_advanced.emit(current_year(), phase)
 
 
 func _load_segments() -> void:

@@ -34,7 +34,6 @@ extends Resource
 @export var weight: float = 1.0
 @export var required_flags: Array[StringName] = []
 @export var blocked_by_flags: Array[StringName] = []
-@export var winter_only: bool = false
 ## Empty for a normal card. "injury" or "impatience" marks a repeatable
 ## hazard drawn only by EventManager's pace-risk roll, never the normal deck.
 @export var hazard_kind: StringName = &""
@@ -44,12 +43,10 @@ extends Resource
 @export_multiline var assumption_note: String = ""
 
 
-func is_available(miles: float, is_winter: bool, flags: Dictionary) -> bool:
+func is_available(miles: float, flags: Dictionary) -> bool:
 	if miles < float(mile_start):
 		return false
 	if not is_fixed and miles > float(mile_end):
-		return false
-	if winter_only and not is_winter:
 		return false
 	for flag in required_flags:
 		if not flags.has(flag):

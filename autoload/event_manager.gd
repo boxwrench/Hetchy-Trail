@@ -76,14 +76,13 @@ func resolve_choice(card: EventCard, choice_index: int) -> void:
 # --- internals ---------------------------------------------------------------
 
 func _available_cards() -> Array[EventCard]:
-	var is_winter := GameState.season == GameState.Season.WINTER
 	var out: Array[EventCard] = []
 	for card in deck:
 		if card.hazard_kind != &"":
 			continue   # hazards are drawn only by the pace-risk roll (see try_draw)
 		if drawn_ids.has(card.event_id):
 			continue
-		if card.is_available(GameState.miles_built, is_winter, GameState.flags):
+		if card.is_available(GameState.miles_built, GameState.flags):
 			out.append(card)
 	return out
 
@@ -139,14 +138,13 @@ func risk_preview(pace: int) -> Dictionary:
 
 
 func _hazard_pool(kind: StringName) -> Array[EventCard]:
-	var is_winter := GameState.season == GameState.Season.WINTER
 	var out: Array[EventCard] = []
 	for card in deck:
 		if card.hazard_kind != kind:
 			continue
 		if drawn_ids.has(card.event_id):
 			continue
-		if card.is_available(GameState.miles_built, is_winter, GameState.flags):
+		if card.is_available(GameState.miles_built, GameState.flags):
 			out.append(card)
 	return out
 

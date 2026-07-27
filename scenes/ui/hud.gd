@@ -2,7 +2,6 @@ extends CanvasLayer
 ## Read-only display of the five metrics, the date, and the construction front.
 ## Metrics near a loss condition turn warning-rust; ongoing drains are surfaced.
 
-const SEASONS := ["Winter", "Spring", "Summer", "Fall"]
 const WARN_COLOR := Color(0.65, 0.32, 0.18)   # warning rust (#A6532E), per art_assets.md
 const FUNDS_WARN_AT := 2                        # bond crisis strikes below 0
 const METER_WARN_AT := 2                        # support->cancelled, crew->halt at 0
@@ -34,7 +33,7 @@ func _ready() -> void:
 	GameState.readiness_changed.connect(_set_water)
 	GameState.flag_granted.connect(_on_flag)
 	GameState.miles_changed.connect(func(v: float): labels["miles"].text = "Mile %.1f of 167" % v)
-	GameState.turn_advanced.connect(func(y: int, s: int): labels["date"].text = "%s %d" % [SEASONS[s], y])
+	GameState.turn_advanced.connect(func(y: int, p: int): labels["date"].text = "Phase %d of %d  ·  %d" % [p, GameState.PHASES_TOTAL, y])
 	_refresh()
 
 
@@ -43,7 +42,7 @@ func _refresh() -> void:
 	_set_support(GameState.public_support)
 	_set_crew(GameState.crew_wellbeing)
 	labels["miles"].text = "Mile %.1f of 167" % GameState.miles_built
-	labels["date"].text = "%s %d" % [SEASONS[GameState.season], GameState.year]
+	labels["date"].text = "Phase %d of %d  ·  %d" % [GameState.phase, GameState.PHASES_TOTAL, GameState.current_year()]
 	_set_water(GameState.water_readiness)
 	_update_cost_cue()
 
@@ -75,7 +74,7 @@ func _on_flag(_f: StringName) -> void:
 
 func _update_cost_cue() -> void:
 	if GameState.has_flag(&"pumped_alternative_chosen"):
-		cost_label.text = "Pumping: -1 funds every winter"
+		cost_label.text = "Pumping: -%d funds every phase" % GameState.PUMPING_SURCHARGE
 		cost_label.visible = true
 	else:
 		cost_label.visible = false
