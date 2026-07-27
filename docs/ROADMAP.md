@@ -58,6 +58,8 @@ checking it.** Plans are written for this: every step is explicit, every
 verification is a command with an expected result, and no step requires a design
 judgment call.
 
+**Current plan:** [P1 — Foundations](superpowers/plans/2026-07-27-p1-foundations.md)
+
 **If you are the worker:**
 
 1. Open the current plan. Find the first unchecked `- [ ]` step.
