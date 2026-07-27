@@ -84,6 +84,6 @@ func refresh_affordability() -> void:
 func _refresh_risk() -> void:
 	var preview: Dictionary = EventManager.risk_preview(pace_select.selected)
 	var noun := "injury" if preview["kind"] == &"injury" else "public impatience"
-	# Worded as a conditional: on turns a fixed milestone card is due, the hazard
-	# roll is skipped entirely, so this is the risk only "if the phase passes quietly".
-	risk_label.text = "If the phase passes quietly: %s chance of %s" % [String(preview["level"]), noun]
+	# The pace-risk roll now runs every turn, milestone or not, so this reads
+	# as a plain statement rather than a conditional.
+	risk_label.text = "This phase: %s chance of %s" % [String(preview["level"]), noun]

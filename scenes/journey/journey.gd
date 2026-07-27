@@ -1,6 +1,7 @@
 extends Node
 ## Turn conductor: DECIDE -> RESOLVE -> EVENT -> CHECK.
-## The only script that calls GameState.advance_turn() and EventManager.try_draw().
+## The only script that calls GameState.advance_turn() and
+## EventManager.try_draw_queue().
 
 const HUD_SCENE := preload("res://scenes/ui/hud.tscn")
 const DECISION_SCENE := preload("res://scenes/ui/decision_panel.tscn")
@@ -12,6 +13,7 @@ var hud
 var decision_panel
 var event_panel
 var current_card: EventCard
+var pending: Array[EventCard] = []
 
 
 func _ready() -> void:
@@ -40,19 +42,28 @@ func _on_decisions(pace: int, action: StringName) -> void:
 	GameState.advance_turn()
 	if GameState.game_over:
 		return
-	current_card = EventManager.try_draw()
-	if current_card != null:
-		event_panel.show_card(current_card)
-	else:
-		_begin_decide()
+	pending = EventManager.try_draw_queue()
+	_show_next()
 
 
 func _on_event_choice(index: int) -> void:
 	var card := current_card
 	current_card = null
 	EventManager.resolve_choice(card, index)
-	if not GameState.game_over:
+	_show_next()
+
+
+## Shows the next queued card, or hands the turn back to the player when the
+## queue is empty. A hazard that ends the game stops the queue here.
+func _show_next() -> void:
+	if GameState.game_over:
+		pending.clear()
+		return
+	if pending.is_empty():
 		_begin_decide()
+		return
+	current_card = pending.pop_front()
+	event_panel.show_card(current_card)
 
 
 func _on_game_ended(result: StringName) -> void:

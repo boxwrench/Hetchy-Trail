@@ -2109,7 +2109,7 @@ Pace becomes a real decision again.
 - `EventManager.try_draw()` is **removed**. All four call sites are updated
   below.
 
-- [ ] **Step 1: Make the sim assert that hazards actually fire**
+- [x] **Step 1: Make the sim assert that hazards actually fire**
 
 In `tools/sim_test.gd`, find the win condition and add a third clause. Replace:
 
@@ -2130,7 +2130,7 @@ with:
 	win = win and hazards_seen > 0
 ```
 
-- [ ] **Step 2: Run the sim and confirm it fails**
+- [x] **Step 2: Run the sim and confirm it fails**
 
 ```bash
 godot --headless res://tools/sim_test.tscn
@@ -2139,7 +2139,7 @@ godot --headless res://tools/sim_test.tscn
 Expected: `SIM RESULT` ending in `0 hazards`, then `SIM FAIL`. That is the
 defect reproducing.
 
-- [ ] **Step 3: Replace `try_draw()` with a queue**
+- [x] **Step 3: Replace `try_draw()` with a queue**
 
 In `autoload/event_manager.gd`, replace the whole of `try_draw()`:
 
@@ -2196,7 +2196,7 @@ func try_draw_queue() -> Array[EventCard]:
 	return queue
 ```
 
-- [ ] **Step 4: Teach Journey to play a queue**
+- [x] **Step 4: Teach Journey to play a queue**
 
 In `scenes/journey/journey.gd`, replace this line near the top:
 
@@ -2275,7 +2275,7 @@ func _show_next() -> void:
 	event_panel.show_card(current_card)
 ```
 
-- [ ] **Step 5: Make the telegraph honest**
+- [x] **Step 5: Make the telegraph honest**
 
 The hedge in `scenes/ui/decision_panel.gd` existed only because of the
 suppression this task removes. Replace:
@@ -2294,7 +2294,7 @@ with:
 	risk_label.text = "This phase: %s chance of %s" % [String(preview["level"]), noun]
 ```
 
-- [ ] **Step 6: Update the two harness call sites**
+- [x] **Step 6: Update the two harness call sites**
 
 In `tools/sim_test.gd` there are two. Replace both occurrences of:
 
@@ -2339,7 +2339,7 @@ with:
 		"resolving turn 1 grants high_sierra_access_complete")
 ```
 
-- [ ] **Step 7: Update the UI scene check for queued turns**
+- [x] **Step 7: Update the UI scene check for queued turns**
 
 Still in `tools/smoke_test.gd`, inside `_check_ui_scenes()`, replace:
 
@@ -2370,14 +2370,14 @@ with:
 		"draining turn 1 resolves the milestone and grants its flag")
 ```
 
-- [ ] **Step 8: Confirm no `try_draw` references survive**
+- [x] **Step 8: Confirm no `try_draw` references survive**
 
 ```bash
 grep -rn "try_draw()" --include=*.gd .
 ```
 Expected: **no output.** If anything prints, update it and re-run.
 
-- [ ] **Step 9: Run the full harness**
+- [x] **Step 9: Run the full harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -2395,7 +2395,7 @@ Then confirm the calibration survived:
   `behind_history`, **STOP and report** — a hazard has cost a turn somewhere,
   which this design forbids. Do not adjust `CALENDAR_PHASES` to compensate.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add -A

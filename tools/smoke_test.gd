@@ -93,13 +93,15 @@ func _check_flag_closure() -> void:
 func _check_first_turn() -> void:
 	GameState.new_game()
 	EventManager.reset()
-	var card := EventManager.try_draw()
-	check(card != null and card.event_id == &"cut_the_first_road",
-		"first fixed card is Cut the First Road")
-	if card != null:
+	# The turn may queue a hazard ahead of the milestone, so the spine card is
+	# the LAST entry, not necessarily the only one.
+	var queue := EventManager.try_draw_queue()
+	check(not queue.is_empty() and queue.back().event_id == &"cut_the_first_road",
+		"the first milestone card is Cut the First Road")
+	for card in queue:
 		EventManager.resolve_choice(card, card.canonical_choice)
-		check(GameState.has_flag(&"high_sierra_access_complete"),
-			"resolving the road card grants high_sierra_access_complete")
+	check(GameState.has_flag(&"high_sierra_access_complete"),
+		"resolving turn 1 grants high_sierra_access_complete")
 	GameState.new_game()
 	EventManager.reset()
 
@@ -134,12 +136,19 @@ func _check_ui_scenes() -> void:
 	check(not journey.event_panel.visible, "EventPanel starts hidden")
 	journey._on_decisions(GameState.Pace.STEADY, &"none")
 	check(GameState.miles_built > 0.0, "one turn advances the construction front")
-	check(journey.event_panel.visible, "turn 1 shows the first fixed card")
+	check(journey.event_panel.visible, "turn 1 shows a card")
 	journey.event_panel._on_choice(0)
-	check(GameState.miles_built > 0.0 and not GameState.has_flag(&"high_sierra_access_complete"),
+	check(not GameState.has_flag(&"high_sierra_access_complete"),
 		"choosing shows the consequence beat but does not resolve yet")
-	journey.event_panel._on_continue(0)
-	check(GameState.has_flag(&"high_sierra_access_complete"), "Continue resolves and grants the flag")
+	# Turn 1 may queue a hazard ahead of the milestone; drain the whole queue.
+	var guard := 0
+	while journey.event_panel.visible and guard < 5:
+		guard += 1
+		journey.event_panel._on_choice(0)
+		journey.event_panel._on_continue(0)
+	check(guard < 5, "the turn-1 queue drains instead of looping")
+	check(GameState.has_flag(&"high_sierra_access_complete"),
+		"draining turn 1 resolves the milestone and grants its flag")
 	journey.queue_free()
 	GameState.new_game()
 	EventManager.reset()

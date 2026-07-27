@@ -38,8 +38,9 @@ func _ready() -> void:
 		GameState.advance_turn()
 		if GameState.game_over:
 			break
-		var card := EventManager.try_draw()
-		if card != null:
+		for card in EventManager.try_draw_queue():
+			if GameState.game_over:
+				break
 			EventManager.resolve_choice(card, card.canonical_choice)
 	EventManager.event_drawn.disconnect(count_hazards)
 	var final_result := result
@@ -65,6 +66,9 @@ func _ready() -> void:
 	# Two bonds at BOND_FUNDS_GAIN is the entire authorized income; anything
 	# above that means a repeatable loop is manufacturing funds.
 	win = win and exploit_peak <= GameState.START_FUNDS + (GameState.MAX_BOND_ISSUES * GameState.BOND_FUNDS_GAIN)
+	# The pace-risk mechanic must be alive in real play, not just in the probes.
+	# This is the guard that would have caught the fixed-spine suppression.
+	win = win and hazards_seen > 0
 	if win and injuries > 0 and impatience > 0:
 		print("SIM PASS: system_complete, grade=%s" % final_grade)
 		get_tree().quit(0)
@@ -90,8 +94,9 @@ func _probe(pace: int, kind: StringName) -> int:
 		GameState.advance_turn()
 		if GameState.game_over:
 			break
-		var card := EventManager.try_draw()
-		if card != null:
+		for card in EventManager.try_draw_queue():
+			if GameState.game_over:
+				break
 			EventManager.resolve_choice(card, card.canonical_choice)
 	EventManager.event_drawn.disconnect(cb)
 	return seen["n"]

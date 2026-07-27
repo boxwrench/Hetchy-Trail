@@ -40,28 +40,32 @@ func reset() -> void:
 	drawn_ids = {}
 
 
-## Called by Journey during the EVENT phase. Returns the card to display,
-## or null when this turn has no event. The caller shows the card and then
-## reports the player's pick through resolve_choice().
-func try_draw() -> EventCard:
+## Cards to resolve this turn, in order. Empty, one, or two entries.
+##
+## The pace-risk roll runs on EVERY turn, including milestone turns. It used to
+## be skipped whenever a fixed card was due, which silenced it: the fixed spine
+## occupies 15 of a campaign's 20 turns, so the roll fired on 5. A hazard is
+## queued AHEAD of the milestone rather than replacing it, so no card is lost
+## and a hazard never costs the player a turn.
+func try_draw_queue() -> Array[EventCard]:
+	var queue: Array[EventCard] = []
 	if GameState.game_over:
-		return null
+		return queue
 	var available := _available_cards()
-	for card in available:
-		if card.is_fixed:
-			return _draw(card)
-	# Pace-risk: the season just worked may trigger a hazard before texture cards.
-	# A due fixed spine card returns above and skips this roll, so on milestone
-	# turns the real hazard chance is 0 -- the DecisionPanel telegraph is worded
-	# "if the season passes quietly" to stay honest about that.
 	var risk := _risk_for(GameState.work_pace)
 	if randf() < float(risk["chance"]):
 		var hazard := _pick_hazard(risk["kind"])
 		if hazard != null:
-			return _draw(hazard)
+			queue.append(_draw(hazard))
+	for card in available:
+		if card.is_fixed:
+			queue.append(_draw(card))
+			return queue
+	# A texture card only when no milestone is due.
 	if available.is_empty() or randf() > event_chance:
-		return null
-	return _draw(_weighted_pick(available))
+		return queue
+	queue.append(_draw(_weighted_pick(available)))
+	return queue
 
 
 ## Applies the player's chosen option and re-arms the card if the choice
