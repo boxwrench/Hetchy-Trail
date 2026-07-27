@@ -73,7 +73,7 @@ Never delete data or weaken a check to make the harness pass.
 
 | File | Status | Responsibility |
 |---|---|---|
-| `autoload/game_state.gd` | Modify | Phase calendar, bounded economy. All rule changes land here. |
+| `autoload/game_state.gd` | Modify | Phase calendar, turn counter, bounded economy. All rule changes land here. |
 | `autoload/event_manager.gd` | Modify | Drop the winter-gating argument from availability calls. |
 | `resources/event_card.gd` | Modify | Remove `winter_only` and `archival_photo`; add `art_path()`. |
 | `resources/route_segment.gd` | Modify | Re-document `winter_sensitive` as railroad dependence. |
@@ -712,6 +712,269 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 ```
 
 **STOP. Report the final SIM RESULT line and wait for review.**
+
+---
+
+### Task 1b: Split the turn counter from the calendar
+
+**The defect Task 1 exposed.** `phase` is doing two incompatible jobs: counting
+the player's turns *and* counting calendar time. Card delays advance the
+calendar without granting a turn, so canonical play used **20 turns but 30
+phases**, and the year formula — calibrated to 24 — landed on **1939**, one year
+from the `city_moves_on` loss at 1940.
+
+The asymmetry causing it is deliberate and correct: in `apply_choice()`, a
+positive `time_delta_seasons` advances the calendar (a lost phase), while a
+negative one grants bonus mileage rather than rewinding the clock. You cannot
+un-spend 1926. Measured across the deck, canonical choices carry **+13 phases of
+delay** against **−15 of schedule gain**, and only the +13 touches the calendar.
+
+**The consequence worth fixing:** every playthrough grades `behind_history`, so
+`completion_grade()` is decoration. After this task the clock is driven purely
+by delays — careful play finishes *ahead* of history, reckless play behind and
+can genuinely lose to 1940.
+
+**Files:**
+- Modify: `autoload/game_state.gd`
+- Modify: `scenes/ui/hud.gd`
+- Modify: `tools/smoke_test.gd`
+
+**Interfaces:**
+- Produces: `GameState.turn: int` (player decisions taken),
+  `GameState.TURNS_TOTAL := 24`, `GameState.CALENDAR_PHASES`,
+  `GameState.turns_remaining() -> int`.
+- `GameState.phases_remaining()` and `GameState.PHASES_TOTAL` are **removed**.
+  `GameState.phase` survives, now meaning calendar time only.
+
+- [ ] **Step 1: Update the smoke assertions**
+
+In `tools/smoke_test.gd`, inside `_check_phase_calendar()`, replace these four
+lines:
+
+```gdscript
+	check(GameState.PHASES_TOTAL == 24, "campaign is 24 phases")
+	check(GameState.phase == 0, "new game starts at phase 0")
+	check(GameState.current_year() == 1914, "phase 0 is 1914")
+	check(GameState.phases_remaining() == 24, "24 phases remain at start")
+```
+
+with:
+
+```gdscript
+	check(GameState.TURNS_TOTAL == 24, "the turn budget is 24")
+	check(GameState.phase == 0, "new game starts at phase 0")
+	check(GameState.turn == 0, "new game starts at turn 0")
+	check(GameState.current_year() == 1914, "phase 0 is 1914")
+	check(GameState.turns_remaining() == 24, "24 turns remain at start")
+```
+
+and replace these two:
+
+```gdscript
+	check(GameState.phase == 24, "24 advances reach phase 24 (got %d)" % GameState.phase)
+	check(GameState.current_year() == 1934,
+		"phase 24 lands on 1934 (got %d)" % GameState.current_year())
+```
+
+with:
+
+```gdscript
+	check(GameState.turn == 24, "24 advances reach turn 24 (got %d)" % GameState.turn)
+	check(GameState.phase == 24,
+		"with no card delays, phase tracks turn (got %d)" % GameState.phase)
+	# A delay-free run is faster than history: 24 phases against a calendar
+	# calibrated to canonical play, which costs ~30.
+	check(GameState.current_year() < 1934,
+		"a delay-free campaign finishes ahead of 1934 (got %d)" % GameState.current_year())
+```
+
+- [ ] **Step 2: Run the smoke test and confirm it fails**
+
+```bash
+godot --headless res://tools/smoke_test.tscn
+```
+
+Expected: `SMOKE FAIL`, or a parse error naming `TURNS_TOTAL` or `turn`.
+
+- [ ] **Step 3: Add the turn counter and calendar constants**
+
+In `autoload/game_state.gd`, replace:
+
+```gdscript
+const PHASES_TOTAL := 24
+const YEARS_SPAN := HISTORICAL_FINISH_YEAR - START_YEAR   # 20 years over 24 phases
+```
+
+with:
+
+```gdscript
+## The player's turn budget -- a session-length design target, not a rule. The
+## real constraint is FINAL_DEADLINE_YEAR.
+const TURNS_TOTAL := 24
+## Calendar phases consumed by canonical play. The year is derived from this,
+## NOT from TURNS_TOTAL: card delays advance the calendar without granting a
+## turn, so canonical play costs about 30 phases against 24 turns. Calibrated
+## in Task 1b Step 7 so canonical play lands on HISTORICAL_FINISH_YEAR.
+const CALENDAR_PHASES := 30
+const YEARS_SPAN := HISTORICAL_FINISH_YEAR - START_YEAR   # 1914 -> 1934
+```
+
+Replace:
+
+```gdscript
+var phase: int = 0
+```
+
+with:
+
+```gdscript
+var phase: int = 0                    # calendar time: turns + card delays
+var turn: int = 0                     # player decisions taken
+```
+
+In `new_game()`, replace:
+
+```gdscript
+	phase = 0
+```
+
+with:
+
+```gdscript
+	phase = 0
+	turn = 0
+```
+
+- [ ] **Step 4: Count the turn in `advance_turn()`**
+
+Replace:
+
+```gdscript
+func advance_turn() -> void:
+	if game_over:
+		return
+	_build_miles(1)
+```
+
+with:
+
+```gdscript
+func advance_turn() -> void:
+	if game_over:
+		return
+	turn += 1
+	_build_miles(1)
+```
+
+- [ ] **Step 5: Rebase the year on `CALENDAR_PHASES`**
+
+Replace:
+
+```gdscript
+func current_year() -> int:
+	return START_YEAR + int(floor(float(phase) * float(YEARS_SPAN) / float(PHASES_TOTAL)))
+
+
+## Phases left before the historical finish. Negative once the player overruns.
+func phases_remaining() -> int:
+	return PHASES_TOTAL - phase
+```
+
+with:
+
+```gdscript
+func current_year() -> int:
+	return START_YEAR + int(floor(float(phase) * float(YEARS_SPAN) / float(CALENDAR_PHASES)))
+
+
+## Turns left in the budget. Negative once the player overruns it; this is a
+## pacing signal, not a loss condition -- the deadline is a year.
+func turns_remaining() -> int:
+	return TURNS_TOTAL - turn
+```
+
+- [ ] **Step 6: Update the HUD**
+
+In `scenes/ui/hud.gd`, replace the two date lines. First, inside `_ready()`:
+
+```gdscript
+	GameState.turn_advanced.connect(func(y: int, p: int): labels["date"].text = "Phase %d of %d  ·  %d" % [p, GameState.PHASES_TOTAL, y])
+```
+
+with:
+
+```gdscript
+	GameState.turn_advanced.connect(func(y: int, _p: int): labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, y])
+```
+
+Then, inside `_refresh()`:
+
+```gdscript
+	labels["date"].text = "Phase %d of %d  ·  %d" % [GameState.phase, GameState.PHASES_TOTAL, GameState.current_year()]
+```
+
+with:
+
+```gdscript
+	labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, GameState.current_year()]
+```
+
+- [ ] **Step 7: Calibrate `CALENDAR_PHASES`**
+
+```bash
+godot --headless res://tools/sim_test.tscn
+```
+
+Read the `phase` number and the `grade=` word in `SIM RESULT`.
+
+- If the run prints `SIM PASS` **and** `grade=matched_history`, calibration is
+  done. Go to Step 8.
+- If `grade=behind_history`: **raise** `CALENDAR_PHASES` by 1 and re-run.
+- If `grade=ahead_of_history`: **lower** `CALENDAR_PHASES` by 1 and re-run.
+- **Maximum 6 adjustments.** If it has not reached `matched_history` after the
+  sixth, or if the result word is ever anything but `system_complete`, **STOP
+  and report** the last three `SIM RESULT` lines. Change no other constant.
+
+- [ ] **Step 8: Run the full harness**
+
+```bash
+godot --headless res://tools/smoke_test.tscn
+```
+Expected: `SMOKE PASS`.
+
+```bash
+godot --headless res://tools/sim_test.tscn
+```
+Expected: `SIM PASS`, with `grade=matched_history`.
+
+Then confirm nothing still references the removed names:
+
+```bash
+grep -rn "PHASES_TOTAL\|phases_remaining" --include=*.gd .
+```
+Expected: **no output.** If anything prints, fix that reference and re-run both
+tests.
+
+- [ ] **Step 9: Commit and stop for review**
+
+```bash
+git add -A
+git commit -m "fix: split the player turn counter from the calendar
+
+phase was counting both player turns and calendar time. Card delays advance the
+calendar without granting a turn, so canonical play used 20 turns but 30
+phases, and a year formula calibrated to 24 landed on 1939 -- one year from the
+1940 loss, with every playthrough grading behind_history.
+
+turn now counts decisions and phase counts calendar time, with the year derived
+from CALENDAR_PHASES calibrated to canonical play. The clock is driven purely
+by delays, so careful play finishes ahead of history and reckless play behind.
+This makes completion_grade() meaningful as the date axis of the ending matrix.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+```
+
+**STOP. Report the final SIM RESULT line and the grade, and wait for review.**
 
 ---
 
@@ -1788,7 +2051,8 @@ All five boxes below must be true before P2 begins:
 
 - [ ] `godot --headless res://tools/smoke_test.tscn` prints `SMOKE PASS`.
 - [ ] `godot --headless res://tools/sim_test.tscn` prints `SIM PASS` with
-  `turns` between 20 and 28 and `SIM EXPLOIT` peak funds at or below 70.
+  `turns` between 20 and 28, `grade=matched_history`, and `SIM EXPLOIT` peak
+  funds at or below 70.
 - [ ] Editing prose in a `content/cards/*.md` file and running
   `import_cards.tscn` changes what the game shows.
 - [ ] Dropping `assets/art/cards/<event_id>.png` makes that image appear on the
