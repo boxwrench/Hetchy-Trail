@@ -195,8 +195,11 @@ deviations, all noted on the cards themselves:
 - The 1934 completion scene must depict the temporary ceremonial structure,
   not the permanent Pulgas Water Temple (completed 1938).
 
-`archival_photo: Texture2D` is ready on every card for SFPUC material; images
-live in `assets/art/archival/` and must be listed in `CREDITS.md` there.
+Card art resolves by filename convention — `assets/art/cards/<event_id>.png`,
+falling back to `<event_id>.placeholder.png` — via `EventCard.art_path()` and
+`load_art()`. There is no stored texture property, so art and card text never
+collide in the same file. SFPUC archival originals live in
+`assets/art/archival/` and must be listed in `CREDITS.md` there.
 
 ### Chronological milestones
 

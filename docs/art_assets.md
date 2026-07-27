@@ -204,8 +204,10 @@ When the SFPUC historian provides images:
    before it ships** — file, subject, date, source/archive, and rights. This is a
    hard rule already baked into the repo.
 3. Duotone it to the palette so it sits with the generated art.
-4. Name the file `<event_id>.png` and place it in `assets/art/cards/`. No
-   editor step is needed — the card finds it by name.
+4. Name the file `<event_id>.png` and place it in `assets/art/cards/`. There is
+   no Inspector step — the card finds it by name. Godot does have to import the
+   file first, so either open the project in the editor once, or run
+   `godot --headless --import`. Until it is imported, the card shows no image.
 5. If you crop, retouch, or colorize, note that in the card's `assumption_note`
    — the visual record gets the same honesty as the factual text.
 
