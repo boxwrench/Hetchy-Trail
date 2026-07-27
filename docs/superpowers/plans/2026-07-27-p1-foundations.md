@@ -49,7 +49,7 @@ godot --headless res://tools/sim_test.tscn
 Prints `SIM RESULT: system_complete | Summer 1935 | mile 167 | ... | 73 turns | 5 hazards`
 then `SIM PASS: system_complete, grade=behind_history`.
 
-- [ ] **Step 0: Confirm the baseline before starting Task 1.** Run both commands
+- [x] **Step 0: Confirm the baseline before starting Task 1.** Run both commands
   above. If either does not print PASS, STOP and report — do not begin work on a
   red harness.
 
@@ -106,7 +106,7 @@ Never delete data or weaken a check to make the harness pass.
 - Produces: `EventCard.is_available(miles: float, flags: Dictionary) -> bool`
   (the `is_winter: bool` parameter is removed).
 
-- [ ] **Step 1: Add the failing assertions to the smoke test**
+- [x] **Step 1: Add the failing assertions to the smoke test**
 
 In `tools/smoke_test.gd`, add this function and register it in `_ready()`.
 
@@ -131,18 +131,20 @@ func _check_phase_calendar() -> void:
 	check(GameState.phase == 24, "24 advances reach phase 24 (got %d)" % GameState.phase)
 	check(GameState.current_year() == 1934,
 		"phase 24 lands on 1934 (got %d)" % GameState.current_year())
-	# Two Sierra divisions must stay railroad-dependent; renaming the export
-	# would silently drop this from the .tres files.
+	# The three mountain divisions must stay railroad-dependent; renaming the
+	# export would silently drop this from the .tres files. Verified against
+	# data/segments: high_sierra, mountain_tunnel and western_foothills are true;
+	# san_joaquin_valley, coast_range and bay_and_peninsula are false.
 	var dependent := 0
 	for s in GameState.segments:
 		if s.winter_sensitive:
 			dependent += 1
-	check(dependent == 2, "exactly 2 railroad-dependent segments (got %d)" % dependent)
+	check(dependent == 3, "exactly 3 railroad-dependent segments (got %d)" % dependent)
 	GameState.new_game()
 	EventManager.reset()
 ```
 
-- [ ] **Step 2: Run the smoke test and confirm it fails**
+- [x] **Step 2: Run the smoke test and confirm it fails**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -152,7 +154,7 @@ Expected: `SMOKE FAIL`, with errors naming `PHASES_TOTAL` / `current_year`.
 A parse error mentioning `Invalid access to constant 'PHASES_TOTAL'` is also
 correct at this point.
 
-- [ ] **Step 3: Replace the calendar constants in `autoload/game_state.gd`**
+- [x] **Step 3: Replace the calendar constants in `autoload/game_state.gd`**
 
 Replace the `enum Season { WINTER, SPRING, SUMMER, FALL }` line with nothing —
 delete it. Keep `enum Pace { REST, STEADY, PUSHED }`.
@@ -218,7 +220,7 @@ const PUMPING_SURCHARGE := 1          # extra per-phase cost if pumps were chose
 const NO_RAILROAD_FACTOR := 0.4
 ```
 
-- [ ] **Step 4: Replace the state variables**
+- [x] **Step 4: Replace the state variables**
 
 Replace:
 
@@ -247,7 +249,7 @@ with:
 	phase = 0
 ```
 
-- [ ] **Step 5: Replace the calendar, build, and end-condition internals**
+- [x] **Step 5: Replace the calendar, build, and end-condition internals**
 
 Replace `_advance_calendar()`:
 
@@ -329,7 +331,7 @@ with:
 	turn_advanced.emit(current_year(), phase)
 ```
 
-- [ ] **Step 6: Add the public phase accessors**
+- [x] **Step 6: Add the public phase accessors**
 
 Add these two functions immediately above `completion_grade()`:
 
@@ -384,7 +386,7 @@ with:
 		# banked as immediate bonus mileage at the steady rate.
 ```
 
-- [ ] **Step 7: Remove winter gating from cards, segments, and EventManager**
+- [x] **Step 7: Remove winter gating from cards, segments, and EventManager**
 
 In `resources/event_card.gd`, delete this line:
 
@@ -553,27 +555,126 @@ and the `print("SIM RESULT: ...")` call becomes:
 
 Also replace `PROBE_TURNS := 25` with `PROBE_TURNS := 12`.
 
-Now run:
+**Do not run the sim yet.** Step 9 must land first or it will fail. Go to
+Step 9.
+
+- [ ] **Step 9: Rebalance the funds economy for 24 phases**
+
+> **Why this step exists.** Compressing 73 turns to 24 cut the number of
+> income opportunities by two thirds while leaving costs untouched. Measured
+> against the actual deck: canonical card choices cost **−34 funds** across a
+> campaign, phase overhead costs **−24**, and starting funds are **+25** — a
+> net of **−33** before any action is taken. The old campaign only balanced
+> because `issue_bond` was unlimited and there were 73 turns to grind it; the
+> game was floating on the very exploit P1 exists to close.
+>
+> The fix is historically better than what it replaces. There were **two**
+> major Hetch Hetchy bond measures, not twenty — the 1910 issue and the 1928
+> issue. So: two bonds, each large, instead of an unlimited supply of small
+> ones.
+
+In `autoload/game_state.gd`, replace:
+
+```gdscript
+const START_FUNDS := 25
+```
+
+with:
+
+```gdscript
+const START_FUNDS := 30
+```
+
+Replace:
+
+```gdscript
+const BOND_MIN_SUPPORT := 4           # support needed to issue a bond
+const BOND_FUNDS_GAIN := 3
+const BOND_SUPPORT_COST := 1
+```
+
+with:
+
+```gdscript
+const BOND_MIN_SUPPORT := 4           # support needed to issue a bond
+## A campaign authorizes two major bond measures, echoing the 1910 and 1928
+## issues -- large and rare, not an unlimited supply of small ones. This is
+## what funds a 24-phase campaign against -34 funds of canonical card costs
+## and -24 of phase overhead.
+const BOND_FUNDS_GAIN := 20
+const BOND_SUPPORT_COST := 1
+const MAX_BOND_ISSUES := 2
+```
+
+Add to the state variables, immediately after `var flags: Dictionary = {}`:
+
+```gdscript
+var bonds_issued: int = 0
+```
+
+In `new_game()`, immediately after `flags = {}`, add:
+
+```gdscript
+	bonds_issued = 0
+```
+
+In `take_action()`, replace the `&"issue_bond":` branch:
+
+```gdscript
+		&"issue_bond":
+			if public_support < BOND_MIN_SUPPORT:
+				return false
+			_set_funds(funds + BOND_FUNDS_GAIN)
+			_set_support(public_support - BOND_SUPPORT_COST)
+```
+
+with:
+
+```gdscript
+		&"issue_bond":
+			if public_support < BOND_MIN_SUPPORT:
+				return false
+			if bonds_issued >= MAX_BOND_ISSUES:
+				return false
+			bonds_issued += 1
+			_set_funds(funds + BOND_FUNDS_GAIN)
+			_set_support(public_support - BOND_SUPPORT_COST)
+```
+
+- [ ] **Step 10: Run the sim and tune mileage**
 
 ```bash
 godot --headless res://tools/sim_test.tscn
 ```
 
-**Tuning procedure — follow exactly, do not improvise:**
+**First check the result word, then the turn count.**
 
-Read the `turns` number in `SIM RESULT`.
+If `SIM RESULT` begins with `bond_crisis`, `project_cancelled`, `work_halted`
+or `city_moves_on`, the campaign is not winnable — **STOP and report the full
+line.** Do not attempt to fix it by changing constants; the mileage knob cannot
+fix a funds problem, and no other constant is yours to change.
 
-- If `turns` is between **20 and 28 inclusive**, and the line ends with
-  `SIM PASS`, tuning is done. Go to Step 9.
+If it begins with `system_complete`, read the `turns` number:
+
+- If `turns` is between **20 and 28 inclusive**, and the run prints
+  `SIM PASS`, tuning is done. Go to Step 11.
 - If `turns` is **below 20**: lower `MILES_PER_PHASE[Pace.STEADY]` by `0.5`, set
   `Pace.PUSHED` to that new value times `1.6` rounded to one decimal, re-run.
 - If `turns` is **above 28**: raise `MILES_PER_PHASE[Pace.STEADY]` by `0.5`, set
   `Pace.PUSHED` to that new value times `1.6` rounded to one decimal, re-run.
-- **Maximum 4 adjustments.** If it is still outside 20–28 after the fourth, or
-  if the run prints `SIM FAIL` for any reason other than turn count, **STOP and
-  report** the last three `SIM RESULT` lines. Do not adjust any other constant.
+- **Maximum 4 adjustments.** If it is still outside 20–28 after the fourth,
+  **STOP and report** the last three `SIM RESULT` lines. Do not adjust any
+  other constant.
 
-- [ ] **Step 9: Run the full harness**
+**One more case to watch.** If `SIM RESULT` says `system_complete`, `turns` is
+inside 20–28, and the run *still* prints `SIM FAIL`, look at the `SIM PROBE`
+line. If either `push->injury` or `rest->impatience` is `0`, **STOP and report
+both the SIM RESULT and SIM PROBE lines.** That is a known risk of compressing
+the campaign — the fixed card spine now fires on most turns and suppresses the
+hazard roll — and it is a design question, not something to fix by changing
+constants.
+
+- [ ] **Step 11: Run the full harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -588,7 +689,7 @@ Expected: `SIM PASS`, with `turns` between 20 and 28.
 
 If either fails, STOP and report.
 
-- [ ] **Step 10: Commit and stop for review**
+- [ ] **Step 12: Commit and stop for review**
 
 ```bash
 git add -A
@@ -601,6 +702,11 @@ build the railroad.
 
 Removes GameState.season/Season and EventCard.winter_only. Adds phase,
 PHASES_TOTAL, current_year(), phases_remaining().
+
+Rebalances funds for the compressed campaign: two large bond measures echoing
+the 1910 and 1928 issues replace an unlimited supply of small ones. Measured
+canonical card cost is -34 against -24 phase overhead, so the old economy only
+balanced by grinding the unbounded bond loop across 73 turns.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 ```
@@ -677,7 +783,9 @@ to:
 ```gdscript
 	var win := final_result == &"system_complete" and final_year <= 1940
 	# Regression guard: no repeatable action loop may outrun phase overhead.
-	win = win and exploit_peak <= GameState.START_FUNDS + 10
+	# Two bonds at BOND_FUNDS_GAIN is the entire authorized income; anything
+	# above that means a repeatable loop is manufacturing funds.
+	win = win and exploit_peak <= GameState.START_FUNDS + (GameState.MAX_BOND_ISSUES * GameState.BOND_FUNDS_GAIN)
 ```
 
 - [ ] **Step 2: Run the sim and confirm the probe fails**
@@ -693,12 +801,14 @@ Record the number — the reviewer wants it.
 
 - [ ] **Step 3: Add the economy constants and state**
 
+> **Already done in Task 1:** `MAX_BOND_ISSUES`, `BOND_FUNDS_GAIN := 20`,
+> `var bonds_issued`, its reset in `new_game()`, and the cap check inside
+> `take_action()`. **Do not add them again.** Task 1 needed them to make the
+> compressed campaign winnable. This task adds only the *escalation* half.
+
 In `autoload/game_state.gd`, replace:
 
 ```gdscript
-const BOND_MIN_SUPPORT := 4           # support needed to issue a bond
-const BOND_FUNDS_GAIN := 3
-const BOND_SUPPORT_COST := 1
 const OUTREACH_FUNDS_COST := 1
 const OUTREACH_SUPPORT_GAIN := 2
 const CAMP_FUNDS_COST := 1
@@ -708,14 +818,6 @@ const CAMP_CREW_GAIN := 2
 with:
 
 ```gdscript
-const BOND_MIN_SUPPORT := 4           # support needed to issue a bond
-const BOND_FUNDS_GAIN := 3
-const BOND_SUPPORT_COST := 1
-## A campaign authorizes a bounded number of bond issues. P3 replaces these
-## with the Bond Vote set piece; the cap exists so no repeatable action can
-## generate unbounded funds.
-const MAX_BOND_ISSUES := 2
-
 const OUTREACH_FUNDS_COST := 1
 const OUTREACH_SUPPORT_GAIN := 2
 const CAMP_FUNDS_COST := 1
@@ -725,17 +827,15 @@ const CAMP_CREW_GAIN := 2
 const ACTION_COST_ESCALATION := 1
 ```
 
-Add to the state variables, immediately after `var flags: Dictionary = {}`:
+Add to the state variables, immediately after `var bonds_issued: int = 0`:
 
 ```gdscript
-var bonds_issued: int = 0
 var action_uses: Dictionary = {}      # StringName -> int
 ```
 
-In `new_game()`, immediately after `flags = {}`, add:
+In `new_game()`, immediately after `bonds_issued = 0`, add:
 
 ```gdscript
-	bonds_issued = 0
 	action_uses = {}
 ```
 
@@ -892,7 +992,7 @@ Expected: `SMOKE PASS`.
 ```bash
 godot --headless res://tools/sim_test.tscn
 ```
-Expected: `SIM EXPLOIT: peak funds ... = <a number at or below 35>` followed by
+Expected: `SIM EXPLOIT: peak funds ... = <a number at or below 70>` followed by
 `SIM PASS`.
 
 If the canonical run now fails to complete because funds ran out, **STOP and
@@ -1659,7 +1759,7 @@ All five boxes below must be true before P2 begins:
 
 - [ ] `godot --headless res://tools/smoke_test.tscn` prints `SMOKE PASS`.
 - [ ] `godot --headless res://tools/sim_test.tscn` prints `SIM PASS` with
-  `turns` between 20 and 28 and `SIM EXPLOIT` peak funds at or below 35.
+  `turns` between 20 and 28 and `SIM EXPLOIT` peak funds at or below 70.
 - [ ] Editing prose in a `content/cards/*.md` file and running
   `import_cards.tscn` changes what the game shows.
 - [ ] Dropping `assets/art/cards/<event_id>.png` makes that image appear on the
