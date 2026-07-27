@@ -13,8 +13,11 @@ extends Node
 ##                    until every SYSTEM_FLAGS entry is true and the Pulgas
 ##                    card converts readiness into delivered water.
 ##   Crew Wellbeing   int 0-10. Zero = work halts (loss).
-##   Time/Season      one turn = one season, starting Spring 1914. The win
-##                    screen grades the finish date against October 1934.
+##   Time             two counters. `turn` counts player decisions against a
+##                    TURNS_TOTAL budget. `phase` counts calendar time: one per
+##                    turn, plus one per phase of card-inflicted delay. The year
+##                    derives from `phase`, so delays -- not turns spent -- are
+##                    what push the finish past October 1934.
 
 signal funds_changed(value: int)
 signal support_changed(value: int)
@@ -32,12 +35,13 @@ const START_YEAR := 1914
 const HISTORICAL_FINISH_YEAR := 1934  # first water reached Pulgas October 24, 1934
 const FINAL_DEADLINE_YEAR := 1940     # hard loss: the city turns elsewhere
 
-## One turn is one construction phase, not a calendar season: six divisions,
-## four phases each. Seasons survive only as narrative framing inside card
-## prose -- the campaign does not simulate weather. Each affected card records
-## this in its assumption_note.
-## The player's turn budget -- a session-length design target, not a rule. The
-## real constraint is FINAL_DEADLINE_YEAR.
+## One turn is one construction phase, not a calendar season. Seasons survive
+## only as narrative framing inside card prose -- the campaign does not simulate
+## weather. Each affected card records this in its assumption_note.
+##
+## The player's turn budget: six divisions, four phases each. This is a
+## session-length design target, not a rule -- the real constraint is
+## FINAL_DEADLINE_YEAR, reached through accumulated delay.
 const TURNS_TOTAL := 24
 ## Calendar phases consumed by canonical play. The year is derived from this,
 ## NOT from TURNS_TOTAL: card delays advance the calendar without granting a
