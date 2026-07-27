@@ -36,8 +36,15 @@ const FINAL_DEADLINE_YEAR := 1940     # hard loss: the city turns elsewhere
 ## four phases each. Seasons survive only as narrative framing inside card
 ## prose -- the campaign does not simulate weather. Each affected card records
 ## this in its assumption_note.
-const PHASES_TOTAL := 24
-const YEARS_SPAN := HISTORICAL_FINISH_YEAR - START_YEAR   # 20 years over 24 phases
+## The player's turn budget -- a session-length design target, not a rule. The
+## real constraint is FINAL_DEADLINE_YEAR.
+const TURNS_TOTAL := 24
+## Calendar phases consumed by canonical play. The year is derived from this,
+## NOT from TURNS_TOTAL: card delays advance the calendar without granting a
+## turn, so canonical play costs about 30 phases against 24 turns. Calibrated
+## in Task 1b Step 7 so canonical play lands on HISTORICAL_FINISH_YEAR.
+const CALENDAR_PHASES := 30
+const YEARS_SPAN := HISTORICAL_FINISH_YEAR - START_YEAR   # 1914 -> 1934
 
 # --- Tuning knobs -----------------------------------------------------------
 const START_FUNDS := 30
@@ -97,7 +104,8 @@ var public_support: int = START_SUPPORT
 var water_readiness: int = 0
 var crew_wellbeing: int = START_CREW
 var miles_built: float = 0.0
-var phase: int = 0
+var phase: int = 0                    # calendar time: turns + card delays
+var turn: int = 0                     # player decisions taken
 var work_pace: int = Pace.STEADY
 var flags: Dictionary = {}            # StringName -> true
 var bonds_issued: int = 0
@@ -118,6 +126,7 @@ func new_game() -> void:
 	crew_wellbeing = START_CREW
 	miles_built = 0.0
 	phase = 0
+	turn = 0
 	work_pace = Pace.STEADY
 	flags = {}
 	bonds_issued = 0
@@ -130,6 +139,7 @@ func new_game() -> void:
 func advance_turn() -> void:
 	if game_over:
 		return
+	turn += 1
 	_build_miles(1)
 	match work_pace:
 		Pace.PUSHED:
@@ -219,12 +229,13 @@ func current_segment() -> RouteSegment:
 ## Display year derived from the phase counter: 24 phases span 1914-1934.
 ## Overrunning the campaign keeps advancing the year toward FINAL_DEADLINE_YEAR.
 func current_year() -> int:
-	return START_YEAR + int(floor(float(phase) * float(YEARS_SPAN) / float(PHASES_TOTAL)))
+	return START_YEAR + int(floor(float(phase) * float(YEARS_SPAN) / float(CALENDAR_PHASES)))
 
 
-## Phases left before the historical finish. Negative once the player overruns.
-func phases_remaining() -> int:
-	return PHASES_TOTAL - phase
+## Turns left in the budget. Negative once the player overruns it; this is a
+## pacing signal, not a loss condition -- the deadline is a year.
+func turns_remaining() -> int:
+	return TURNS_TOTAL - turn
 
 
 ## Win-screen grade against the historical finish of October 1934.

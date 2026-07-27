@@ -746,7 +746,7 @@ can genuinely lose to 1940.
 - `GameState.phases_remaining()` and `GameState.PHASES_TOTAL` are **removed**.
   `GameState.phase` survives, now meaning calendar time only.
 
-- [ ] **Step 1: Update the smoke assertions**
+- [x] **Step 1: Update the smoke assertions**
 
 In `tools/smoke_test.gd`, inside `_check_phase_calendar()`, replace these four
 lines:
@@ -788,7 +788,7 @@ with:
 		"a delay-free campaign finishes ahead of 1934 (got %d)" % GameState.current_year())
 ```
 
-- [ ] **Step 2: Run the smoke test and confirm it fails**
+- [x] **Step 2: Run the smoke test and confirm it fails**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -796,7 +796,7 @@ godot --headless res://tools/smoke_test.tscn
 
 Expected: `SMOKE FAIL`, or a parse error naming `TURNS_TOTAL` or `turn`.
 
-- [ ] **Step 3: Add the turn counter and calendar constants**
+- [x] **Step 3: Add the turn counter and calendar constants**
 
 In `autoload/game_state.gd`, replace:
 
@@ -845,7 +845,7 @@ with:
 	turn = 0
 ```
 
-- [ ] **Step 4: Count the turn in `advance_turn()`**
+- [x] **Step 4: Count the turn in `advance_turn()`**
 
 Replace:
 
@@ -866,7 +866,7 @@ func advance_turn() -> void:
 	_build_miles(1)
 ```
 
-- [ ] **Step 5: Rebase the year on `CALENDAR_PHASES`**
+- [x] **Step 5: Rebase the year on `CALENDAR_PHASES`**
 
 Replace:
 
@@ -893,7 +893,7 @@ func turns_remaining() -> int:
 	return TURNS_TOTAL - turn
 ```
 
-- [ ] **Step 6: Update the HUD**
+- [x] **Step 6: Update the HUD**
 
 In `scenes/ui/hud.gd`, replace the two date lines. First, inside `_ready()`:
 
@@ -919,7 +919,7 @@ with:
 	labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, GameState.current_year()]
 ```
 
-- [ ] **Step 7: Calibrate `CALENDAR_PHASES`**
+- [x] **Step 7: Calibrate `CALENDAR_PHASES`**
 
 ```bash
 godot --headless res://tools/sim_test.tscn
@@ -935,7 +935,7 @@ Read the `phase` number and the `grade=` word in `SIM RESULT`.
   sixth, or if the result word is ever anything but `system_complete`, **STOP
   and report** the last three `SIM RESULT` lines. Change no other constant.
 
-- [ ] **Step 8: Run the full harness**
+- [x] **Step 8: Run the full harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -955,7 +955,7 @@ grep -rn "PHASES_TOTAL\|phases_remaining" --include=*.gd .
 Expected: **no output.** If anything prints, fix that reference and re-run both
 tests.
 
-- [ ] **Step 9: Commit and stop for review**
+- [x] **Step 9: Commit and stop for review**
 
 ```bash
 git add -A

@@ -144,16 +144,21 @@ func _check_ui_scenes() -> void:
 
 func _check_phase_calendar() -> void:
 	GameState.new_game()
-	check(GameState.PHASES_TOTAL == 24, "campaign is 24 phases")
+	check(GameState.TURNS_TOTAL == 24, "the turn budget is 24")
 	check(GameState.phase == 0, "new game starts at phase 0")
+	check(GameState.turn == 0, "new game starts at turn 0")
 	check(GameState.current_year() == 1914, "phase 0 is 1914")
-	check(GameState.phases_remaining() == 24, "24 phases remain at start")
+	check(GameState.turns_remaining() == 24, "24 turns remain at start")
 	for i in 24:
 		GameState.work_pace = GameState.Pace.STEADY
 		GameState.advance_turn()
-	check(GameState.phase == 24, "24 advances reach phase 24 (got %d)" % GameState.phase)
-	check(GameState.current_year() == 1934,
-		"phase 24 lands on 1934 (got %d)" % GameState.current_year())
+	check(GameState.turn == 24, "24 advances reach turn 24 (got %d)" % GameState.turn)
+	check(GameState.phase == 24,
+		"with no card delays, phase tracks turn (got %d)" % GameState.phase)
+	# A delay-free run is faster than history: 24 phases against a calendar
+	# calibrated to canonical play, which costs ~30.
+	check(GameState.current_year() < 1934,
+		"a delay-free campaign finishes ahead of 1934 (got %d)" % GameState.current_year())
 	# Two Sierra divisions must stay railroad-dependent; renaming the export
 	# would silently drop this from the .tres files.
 	var dependent := 0

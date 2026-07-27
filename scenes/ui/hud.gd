@@ -33,7 +33,7 @@ func _ready() -> void:
 	GameState.readiness_changed.connect(_set_water)
 	GameState.flag_granted.connect(_on_flag)
 	GameState.miles_changed.connect(func(v: float): labels["miles"].text = "Mile %.1f of 167" % v)
-	GameState.turn_advanced.connect(func(y: int, p: int): labels["date"].text = "Phase %d of %d  ·  %d" % [p, GameState.PHASES_TOTAL, y])
+	GameState.turn_advanced.connect(func(y: int, _p: int): labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, y])
 	_refresh()
 
 
@@ -42,7 +42,7 @@ func _refresh() -> void:
 	_set_support(GameState.public_support)
 	_set_crew(GameState.crew_wellbeing)
 	labels["miles"].text = "Mile %.1f of 167" % GameState.miles_built
-	labels["date"].text = "Phase %d of %d  ·  %d" % [GameState.phase, GameState.PHASES_TOTAL, GameState.current_year()]
+	labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, GameState.current_year()]
 	_set_water(GameState.water_readiness)
 	_update_cost_cue()
 
