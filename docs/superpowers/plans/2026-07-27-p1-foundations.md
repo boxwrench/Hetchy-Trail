@@ -1136,7 +1136,8 @@ func can_take_action(action: StringName) -> bool:
 
 - [ ] **Step 5: Rewrite `take_action()` to use them**
 
-Replace the whole of `take_action()`:
+Replace the whole of `take_action()`. This is its current text, including the
+bond cap Task 1 added — match it exactly:
 
 ```gdscript
 func take_action(action: StringName) -> bool:
@@ -1146,6 +1147,9 @@ func take_action(action: StringName) -> bool:
 		&"issue_bond":
 			if public_support < BOND_MIN_SUPPORT:
 				return false
+			if bonds_issued >= MAX_BOND_ISSUES:
+				return false
+			bonds_issued += 1
 			_set_funds(funds + BOND_FUNDS_GAIN)
 			_set_support(public_support - BOND_SUPPORT_COST)
 		&"outreach":
@@ -1163,6 +1167,9 @@ func take_action(action: StringName) -> bool:
 	_check_end_conditions()
 	return true
 ```
+
+> The bond guards move into `can_take_action()` from Step 4, so the replacement
+> below drops them from the `match` body. `bonds_issued += 1` stays.
 
 with:
 
@@ -1235,16 +1242,38 @@ with:
 	end_button.text = "End phase"
 ```
 
-Replace line 80:
+Replace lines 79–80 (the comment as well as the string):
 
 ```gdscript
+	# roll is skipped entirely, so this is the risk only "if the season passes quietly".
 	risk_label.text = "If the season passes quietly: %s chance of %s" % [String(preview["level"]), noun]
 ```
 
 with:
 
 ```gdscript
+	# roll is skipped entirely, so this is the risk only "if the phase passes quietly".
 	risk_label.text = "If the phase passes quietly: %s chance of %s" % [String(preview["level"]), noun]
+```
+
+Finally, the hardcoded bond figure in `ACTION_LABELS` is stale — Task 1 raised
+`BOND_FUNDS_GAIN` from 3 to 20. Step 6 overwrites these labels at runtime, so
+the player never sees the wrong number, but the source should not lie. Replace:
+
+```gdscript
+	"Issue bond (+3 funds, -1 support)",
+	"Community outreach (-1 funds, +2 support)",
+	"Improve the camps (-1 funds, +2 crew)",
+```
+
+with:
+
+```gdscript
+	# Placeholder text only -- refresh_affordability() rewrites all three from
+	# the live GameState constants and the current escalated costs.
+	"Issue bond",
+	"Community outreach",
+	"Improve the camps",
 ```
 
 - [ ] **Step 7: Add smoke assertions for the cap and escalation**
