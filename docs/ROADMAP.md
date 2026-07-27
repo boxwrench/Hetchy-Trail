@@ -6,46 +6,121 @@ on this repository. Read it fully before changing anything.
 ## What this project is
 
 A Godot 4.7 teaching game: build the 167-mile Hetch Hetchy aqueduct
-(1914–1934) balancing five metrics. Architecture, data model, and all game
-logic are complete and documented in
-[technical_design.md](technical_design.md). What remains is the toolchain
-harness, the scenes, and balance.
+(1914–1934) balancing five metrics.
 
-## How to work here (any agent, any skill level)
+It is a **showcase piece** — distributed internally among SFPUC staff, possibly
+posted to agency social media. Expected play counts are low. Its job is to
+demonstrate a concept and inspire creativity in the department. Three
+consequences govern design decisions:
 
-1. Read [technical_design.md](technical_design.md) sections I–V, then the
-   **Global Constraints** in the current plan.
-2. Open the current plan: [plans/2026-07-05-playable-core.md](plans/2026-07-05-playable-core.md).
-3. Find the first unchecked `- [ ]` step. Do steps **in order**. Never skip a
-   verification step.
-4. After each task: run the verification harness (smoke + sim), confirm exit
-   code 0, commit with the given message, tick the checkboxes in the plan file.
-5. **Stop conditions — report to the user instead of improvising:** a
-   verification fails twice in a row after your best fix; a step requires a
-   design decision the plan doesn't cover; you are tempted to add a mechanic,
-   resource, or dependency. When blocked on a bug, debug the root cause
-   (reproduce → isolate → fix); never delete data or weaken a check to make
-   the harness pass.
+1. **The first three minutes are the product.** Most people play once, briefly,
+   or watch a clip.
+2. **The minigame is the artifact.** Nobody shares a screenshot of a resource
+   dropdown.
+3. **Accuracy still governs.** An agency historian reviews the content; the
+   teaching layer is non-negotiable.
+
+Architecture and data model are documented in
+[technical_design.md](technical_design.md).
+
+## Current state (2026-07-27)
+
+Built and committed: both autoload singletons, the full data model, 26 event
+cards (15 fixed spine + 6 texture + 5 hazards), 6 route segments, the pace-risk
+mechanic with its telegraph, HUD, DecisionPanel, EventPanel, the Journey
+conductor, and the smoke/sim/layout harness. The game is playable end to end.
+
+Not built: the route map, title and end screens, minigames, balance pass.
+
+> **Ledger note.** The checkboxes in the two completed plan files
+> ([playable-core](plans/2026-07-05-playable-core.md),
+> [decision-weight](superpowers/plans/2026-07-06-decision-weight.md)) were never
+> ticked as the work landed, so they read as untouched. Their work is done; git
+> history is the record. **Going forward the checkbox ledger is mandatory** —
+> worker/reviewer mode (below) depends on it being truthful.
+
+## Active design
+
+[**Minigames & Campaign Restructure**](superpowers/specs/2026-07-27-minigames-and-campaign-restructure-design.md)
+— the approved design now in force. It supersedes the remaining milestones of
+the playable-core plan, because it reshapes the loop those milestones decorate.
+
+It fixes five defects: empty turns, an unbounded bond/outreach loop that
+disarms four of five loss conditions, two metrics that do no work, `.tres`
+being unauthorable by a historian, and art coupled to card data.
+
+## How to work here
+
+### Worker/reviewer mode
+
+Implementation runs as **a worker model executing a batch, then a reviewer model
+checking it.** Plans are written for this: every step is explicit, every
+verification is a command with an expected result, and no step requires a design
+judgment call.
+
+**If you are the worker:**
+
+1. Open the current plan. Find the first unchecked `- [ ]` step.
+2. Do steps **in order**. Never skip a verification step.
+3. Run the verification exactly as written. Confirm the stated exit code or
+   output before moving on.
+4. At the end of a batch, commit with the message given in the plan and tick the
+   checkboxes for what you completed. **Tick only what you actually verified.**
+5. Stop at the batch boundary and report. Do not begin the next batch.
+
+**Stop immediately and report instead of improvising when:**
+
+- A verification fails twice in a row after your best fix.
+- A step requires a design decision the plan does not cover.
+- You are tempted to add a mechanic, resource, or dependency.
+- A step's expected output does not match what you see, even if it looks close.
+
+Never delete data or weaken a check to make the harness pass. When blocked on a
+bug, debug the root cause — reproduce, isolate, fix.
+
+**If you are the reviewer:** verify against the plan's stated verification, not
+against the worker's summary. Re-run the harness yourself. Check that ticked
+boxes correspond to work that actually landed.
+
+### Verification harness
+
+```bash
+godot --headless res://tools/smoke_test.tscn
+```
+
+```bash
+godot --headless res://tools/sim_test.tscn
+```
+
+Both must exit 0. A failing harness is never committed.
 
 ## Milestones
 
 | # | Milestone | Deliverable | Verified by | Status |
 |---|-----------|-------------|-------------|--------|
-| M0 | Toolchain & harness | Godot installed, project imports, smoke test + full-campaign simulation run headless | `smoke_test` and `sim_test` exit 0 | Tasks 1–3 |
-| M1 | First playable loop | HUD, DecisionPanel, EventPanel, Journey conductor; play a season with the mouse | Harness + manual playthrough of ~10 turns | Tasks 4–7 |
-| M2 | The lighting map | Six divisions drawn, lighting up as completion flags land | Harness + visual check | Task 8 |
-| M3 | Framing screens | Title screen, end screen with grade vs. October 1934, replay | Harness + manual win/loss | Task 9 |
-| M4 | Balance & teaching pass | Sim finishes 1934±2 on canonical play; teaching layer readable on every card | `sim_test` prints finish year in range | Task 10 |
-| M5 | Content & polish | SFPUC archival photos (credits mandatory), art, audio, export | Future plan — do not start without the user | Not planned yet |
+| M0 | Toolchain & harness | Project imports; smoke + sim run headless | `smoke_test`, `sim_test` exit 0 | **Done** |
+| M1 | First playable loop | HUD, DecisionPanel, EventPanel, Journey | Harness + manual playthrough | **Done** |
+| M1.5 | Decision weight | Pace-risk, hazard deck, risk telegraph, HUD warnings | Harness + sim hazard probes | **Done** |
+| P1 | Foundations | 24-turn restructure, economy fix, content pipeline, art decoupling | Harness + exploit probe + historian can edit a card | Next |
+| P2 | Minigame framework + The Heading | Module contract, arcade mode, press-your-luck tuning | Harness + `minigame_sim` band check | After P1 |
+| P3 | The remaining four | Minesweeper, Pipe Dream, lane-dodge, Bond Vote set piece | Harness + per-minigame sim | After P2 |
+| M2 | The lighting map | Six divisions drawn, lighting as flags land | Harness + visual check | Deferred behind P1–P3 |
+| M3 | Framing screens | Title (with arcade entry), end screen, replay | Harness + manual win/loss | Folded into P2 |
+| M4 | Balance & content polish | Archival photos, audio, export | Harness + historian sign-off | Last |
+
+**P1 first, deliberately.** It depends on no minigame design and it unblocks the
+two tracks that run in parallel with everything else: historian review of
+content, and art production. Neither should wait on gameplay work.
 
 ## Invariants that outlive any plan
 
 - Five metrics, one mile counter, campaign flags. **Never a sixth resource.**
 - All game logic lives in `autoload/` + `resources/`; scenes only display and
   call GameState methods.
+- **Minigames never gate progress.** A player who skips every one must still be
+  able to finish the campaign.
+- Minigames never read or write `GameState` — config in, result out.
 - Every historical deviation is recorded in a card's `assumption_note`.
 - Archival images require a row in `assets/art/archival/CREDITS.md`.
+- **No GPL dependencies.** MIT/Apache/BSD with a credits row, or nothing.
 - A failing harness never gets committed.
-
-Completed work log: architecture + full data model + both singletons + 21
-event cards + 6 segments (July 2026, see git history).

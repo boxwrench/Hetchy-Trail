@@ -9,13 +9,19 @@ Hetchy Trail is a teaching game. Every encounter card carries the historical
 fact behind it, a source note, and an assumption note recording where gameplay
 deviates from the record.
 
+It is built as a showcase piece for internal SFPUC distribution: a short
+campaign broken up by Oregon-Trail-style minigames, playable in one sitting.
+
 ## Getting started
 
 1. Open the repository folder in Godot 4.7 (the `project.godot` file is
    committed; the editor will import everything on first open).
 2. The two autoload singletons (`GameState`, `EventManager`) are registered in
    `project.godot`.
-3. Read `docs/technical_design.md` for the full architecture, and
+3. **Read `docs/ROADMAP.md` first** — it is the entry point for any human or AI
+   agent working here, and describes the worker/reviewer implementation
+   workflow.
+4. Read `docs/technical_design.md` for the full architecture, and
    `docs/Hetchy Trail Historical Game Mapping.pdf` for the historical research
    the campaign data is built from.
 
