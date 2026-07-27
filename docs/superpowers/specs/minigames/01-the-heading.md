@@ -61,6 +61,43 @@ from the same pool, or does the minigame get its own bust text keyed to which
 hazard occurred?** Reusing the cards keeps the sourcing; separate text lets the
 bust describe the specific round the player just gambled on.
 
+## The structural problem this slot must solve
+
+Measured with [balance_probe](../../../../tools/balance_probe.gd) after P1
+Task 6, across 12 seeds per strategy:
+
+| Strategy | Wins |
+|---|---|
+| all steady | 11/12 |
+| rest when crew ≤ 3 | 11/12 |
+| push first 4 turns | 3/12 |
+| push while crew ≥ 6 | 1/12 |
+| all pushed | 0/12 |
+
+**Pace is not a decision — STEADY strictly dominates.** The cause is structural,
+not a tuning error, and reducing the hazard rates does not fix it (tested:
+PUSHED 0.30→0.15 moved `push while crew>=6` from 1/12 to 2/12).
+
+The 15 fixed spine cards form a **dependency chain** — card 04 requires card
+01's flag, 05 requires 04's, and so on to Pulgas. Only one link can fire per
+turn, so the campaign has a hard floor of roughly 15 turns *whatever the pace*.
+Mileage gates nothing. Pushing therefore buys no schedule at all while costing
+crew, remediation spending, and hazard exposure, and the dominant failure across
+every pushing strategy is `bond_crisis`.
+
+**This slot is the fix.** §4.1 already specifies that tunnel footage comes from
+The Heading rather than a pace multiplier, and that `work_pace` becomes the
+minigame's risk dial. That is what finally gives `miles_built` a job and gives
+pushing an upside — but only if the design here answers:
+
+**Does progress through the spine depend on footage?** If the chain still
+advances one card per turn regardless, The Heading will make miles *feel*
+earned while changing nothing about pacing, and PUSHED will still be dominated.
+Something must connect footage to spine progression — a milestone card that
+requires a footage threshold, or a delay when footage falls short.
+
+Do not design this slot without answering that question.
+
 ## Must be decided
 
 Answer every one of these before writing the implementation plan.
