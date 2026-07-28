@@ -7,33 +7,53 @@ extends Node
 ## guards live in sim_test. Use this when tuning to see WHY a strategy fails.
 ##
 ## Reading it: no strategy should win every time, and no strategy that a
-## reasonable player would try should almost always lose. If "all steady" wins
-## 10/10 while every pushing strategy wins 3/10, pace is not a decision.
+## reasonable player would try should almost always lose.
+##
+## The probe measures TWO different games and must not collapse them:
+##   * pace       -- steady versus pushed on whichever front is being worked
+##   * allocation -- which front receives this turn, the decision workfronts
+##                   exist to create
+## Earlier versions ran six pace policies over a single allocation policy, so
+## they could not see the allocation decision at all. Strategies are now a
+## matrix of the two, and the grade columns are reported alongside wins:
+## allocation frequently costs nothing in survival while costing a great deal
+## in finish year, and a win-rate-only view throws that signal away.
 
 const SEEDS := 12
 const MAX_TURNS := 34
 
 
 func _ready() -> void:
-	_run("all steady", func(_t: int) -> int: return GameState.Pace.STEADY)
-	_run("all pushed", func(_t: int) -> int: return GameState.Pace.PUSHED)
-	_run("all rest", func(_t: int) -> int: return GameState.Pace.REST)
-	_run("push while crew>=6", func(_t: int) -> int:
-		return GameState.Pace.PUSHED if GameState.crew_wellbeing >= 6 else GameState.Pace.STEADY)
-	_run("push first 4", func(t: int) -> int:
-		return GameState.Pace.PUSHED if t < 4 else GameState.Pace.STEADY)
-	_run("rest when crew<=3", func(_t: int) -> int:
-		return GameState.Pace.REST if GameState.crew_wellbeing <= 3 else GameState.Pace.STEADY)
-	_run("bay first, steady", func(_t: int) -> int: return GameState.Pace.STEADY,
-		func() -> int: return _bay_first_front())
-	_run("bay first, push", func(_t: int) -> int: return GameState.Pace.PUSHED,
-		func() -> int: return _bay_first_front())
+	var steady := func(_t: int) -> int: return GameState.Pace.STEADY
+	var pushed := func(_t: int) -> int: return GameState.Pace.PUSHED
+	var rested := func(_t: int) -> int: return GameState.Pace.REST
+	var push_crew := func(_t: int) -> int:
+		return GameState.Pace.PUSHED if GameState.crew_wellbeing >= 6 else GameState.Pace.STEADY
+	var historical := func() -> int: return _lowest_open_front()
+	var critical := func() -> int: return _critical_path_front()
+	var balanced := func() -> int: return _balanced_front()
+	var bay := func() -> int: return _bay_first_front()
+	print("BALANCE %-24s %-9s | %-14s | %s"
+		% ["allocation / pace", "wins", "grade a/m/b", "turns, hazards, end states"])
+	_run("historical / steady", steady, historical)
+	_run("historical / push", push_crew, historical)
+	_run("critical path / steady", steady, critical)
+	_run("critical path / push", push_crew, critical)
+	_run("balanced / steady", steady, balanced)
+	_run("balanced / push", push_crew, balanced)
+	_run("bay first / steady", steady, bay)
+	_run("bay first / push", push_crew, bay)
+	# Degenerate pace baselines under historical allocation; they bracket the
+	# range and catch a build where pace has stopped mattering in either
+	# direction.
+	_run("historical / all pushed", pushed, historical)
+	_run("historical / all rest", rested, historical)
 	print("BALANCE PROBE DONE")
 	get_tree().quit(0)
 
 
 func _run(label: String, picker: Callable, front_picker: Callable = Callable()) -> void:
-	var tally := {"wins": 0, "turns": 0, "hazards": 0, "ahead": 0}
+	var tally := {"wins": 0, "turns": 0, "hazards": 0, "ahead": 0, "matched": 0, "behind": 0}
 	var modes := {}
 	for s in SEEDS:
 		seed(3000 + s)
@@ -63,10 +83,17 @@ func _run(label: String, picker: Callable, front_picker: Callable = Callable()) 
 			GameState.advance_turn()
 			if GameState.game_over:
 				break
-			for card in EventManager.try_draw_queue():
+			# Drain rather than iterate a snapshot: resolving a milestone can
+			# chain into the next one on the same front, appending to this queue.
+			var queue := EventManager.try_draw_queue()
+			while not queue.is_empty():
 				if GameState.game_over:
 					break
+				var card: EventCard = queue.pop_front()
 				EventManager.resolve_choice(card, card.canonical_choice)
+				var followup: EventCard = EventManager.try_draw_followup(card)
+				if followup != null:
+					queue.append(followup)
 		var grade := GameState.completion_grade()
 		EventManager.event_drawn.disconnect(on_draw)
 		GameState.game_ended.disconnect(on_end)
@@ -78,15 +105,29 @@ func _run(label: String, picker: Callable, front_picker: Callable = Callable()) 
 			tally["wins"] += 1
 			if grade == "ahead_of_history":
 				tally["ahead"] += 1
-	print("BALANCE %-20s win %2d/%d | ahead %2d | avg %4.1f turns | %4.1f hazards/run | %s"
-		% [label, tally["wins"], SEEDS, tally["ahead"],
+			elif grade == "matched_history":
+				tally["matched"] += 1
+			else:
+				tally["behind"] += 1
+	print("BALANCE %-24s win %2d/%d | grade %2d/%2d/%2d | avg %4.1f turns | %4.1f haz/run | %s"
+		% [label, tally["wins"], SEEDS,
+		tally["ahead"], tally["matched"], tally["behind"],
 		float(tally["turns"]) / float(SEEDS),
 		float(tally["hazards"]) / float(SEEDS), str(modes)])
 
 
 ## The same reflex a competent player would use: cover the metric nearest a loss.
+##
+## The bond trigger is deliberately 8, matching sim_test's canonical bot rather
+## than the 3 this used before. At 3 the bot was not competent, it was myopic:
+## a bond is worth BOND_FUNDS_GAIN and only MAX_BOND_ISSUES are authorised, so
+## waiting until funds are nearly gone risks skipping the window entirely. Under
+## smooth spending that never showed. Under workfronts, pushing makes spending
+## lumpy -- a hazard plus an escalated camp in one turn -- so runs stepped from
+## 4 funds straight to below zero and died holding an unissued bond. That scored
+## as "pushing is unaffordable" when it was really "the bot did not bank".
 func _take_sensible_action() -> void:
-	if GameState.funds <= 3 and GameState.can_take_action(&"issue_bond"):
+	if GameState.funds <= 8 and GameState.can_take_action(&"issue_bond"):
 		GameState.take_action(&"issue_bond")
 	elif GameState.crew_wellbeing <= 4 and GameState.can_take_action(&"improve_camp"):
 		GameState.take_action(&"improve_camp")
@@ -113,11 +154,54 @@ func _lowest_open_front() -> int:
 	return 0
 
 
+## A front still deserves a turn while it is unfinished OR still owes fixed
+## cards. Every allocation policy must use this, not a bare progress test --
+## see _lowest_open_front() for what stranding a front's last card does.
+func _needs_work(index: int) -> bool:
+	return GameState.front_progress[index] < 1.0 or EventManager.front_has_pending_fixed(index)
+
+
+## Critical path first: fronts 1-3 are the gated chain (each opens the next),
+## so nothing else can substitute for time spent on them. Ungated fronts 4-6
+## get a turn only when the chain has nothing workable. This is the policy a
+## player who has understood the prerequisite graph would play, and it is the
+## upper bound the other allocation policies are measured against.
+func _critical_path_front() -> int:
+	for i in 3:
+		if GameState.front_is_open(i) and _needs_work(i):
+			return i
+	return _lowest_open_front()
+
+
+## Balanced: spread effort, always working whichever open front has advanced
+## least. The intuitive "keep everything moving" policy, and the one most
+## likely to punish a player for treating six fronts as six equal claims when
+## three of them gate each other.
+func _balanced_front() -> int:
+	var choice := -1
+	var lowest := 2.0
+	for i in GameState.front_count():
+		if not GameState.front_is_open(i) or not _needs_work(i):
+			continue
+		if GameState.front_progress[i] < lowest:
+			lowest = GameState.front_progress[i]
+			choice = i
+	return choice if choice >= 0 else _lowest_open_front()
+
+
 ## Bay and Peninsula first -- the Spring Valley gambit. Historically real, and
-## the sharpest test of whether front choice matters. Same pending-cards rule:
-## front 6 must be worked until its cards are drawn, not until its bar fills.
+## the sharpest test of whether front choice matters.
+##
+## Pinned on PROGRESS ONLY -- deliberately unlike _lowest_open_front(), which
+## also pins on pending cards. Front 6's cards are flag-gated behind fronts 4
+## and 5 (card 19 needs coast_range_committed; card 21 needs all seven other
+## system flags), so front_has_pending_fixed(5) is permanently true here.
+## Pinning on it livelocks the strategy onto front 6 for the entire run: 34.0
+## turns, unfinished, every seed -- a probe that reports a verdict on front
+## allocation while never allocating. Front 6's cards are collected later by
+## _lowest_open_front() once the earlier fronts have granted their flags.
 func _bay_first_front() -> int:
-	if GameState.front_progress[5] < 1.0 or EventManager.front_has_pending_fixed(5):
+	if GameState.front_progress[5] < 1.0:
 		return 5
 	return _lowest_open_front()
 
