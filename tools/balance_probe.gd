@@ -21,6 +21,15 @@ extends Node
 
 const SEEDS := 12
 const MAX_TURNS := 34
+## The first phase at which overrun pressure can apply. Both of its gates must
+## open: phase > CALENDAR_PHASES + OVERRUN_GRACE_PHASES (34), and current_year()
+## must reach 1935, which it does at phase 34. So 35.
+##
+## Hard-coded rather than read from GameState ON PURPOSE. This file has to run
+## unchanged against commit 406c989, which predates the OVERRUN_* constants, or
+## the A/B comparison is not a comparison. A probe that imports the mechanic it
+## is measuring cannot be pointed at a build without it.
+const PRESSURE_PHASE := 35
 
 
 func _ready() -> void:
@@ -34,7 +43,7 @@ func _ready() -> void:
 	var balanced := func() -> int: return _balanced_front()
 	var bay := func() -> int: return _bay_first_front()
 	print("BALANCE %-24s %-9s | %-14s | %s"
-		% ["allocation / pace", "wins", "grade a/m/b", "turns, hazards, end states"])
+		% ["allocation / pace", "wins", "grade a/m/b", "turns, phases, late wins, exposure, hazards, end states"])
 	_run("historical / steady", steady, historical)
 	_run("historical / push", push_crew, historical)
 	_run("critical path / steady", steady, critical)
@@ -57,7 +66,8 @@ func _ready() -> void:
 ## default is what keeps the ten existing rows comparable across this change.
 func _run(label: String, picker: Callable, front_picker: Callable = Callable(),
 		choice_picker: Callable = Callable()) -> void:
-	var tally := {"wins": 0, "turns": 0, "hazards": 0, "ahead": 0, "matched": 0, "behind": 0}
+	var tally := {"wins": 0, "turns": 0, "hazards": 0, "ahead": 0, "matched": 0, "behind": 0,
+		"phase": 0, "max_phase": 0, "late_wins": 0, "exposure": 0}
 	var modes := {}
 	for s in SEEDS:
 		seed(3000 + s)
@@ -71,8 +81,13 @@ func _run(label: String, picker: Callable, front_picker: Callable = Callable(),
 		var on_draw := func(c: EventCard) -> void:
 			if c.hazard_kind != &"":
 				counter["hazards"] += 1
+		var exposure := {"phases": 0}
+		var on_phase := func(_y: int, p: int) -> void:
+			if p >= PRESSURE_PHASE:
+				exposure["phases"] += 1
 		GameState.game_ended.connect(on_end)
 		EventManager.event_drawn.connect(on_draw)
+		GameState.turn_advanced.connect(on_phase)
 		var turns := 0
 		for i in MAX_TURNS:
 			if GameState.game_over:
@@ -101,25 +116,34 @@ func _run(label: String, picker: Callable, front_picker: Callable = Callable(),
 				var followup: EventCard = EventManager.try_draw_followup(card)
 				if followup != null:
 					queue.append(followup)
+		var end_phase: int = GameState.phase
+		tally["phase"] += end_phase
+		tally["max_phase"] = maxi(int(tally["max_phase"]), end_phase)
+		tally["exposure"] += exposure["phases"]
 		var grade := GameState.completion_grade()
 		EventManager.event_drawn.disconnect(on_draw)
 		GameState.game_ended.disconnect(on_end)
+		GameState.turn_advanced.disconnect(on_phase)
 		var result: StringName = outcome["result"]
 		modes[result] = int(modes.get(result, 0)) + 1
 		tally["turns"] += turns
 		tally["hazards"] += counter["hazards"]
 		if result == &"system_complete":
 			tally["wins"] += 1
+			if end_phase >= PRESSURE_PHASE:
+				tally["late_wins"] += 1
 			if grade == "ahead_of_history":
 				tally["ahead"] += 1
 			elif grade == "matched_history":
 				tally["matched"] += 1
 			else:
 				tally["behind"] += 1
-	print("BALANCE %-24s win %2d/%d | grade %2d/%2d/%2d | avg %4.1f turns | %4.1f haz/run | %s"
+	print("BALANCE %-24s win %2d/%d | grade %2d/%2d/%2d | avg %4.1f turns | phase %4.1f avg %2d max | late wins %2d | exposure %3d | %4.1f haz/run | %s"
 		% [label, tally["wins"], SEEDS,
 		tally["ahead"], tally["matched"], tally["behind"],
 		float(tally["turns"]) / float(SEEDS),
+		float(tally["phase"]) / float(SEEDS), tally["max_phase"],
+		tally["late_wins"], tally["exposure"],
 		float(tally["hazards"]) / float(SEEDS), str(modes)])
 
 
