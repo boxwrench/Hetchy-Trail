@@ -71,10 +71,20 @@ post-pressure commit is byte-identical to the pre-pressure commit across all ten
 rows. Only the degenerate all-rest baseline ever crosses, and it is already
 losing when it does.
 
-This is a reachability question, not a tuning question. The open question is
-whether a rational, resource-safe policy can finish the project after phase 34
-at all. Until that is measured, changing any `OVERRUN_*` constant would be
-fitting a number to an instrument that cannot see it.
+This is a reachability question, not a tuning question. Until it is measured,
+changing any `OVERRUN_*` constant would be fitting a number to an instrument
+that cannot see it.
+
+**Current plan:** [Late-Viability Probe](superpowers/plans/2026-07-28-late-viability-probe.md)
+— answers one question before anything else is touched: *can a rational,
+resource-safe policy complete the project after phase 34 without overrun
+pressure?* It gives the probe a card-choice dimension, which it has never had —
+every strategy resolves canonically, so none can trade schedule for resources,
+which is the only lever that could carry a surviving run past the trigger. The
+comparison is pinned to `406c989` (pre-pressure) against `d9e5745`
+(post-pressure) on identical seeds. It changes no game behaviour, and if no
+policy qualifies as slow-but-competent it stops and says so rather than tuning
+pressure to meet it.
 
 [Batch B — Workfront Progression](superpowers/plans/2026-07-27-batch-b-workfronts.md)
 is implemented and committed, meeting three of its four success criteria; the
