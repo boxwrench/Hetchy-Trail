@@ -42,6 +42,7 @@ func _ready() -> void:
 	var critical := func() -> int: return _critical_path_front()
 	var balanced := func() -> int: return _balanced_front()
 	var bay := func() -> int: return _bay_first_front()
+	var careful := func(c: EventCard) -> int: return _conservative_choice(c)
 	print("BALANCE %-24s %-9s | %-14s | %s"
 		% ["allocation / pace", "wins", "grade a/m/b", "turns, phases, late wins, exposure, hazards, end states"])
 	_run("historical / steady", steady, historical)
@@ -52,6 +53,12 @@ func _ready() -> void:
 	_run("balanced / push", push_crew, balanced)
 	_run("bay first / steady", steady, bay)
 	_run("bay first / push", push_crew, bay)
+	# Slow but competent: the archetype the probe could not previously express.
+	# Crossed with the two allocations most likely to survive, plus rest, which
+	# is the slowest pace a player might defend as caution rather than folly.
+	_run("careful / steady", steady, historical, careful)
+	_run("careful / critical", steady, critical, careful)
+	_run("careful / rest", rested, critical, careful)
 	# Degenerate pace baselines under historical allocation; they bracket the
 	# range and catch a build where pace has stopped mattering in either
 	# direction.
@@ -235,4 +242,53 @@ func _bay_first_front() -> int:
 	if GameState.front_progress[5] < 1.0:
 		return 5
 	return _lowest_open_front()
+
+
+## Conservative card resolution: take the option that best protects the five
+## metrics and accept whatever delay comes with it. This is the archetype the
+## probe was missing -- a player who is competent but slow. Pace and allocation
+## policies can only make a run slower by playing WORSE; this one can make a run
+## slower by playing SAFER, which is the only way a surviving run plausibly
+## reaches the phase where overrun pressure begins.
+##
+## Deterministic by construction: total ordering with an index tie-break, no
+## randomness, so the same seed produces the same decisions at both commits.
+##
+## Time is not scored. Delay is neither sought nor avoided -- it is simply not
+## a term, which is exactly what "accepts schedule delays to protect resources"
+## means. Scoring time at all would make this a pace policy in disguise.
+func _conservative_choice(card: EventCard) -> int:
+	var best := -1
+	var best_score := -999
+	var fallback := -1
+	var fallback_score := -999
+	for i in card.choices.size():
+		var choice: EventChoice = card.choices[i]
+		# Never deliberately re-arm a card. Repeating is a schedule decision
+		# dressed as a choice, and it would confound the measurement.
+		if choice.repeat_card:
+			continue
+		var score: int = (choice.funds_delta + choice.public_support_delta
+			+ choice.crew_wellbeing_delta)
+		if score > fallback_score:
+			fallback_score = score
+			fallback = i
+		# Reject anything that ends the game on the spot. funds is unclamped and
+		# loses below zero; support and crew clamp at 0 and lose at 0.
+		if GameState.funds + choice.funds_delta < 0:
+			continue
+		if GameState.public_support + choice.public_support_delta <= 0:
+			continue
+		if GameState.crew_wellbeing + choice.crew_wellbeing_delta <= 0:
+			continue
+		if score > best_score:
+			best_score = score
+			best = i
+	if best >= 0:
+		return best
+	# Every survivable option was rejected, or every option repeats the card.
+	# Take the least-bad rather than crashing; a cornered player still moves.
+	if fallback >= 0:
+		return fallback
+	return card.canonical_choice
 
