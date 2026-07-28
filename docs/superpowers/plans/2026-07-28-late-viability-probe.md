@@ -92,7 +92,7 @@ BALANCE historical / all rest    win  0/12 | grade  0/ 0/ 0 | avg 31.8 turns | 1
 BALANCE PROBE DONE
 ```
 
-- [ ] **Step 0: Confirm all four.** If any differs, STOP and report before
+- [x] **Step 0: Confirm all four.** If any differs, STOP and report before
   editing a file.
 
 ---
@@ -102,7 +102,7 @@ BALANCE PROBE DONE
 `_run()` currently hard-codes `card.canonical_choice`, so choice is not a
 strategy dimension. Make it one, **without changing any existing behaviour**.
 
-- [ ] **Step 1: Widen the signature.** In `tools/balance_probe.gd`, replace:
+- [x] **Step 1: Widen the signature.** In `tools/balance_probe.gd`, replace:
 
 ```gdscript
 func _run(label: String, picker: Callable, front_picker: Callable = Callable()) -> void:
@@ -118,7 +118,7 @@ func _run(label: String, picker: Callable, front_picker: Callable = Callable(),
 		choice_picker: Callable = Callable()) -> void:
 ```
 
-- [ ] **Step 2: Use it at the one resolution site.** Replace:
+- [x] **Step 2: Use it at the one resolution site.** Replace:
 
 ```gdscript
 				var card: EventCard = queue.pop_front()
@@ -138,7 +138,7 @@ with:
 Change nothing else in the loop. The followup-drain lines below stay as they
 are.
 
-- [ ] **Step 3: Verify the change is inert.** Run:
+- [x] **Step 3: Verify the change is inert.** Run:
 
 ```bash
 godot --headless res://tools/balance_probe.tscn
@@ -148,11 +148,11 @@ Expected: **byte-identical to the baseline block above**, all ten rows. No
 strategy passes a `choice_picker` yet, so any difference at all means the edit
 changed behaviour it should not have. If even one number moves, STOP and report.
 
-- [ ] **Step 4: Confirm the suites.** `smoke_test`, `sim_test` and `layout_test`
+- [x] **Step 4: Confirm the suites.** `smoke_test`, `sim_test` and `layout_test`
   must be unchanged from Step 0. `sim_test` has its own resolve loop and this
   task does not touch it.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 git add tools/balance_probe.gd
@@ -179,7 +179,7 @@ Turns are not phases: cards add seasons, so a 21-turn run sits near phase 31.
 Every conclusion about the 1934 milestone is about phases, and the probe does
 not print any. Make these permanent columns, not scratch instrumentation.
 
-- [ ] **Step 1: Add the pressure constant.** After `const MAX_TURNS := 34`, add:
+- [x] **Step 1: Add the pressure constant.** After `const MAX_TURNS := 34`, add:
 
 ```gdscript
 ## The first phase at which overrun pressure can apply. Both of its gates must
@@ -193,7 +193,7 @@ not print any. Make these permanent columns, not scratch instrumentation.
 const PRESSURE_PHASE := 35
 ```
 
-- [ ] **Step 2: Extend the tally.** Replace:
+- [x] **Step 2: Extend the tally.** Replace:
 
 ```gdscript
 	var tally := {"wins": 0, "turns": 0, "hazards": 0, "ahead": 0, "matched": 0, "behind": 0}
@@ -206,7 +206,7 @@ with:
 		"phase": 0, "max_phase": 0, "late_wins": 0, "exposure": 0}
 ```
 
-- [ ] **Step 3: Count exposure as the calendar moves.** Exposure is *phases
+- [x] **Step 3: Count exposure as the calendar moves.** Exposure is *phases
   spent under pressure*, which is not derivable from the final phase — a run
   that ends at 38 was exposed for four phases, one that ends at 35 for one.
   `_advance_calendar()` emits `turn_advanced` once per phase, including the
@@ -232,7 +232,7 @@ with:
   lambdas capture locals by value, so the counter must be a Dictionary. A plain
   `int` silently stays at zero.
 
-- [ ] **Step 4: Accumulate per seed.** Immediately before
+- [x] **Step 4: Accumulate per seed.** Immediately before
   `var grade := GameState.completion_grade()`, add:
 
 ```gdscript
@@ -249,7 +249,7 @@ with:
 				tally["late_wins"] += 1
 ```
 
-- [ ] **Step 5: Print the new columns.** Replace:
+- [x] **Step 5: Print the new columns.** Replace:
 
 ```gdscript
 	print("BALANCE %-24s win %2d/%d | grade %2d/%2d/%2d | avg %4.1f turns | %4.1f haz/run | %s"
@@ -273,7 +273,7 @@ with:
 
   Update the header `print` in `_ready()` to match the new columns.
 
-- [ ] **Step 6: Verify.** Run the probe. Every value that existed before must be
+- [x] **Step 6: Verify.** Run the probe. Every value that existed before must be
   unchanged — same wins, same grades, same avg turns, same hazards, same end
   states. The new columns must show `late wins 0` and `exposure 0` for all rows
   except *historical / all rest*, whose max phase is 35.
@@ -282,7 +282,7 @@ with:
   `exposure 0`, `PRESSURE_PHASE` or the signal hook is wrong — STOP and report,
   do not adjust the constant to force a number.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 git add tools/balance_probe.gd
@@ -316,7 +316,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 The policy under test: **protect resources, accept the schedule cost.** It must
 be deterministic — same seed, same decisions, every run, at both commits.
 
-- [ ] **Step 1: Add the policy.** Add at the end of `tools/balance_probe.gd`:
+- [x] **Step 1: Add the policy.** Add at the end of `tools/balance_probe.gd`:
 
 ```gdscript
 ## Conservative card resolution: take the option that best protects the five
@@ -368,7 +368,7 @@ func _conservative_choice(card: EventCard) -> int:
 	return card.canonical_choice
 ```
 
-- [ ] **Step 2: Add three rows.** In `_ready()`, after the `bay` lambda, add:
+- [x] **Step 2: Add three rows.** In `_ready()`, after the `bay` lambda, add:
 
 ```gdscript
 	var careful := func(c: EventCard) -> int: return _conservative_choice(c)
@@ -386,16 +386,16 @@ func _conservative_choice(card: EventCard) -> int:
 	_run("careful / rest", rested, critical, careful)
 ```
 
-- [ ] **Step 3: Verify.** Run the probe. The ten existing rows must be unchanged
+- [x] **Step 3: Verify.** Run the probe. The ten existing rows must be unchanged
   in every pre-existing column. Three new rows appear.
 
   **Do not judge the result here.** Whatever the new rows say, record them and
   move to Task 4. If they look disappointing, that is data, not a bug.
 
-- [ ] **Step 4: Confirm the suites.** `smoke_test`, `sim_test`, `layout_test`
+- [x] **Step 4: Confirm the suites.** `smoke_test`, `sim_test`, `layout_test`
   unchanged from Step 0.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 git add tools/balance_probe.gd
@@ -436,11 +436,11 @@ The comparison is pinned to two commits:
 Identical seeds (`3000 + s`, 12 seeds) and identical policies at both, which is
 what Task 2's hard-coded `PRESSURE_PHASE` exists to make possible.
 
-- [ ] **Step 1: Run post-pressure.** In the main working tree (whose game code
+- [x] **Step 1: Run post-pressure.** In the main working tree (whose game code
   is `d9e5745` plus documentation-only commits), run the probe and save the
   output verbatim.
 
-- [ ] **Step 2: Run pre-pressure.** Create a throwaway worktree, copy in **only
+- [x] **Step 2: Run pre-pressure.** Create a throwaway worktree, copy in **only
   the probe file**, and run it there:
 
 ```bash
@@ -458,7 +458,7 @@ cp tools/balance_probe.gd C:/tmp/hetchy-406c989/tools/balance_probe.gd
   there, it has taken a dependency on the mechanic it is measuring — STOP and
   report rather than patching it in place.
 
-- [ ] **Step 3: Remove the worktree.**
+- [x] **Step 3: Remove the worktree.**
 
 ```bash
 git worktree remove C:/tmp/hetchy-406c989 --force
@@ -475,7 +475,7 @@ Both must hold. The first says the policy is competent — a policy that mostly
 dies proves nothing about late viability. The second says it is genuinely slow —
 wins that all land at phase 31 tell us nothing about a milestone at 34.
 
-- [ ] **Step 4: Apply the criterion and take exactly one branch.**
+- [x] **Step 4: Apply the criterion and take exactly one branch.**
 
 **If no row qualifies — STOP and report:** *late-but-viable play is unreachable.*
 Say which half of the criterion failed and by how much. Do **not** loosen the
@@ -492,18 +492,59 @@ an identical probe file. Report, for the qualifying policy at both commits:
 wins, grade split, avg and max phase, late wins, exposure, and end-state
 distribution.
 
-- [ ] **Step 5: Report and stop.** Do not tune. Do not proceed to a further
+- [x] **Step 5: Report and stop.** Do not tune. Do not proceed to a further
   task. The reviewer decides what the delta means.
 
 ---
 
 ## Definition of done
 
-- [ ] Three commits, all touching `tools/balance_probe.gd` only.
-- [ ] All three suites green and unchanged from Step 0 throughout.
-- [ ] The ten pre-existing `BALANCE` rows unchanged in every pre-existing column.
-- [ ] A/B output from both commits reported verbatim.
-- [ ] The qualification criterion applied as written, with one branch taken.
-- [ ] No `OVERRUN_*`, economy, pace, card or segment constant changed.
-- [ ] `autoload/`, `resources/`, `scenes/`, `content/`, `data/` untouched.
-- [ ] No worktree left behind.
+- [x] Three commits, all touching `tools/balance_probe.gd` only.
+- [x] All three suites green and unchanged from Step 0 throughout.
+- [x] The ten pre-existing `BALANCE` rows unchanged in every pre-existing column.
+- [x] A/B output from both commits reported verbatim.
+- [x] The qualification criterion applied as written, with one branch taken.
+- [x] No `OVERRUN_*`, economy, pace, card or segment constant changed.
+- [x] `autoload/`, `resources/`, `scenes/`, `content/`, `data/` untouched.
+- [x] No worktree left behind.
+
+---
+
+## Reviewer verification and outcome
+
+Harness, diff and both A/B runs re-run independently. Three suites green, the
+diff is exactly what this plan specifies with no drift, the ten pre-existing
+rows are unchanged in every pre-existing column, and the tree is clean. **The
+criterion was applied as written and no policy qualified: late-but-viable play
+is unreachable.**
+
+Two things the row table alone does not show, found by instrumenting a
+disposable worktree.
+
+**`careful / rest` is a null row.** It resolves 173 cards across 12 seeds, of
+which **zero have more than one choice**. Under rest, fronts make so little
+progress that no fixed spine card ever reaches its threshold, so every card
+drawn is a single-option hazard and the choice policy has nothing to decide.
+That is why the row is byte-identical to `historical / all rest` — it is not
+measuring caution, it is measuring the same run twice. `careful / steady` and
+`careful / critical` are genuine: 48 of 125 decisions diverge from canonical.
+(Those two being identical to each other is pre-existing and expected —
+`historical / steady` and `critical path / steady` were already identical in the
+baseline, because the two allocation policies coincide in practice.)
+
+**Caution does not buy delay; it buys speed.** Careful play finishes at phase
+27.9 average against canonical's 30.9 — three phases *earlier*, and further from
+the trigger than the strategies the plan was written to improve on. Auditing the
+deck shows why. Of 15 multi-choice cards, the resource-safest option is also the
+fastest on 7, time-neutral on 3, and genuinely costs schedule on only 5.
+
+This is the finding, and it is not a shortage of headroom: picking the slowest
+option on every multi-choice card would add up to **30 seasons** of delay. The
+deck can produce a long campaign. What it cannot produce is a long campaign as
+the *consequence of playing well*. Delay and resource loss are correlated, not
+traded, so the archetype overrun pressure was designed to price — the cautious
+player who pays in schedule — does not exist in the current content.
+
+Overrun pressure is therefore correctly implemented, verified by `smoke_test`,
+and unreachable by any rational policy. **Do not tune it.** The question it
+raises belongs upstream, in what card choices cost.
