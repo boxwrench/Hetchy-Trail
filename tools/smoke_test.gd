@@ -18,6 +18,7 @@ func _ready() -> void:
 	_check_first_turn()
 	_check_ui_scenes()
 	_check_end_screens()
+	_check_reveal_order()
 	if failures.is_empty():
 		print("SMOKE PASS (%d checks)" % passed)
 	else:
@@ -257,5 +258,35 @@ func _check_end_screens() -> void:
 			"ending '%s' fires (got '%s')" % [expected, seen["result"]])
 		check(GameState.game_over, "ending '%s' sets game_over" % expected)
 		journey.queue_free()
+	GameState.new_game()
+	EventManager.reset()
+
+
+## The teaching layer must not be visible while the player is still choosing.
+func _check_reveal_order() -> void:
+	GameState.new_game()
+	EventManager.reset()
+	var panel: Node = load("res://scenes/ui/event_panel.tscn").instantiate()
+	add_child(panel)
+	var card: EventCard = null
+	for c in EventManager.deck:
+		if c.historical_fact != "" and c.choices.size() >= 2:
+			card = c
+			break
+	check(card != null, "found a card with a fact and two choices to test")
+	if card == null:
+		panel.queue_free()
+		return
+	panel.show_card(card)
+	check(not panel.fact_label.visible,
+		"the historical fact is hidden while choosing")
+	check(not panel.note_label.visible,
+		"the assumption note is hidden while choosing")
+	panel._on_choice(0)
+	check(panel.fact_label.visible,
+		"choosing reveals the historical fact")
+	check(panel.fact_label.text.contains(card.historical_fact),
+		"the revealed fact is the card's own")
+	panel.queue_free()
 	GameState.new_game()
 	EventManager.reset()

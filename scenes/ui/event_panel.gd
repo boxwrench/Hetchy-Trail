@@ -58,9 +58,13 @@ func show_card(card: EventCard) -> void:
 	var art := card.load_art()
 	photo_rect.texture = art
 	photo_rect.visible = art != null
+	# The teaching layer is the reveal, not the briefing: filled here, shown
+	# only once the player has committed. Displaying it during the decision
+	# spoils the beat and signals which option is historically canonical.
 	fact_label.text = "What really happened: " + card.historical_fact
 	note_label.text = card.assumption_note
-	note_label.visible = card.assumption_note != ""
+	fact_label.visible = false
+	note_label.visible = false
 	for child in buttons_box.get_children():
 		child.queue_free()
 	for i in card.choices.size():
@@ -80,6 +84,8 @@ func _on_choice(index: int) -> void:
 	outcome.text = choice.outcome_text
 	var deltas := _add_label(buttons_box)
 	deltas.text = _deltas_text(choice)
+	fact_label.visible = current_card.historical_fact != ""
+	note_label.visible = current_card.assumption_note != ""
 	var cont := Button.new()
 	cont.text = "Continue"
 	cont.pressed.connect(_on_continue.bind(index))
