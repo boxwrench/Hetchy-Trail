@@ -16,7 +16,9 @@ whole rather than about a minigame.
 
 ## For the historian
 
-These go out as one packet. Sending three separate asks wastes goodwill.
+These go out as one packet. Sending five separate asks wastes goodwill — with
+one exception: **H5 blocks art that is otherwise ready to commission**, so it is
+worth asking early rather than holding it for the packet.
 
 ### H1 — Citation gaps in four cards
 
@@ -85,6 +87,27 @@ the historian together.**
 
 **Effort: the decision is the expensive part.** Any of the three is cheap to
 build once made.
+
+### H5 — Which structure stood at Pulgas on 28 October 1934?
+
+The mapping brief's visual-history note says the first-water ceremony used a
+*temporary* structure and that the permanent Pulgas Water Temple was not finished
+until 1938 — so [art_assets.md](art_assets.md) instructs, in three places, that
+the completion scene must not show the temple.
+
+The public source the deck now cites says the crowd greeted the water **"at the
+temple"** on 28 October 1934 ([SOURCES.md](SOURCES.md), `[SFPUC-2005]` p. 42).
+
+Both cannot be read literally. Most likely one of them is using "temple" loosely
+for the site or for the ceremonial structure of the day — but which one is loose
+decides what the game's final image shows.
+
+**This blocks the completion art**, which is the most reproduced frame in the
+project and the one most likely to be seen by people who know the site. It also
+touches [21_first_drop_at_pulgas.md](../content/cards/21_first_drop_at_pulgas.md),
+the map's sixth milestone icon, and the end screens.
+
+**Effort: small to answer, and it unblocks a lot.** One question, one photo.
 
 ---
 
@@ -175,19 +198,16 @@ spend their time on the soft claims.
 **Effort: medium.** It touches every card and the import schema, so it wants a
 plan rather than an afternoon.
 
-### P6 — Two stale slot references left deliberately
+### P6 — Stale slot references in the art doc ✅ RESOLVED 2026-07-28
 
-[art_assets.md](art_assets.md) still calls slot 2 "Sound the Rock" and reserves
-budget against the old slot 4 archetype. **Left untouched on purpose:** that file
-has substantial uncommitted work in the tree from an earlier session, and
-sweeping it into an unrelated commit is how work-in-progress gets lost.
+[art_assets.md](art_assets.md) called slot 2 "Sound the Rock" and reserved budget
+against the old slot 4 archetype. It was left alone at first because that file
+had substantial uncommitted work in the tree; it has since been revised in place,
+along with the 1932 bond date, the withdrawn bloc list, the provenance schema and
+the colour-redundancy rule.
 
-Fix it when that work lands, not before. Its guidance is already conservative —
-it says not to commission train or lane assets until the archetype settles — so
-nothing is being built against the stale name.
-
-The slot files under `specs/minigames/` also keep their old filenames, which the
-spec notes so the paths still resolve.
+The slot files under `specs/minigames/` still keep their old filenames, which the
+parent spec notes so the paths resolve. That is deliberate and not a defect.
 
 ### P7 — First-play acceptance tests apply to the game as it stands
 

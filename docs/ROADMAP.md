@@ -50,8 +50,10 @@ disarms four of five loss conditions, two metrics that do no work, `.tres`
 being unauthorable by a historian, and art coupled to card data.
 
 [**Follow-ups**](FOLLOW-UPS.md) — real but unscheduled items, with the reasoning
-kept so a future session need not re-derive it. Four are for the historian and
+kept so a future session need not re-derive it. Five are for the historian and
 go out as one packet; the rest are content opportunities and project hygiene.
+One of the five — which structure stood at Pulgas on 28 October 1934 — blocks
+the completion art and should not wait for the packet.
 
 ## How to work here
 
