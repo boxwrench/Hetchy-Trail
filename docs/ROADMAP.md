@@ -58,8 +58,11 @@ checking it.** Plans are written for this: every step is explicit, every
 verification is a command with an expected result, and no step requires a design
 judgment call.
 
-**Current plan:** [P1.5 — Review Fixes](superpowers/plans/2026-07-27-p1.5-review-fixes.md)
-([P1 — Foundations](superpowers/plans/2026-07-27-p1-foundations.md) is complete.)
+**Current plan:** [Batch B — Workfront Progression](superpowers/plans/2026-07-27-batch-b-workfronts.md)
+— Task 1 (the workfront model) is complete and committed; Session 2 is Tasks 2
+and 3. ([P1 — Foundations](superpowers/plans/2026-07-27-p1-foundations.md) and
+[P1.5 — Review Fixes](superpowers/plans/2026-07-27-p1.5-review-fixes.md) are
+both complete.)
 
 **If you are the worker:**
 
@@ -139,8 +142,8 @@ to `docs/` whenever a field, method, or system disappears.
 | M1 | First playable loop | HUD, DecisionPanel, EventPanel, Journey | Harness + manual playthrough | **Done** |
 | M1.5 | Decision weight | Pace-risk, hazard deck, risk telegraph, HUD warnings | Harness + sim hazard probes | **Done** |
 | P1 | Foundations | 24-turn restructure, economy fix, content pipeline, art decoupling | Harness + exploit probe + historian can edit a card | **Done** |
-| P1.5 | Review fixes | End-screen crash + UI end test, design-doc rewrite, reveal-after-choice, validator hardening | Harness + four broken cards rejected by name | Next |
-| B | Progression model | Parallel workfronts on paper; Pareto-dominance probe over card choices | A model that makes pace a decision | After P1.5 — **strong model, not a worker** |
+| P1.5 | Review fixes | End-screen crash + UI end test, design-doc rewrite, reveal-after-choice, validator hardening | Harness + four broken cards rejected by name | **Done** |
+| B | Progression model | Parallel workfronts on paper; Pareto-dominance probe over card choices | A model that makes pace a decision | **In progress** — Task 1 done; Tasks 2–3 next |
 | P2 | Minigame framework + The Heading | Module contract, arcade mode, press-your-luck tuning | Harness + `minigame_sim` band check | After B |
 | P3 | The remaining four | Minesweeper, Pipe Dream, lane-dodge, Bond Vote set piece | Harness + per-minigame sim | After P2 |
 | M2 | The lighting map | Six divisions drawn, lighting as flags land | Harness + visual check | Folded into B — the map is the workfront UI |

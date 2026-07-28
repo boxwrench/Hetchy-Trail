@@ -519,7 +519,7 @@ Expected: `SMOKE PASS`.
 If `_check_flag_closure` or `_check_first_turn` fails, STOP and report — those
 guard the card spine and a failure means the re-anchoring is wrong.
 
-- [ ] **Step 9: Tune `FRONT_BASE_PROGRESS`**
+- [x] **Step 9: Tune `FRONT_BASE_PROGRESS`**
 
 ```bash
 godot --headless res://tools/sim_test.tscn
@@ -535,14 +535,14 @@ Read the `turns` number.
   is ever anything but `system_complete`, **STOP and report** the last three
   `SIM RESULT` lines. Change no other constant.
 
-- [ ] **Step 10: Confirm nothing references the removed engine**
+- [x] **Step 10: Confirm nothing references the removed engine**
 
 ```bash
 grep -rn "current_segment\|_build_miles\|is_available(GameState.miles_built" --include=*.gd .
 ```
 Expected: **no output.**
 
-- [ ] **Step 11: Full harness**
+- [x] **Step 11: Full harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -559,10 +559,10 @@ godot --headless res://tools/layout_test.tscn
 ```
 `LAYOUT PASS`
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
-git add -A
+git add autoload/game_state.gd autoload/event_manager.gd resources/event_card.gd tools/smoke_test.gd tools/sim_test.gd
 git commit -m "feat: six workfronts replace the linear card spine
 
 Each turn the player works one of six fronts. Progress lives in GameState as a
@@ -640,6 +640,28 @@ In `refresh_affordability()`, add at the top:
 	_refresh_fronts()
 ```
 
+Replace `set_enabled()`:
+
+```gdscript
+func set_enabled(on: bool) -> void:
+	end_button.disabled = not on
+	pace_select.disabled = not on
+	action_select.disabled = not on
+```
+
+with:
+
+```gdscript
+func set_enabled(on: bool) -> void:
+	end_button.disabled = not on
+	pace_select.disabled = not on
+	action_select.disabled = not on
+	front_select.disabled = not on
+```
+
+The panel is locked while a card is on screen and after game over. A front
+selector left live there is the one control that keeps taking input.
+
 Add this function at the end of the file:
 
 ```gdscript
@@ -712,7 +734,24 @@ with:
 
 - [ ] **Step 4: Show front progress on the HUD**
 
-In `scenes/ui/hud.gd`, replace the miles readout in `_refresh()`:
+The miles label has **two** writers — `_refresh()` and the `miles_changed`
+lambda in `_ready()`. `_recompute_miles()` emits `miles_changed` on every worked
+front, so changing only `_refresh()` would show the front count once at startup
+and erase it on the first turn, permanently. Give the label one writer instead.
+
+In `scenes/ui/hud.gd`, replace this line in `_ready()`:
+
+```gdscript
+	GameState.miles_changed.connect(func(v: float): labels["miles"].text = "Mile %.1f of 167" % v)
+```
+
+with:
+
+```gdscript
+	GameState.miles_changed.connect(func(_v: float): _set_miles())
+```
+
+Replace the miles readout in `_refresh()`:
 
 ```gdscript
 	labels["miles"].text = "Mile %.1f of 167" % GameState.miles_built
@@ -721,17 +760,24 @@ In `scenes/ui/hud.gd`, replace the miles readout in `_refresh()`:
 with:
 
 ```gdscript
-	labels["miles"].text = "Mile %.1f of 167  ·  %d/%d fronts done" % [
-		GameState.miles_built, _fronts_done(), GameState.front_count()]
+	_set_miles()
 ```
 
 Add at the end of the file:
 
 ```gdscript
+## The label's only writer. A front counts as done when its progress is full AND
+## it owes no fixed cards -- the same test the DecisionPanel uses for
+## "(complete)", so the HUD cannot report 6/6 while a card is still pending.
+func _set_miles() -> void:
+	labels["miles"].text = "Mile %.1f of 167  ·  %d/%d fronts done" % [
+		GameState.miles_built, _fronts_done(), GameState.front_count()]
+
+
 func _fronts_done() -> int:
 	var n := 0
-	for p in GameState.front_progress:
-		if p >= 1.0:
+	for i in GameState.front_count():
+		if GameState.front_progress[i] >= 1.0 and not EventManager.front_has_pending_fixed(i):
 			n += 1
 	return n
 ```
@@ -751,8 +797,11 @@ and report; do not shrink anything without saying so.
 
 - [ ] **Step 6: Commit**
 
+**Stage explicit paths — never `git add -A`.** It has twice swept
+work-in-progress into an unrelated commit.
+
 ```bash
-git add -A
+git add scenes/ui/decision_panel.gd scenes/ui/hud.gd scenes/journey/journey.gd tools/smoke_test.gd
 git commit -m "feat: the player chooses which front to work each turn
 
 DecisionPanel gains a front selector showing every front's percentage, with
@@ -792,18 +841,30 @@ Immediately before `GameState.advance_turn()` inside `_run()`, add:
 Add these two helpers at the end of the file:
 
 ```gdscript
-## Historical order: the lowest-numbered open, unfinished front.
+## Historical order: the lowest-numbered open front that is either unfinished or
+## still owes fixed cards. This MUST match sim_test._pick_front() exactly -- it
+## is the baseline every other strategy is measured against, and if the two
+## differ the probe and the sim are playing different games.
+##
+## The pending-cards clause is load-bearing, not defensive. Only one fixed card
+## is drawn per turn, so a front can reach 100%% still owing its completion card.
+## Abandoning it there strands that card forever, the campaign can never satisfy
+## SYSTEM_FLAGS, and every strategy reports 0/12 -- a probe that measures nothing
+## while looking like a verdict on the design.
 func _lowest_open_front() -> int:
 	for i in GameState.front_count():
-		if GameState.front_is_open(i) and GameState.front_progress[i] < 1.0:
+		if not GameState.front_is_open(i):
+			continue
+		if GameState.front_progress[i] < 1.0 or EventManager.front_has_pending_fixed(i):
 			return i
 	return 0
 
 
 ## Bay and Peninsula first -- the Spring Valley gambit. Historically real, and
-## the sharpest test of whether front choice matters.
+## the sharpest test of whether front choice matters. Same pending-cards rule:
+## front 6 must be worked until its cards are drawn, not until its bar fills.
 func _bay_first_front() -> int:
-	if GameState.front_progress[5] < 1.0:
+	if GameState.front_progress[5] < 1.0 or EventManager.front_has_pending_fixed(5):
 		return 5
 	return _lowest_open_front()
 ```
@@ -841,8 +902,10 @@ godot --headless res://tools/sim_test.tscn
 ```
 `SIM PASS`
 
+**Stage explicit paths — never `git add -A`.**
+
 ```bash
-git add -A
+git add tools/balance_probe.gd
 git commit -m "test: balance probe measures front allocation, not just pace
 
 Adds a bay-first strategy -- the Spring Valley gambit, historically real and the
