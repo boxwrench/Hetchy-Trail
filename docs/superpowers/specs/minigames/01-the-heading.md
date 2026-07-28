@@ -1,6 +1,6 @@
 # Slot 1 — The Heading
 
-**Status:** PLACEHOLDER. Not ready for implementation.
+**Status:** DESIGN. Ready for an implementation plan to be written against it.
 **Archetype:** Press-your-luck (Can't Stop lineage)
 **Cadence:** Recurring, player-initiated
 **Priority:** First. Build this before any other minigame.
@@ -10,129 +10,229 @@
 > on the slate, and because it is the hardest test of the module contract. If
 > the contract is wrong, it shows here.
 
-## Already decided — do not revisit
+---
 
-- **The loop:** drill, load powder, blast, muck out. Each cycle yields footage
-  and raises the chance of a bust — rockfall, squeezing ground, bad air, water
-  inflow. The player banks or pushes for another round.
-- **Availability:** optional and player-initiated, whenever the construction
-  front is in a tunnel division (2, 3, 5). Passive accrual remains the fallback.
-- **The limiter is crew wellbeing.** Each round costs crew stamina. This is the
-  "ammunition" that stops the minigame being free mileage.
-- **Primary output is miles.** Tunnel footage comes from the minigame rather
-  than a pace multiplier, which is what gives `miles_built` a job it currently
-  lacks. `work_pace` becomes the risk dial rather than a constant multiplier.
-- **Secondary outputs:** crew (injuries), readiness (build quality per §5).
-- **Arcade mode:** launchable from the title screen with a default config.
+## Superseded by Batch B — read this first
 
-## Historical anchors
+This file was drafted before workfront progression landed. Three of its original
+"already decided — do not revisit" items described a game that no longer exists.
+They are corrected here rather than deleted, so that a future reader does not
+restore them.
 
-Already in the deck, and the design should reach for these rather than invent:
+**1. "The 15 fixed spine cards form a dependency chain… the campaign has a hard
+floor of roughly 15 turns whatever the pace."** No longer true. Fixed cards now
+fire at **per-front progress thresholds** — a front with three cards fires them
+at ⅓, ⅔ and completion — and progress comes from `_work_front()`. The spine is
+six parallel fronts, not one chain.
 
-- [The 803-Foot Month](../../../../content/cards/11_the_803_foot_month.md) — the
-  record September of 1926, following a 781-foot month earlier that year.
-- [Crane Ridge Closes In](../../../../content/cards/16_crane_ridge_closes_in.md)
-  — squeezing ground, timber support, gunite rings.
-- [Twelve Faces, One Line](../../../../content/cards/06_twelve_faces_one_line.md)
-  — multiple simultaneous headings.
-- [Mitchell Shaft Memorial](../../../../content/cards/17_mitchell_shaft_memorial.md)
-  — the documented anchor for real danger. **Bust outcomes must not trivialise
-  injury or death.** Restraint, as the card already models.
+**2. "Pace is not a decision — STEADY strictly dominates."** Fixed by Batch B.
+`PACE_FACTOR` is `REST 0.0 / STEADY 1.0 / PUSHED 1.6`, applied to front progress,
+and pushing now buys schedule at a real cost. The balance table in the original
+draft is from P1 Task 6 and is superseded.
 
-## Bust outcomes come from the existing hazard deck
+**3. "`work_pace` becomes the risk dial rather than a constant multiplier."**
+This is the one live conflict with the parent spec (§4.1), and **the spec's
+clause is not adopted.** Removing the multiplier would undo the measured Batch B
+result. `work_pace` does both instead: it continues to multiply passive front
+progress, *and* it sets this minigame's starting ground stress. Same dial, two
+readings, nothing removed.
 
-The three injury hazard cards are already written, already sourced, and already
-carry the teaching layer — reuse them rather than inventing bust text:
+**The consequence is good news.** The original draft closed with *"Does progress
+through the spine depend on footage? Do not design this slot without answering
+that question."* Batch B answered it. Footage adds to `front_progress`, and
+`front_progress` is what fires spine cards and what `miles_built` aggregates. A
+foot driven in the minigame moves the campaign through the same path a passive
+turn does. No new coupling is required, and `miles_built` already has the job
+§4.1 wanted to give it.
 
-- [h1_powder_blast](../../../../content/cards/h1_powder_blast.md) — a premature
-  detonation before the heading is clear.
-- [h2_rockfall_in_the_heading](../../../../content/cards/h2_rockfall_in_the_heading.md)
-- [h3_cave_in](../../../../content/cards/h3_cave_in.md)
+---
 
-**These stay in the campaign deck as well.** The pace-risk roll and the Heading's
-bust are different events at different scales — one is what happens between
-turns, the other is what happens inside a shift — and the campaign one cannot be
-retired, because minigames are optional by invariant. A player who skips every
-minigame must still face risk. See Task 6 of
-[P1](../../plans/2026-07-27-p1-foundations.md), which revived that roll.
+## What the player does
 
-The design question this raises, to be answered here: **does a Heading bust draw
-from the same pool, or does the minigame get its own bust text keyed to which
-hazard occurred?** Reusing the cards keeps the sourcing; separate text lets the
-bust describe the specific round the player just gambled on.
+Drill, load powder, blast, muck out — then decide. Each round the player picks
+one of four actions, and this is the decision that keeps the slot from being a
+"push again" button:
 
-## The structural problem this slot must solve
+| Action | Footage | Stress | Stamina | Character |
+|---|---|---|---|---|
+| **Short round** | ×0.55 | +1 | 1 | Shallow pull, light powder. Cautious progress. |
+| **Full round** | ×1.0 | +2 | 1 | The standard cycle. |
+| **Deep round** | ×1.7 | +4 | 2 | Heavy powder, long pull. Overbreak risk. |
+| **Set supports** | none | −3 | 1 | Timber or steel sets. Buys back safety, costs tempo. |
 
-Measured with [balance_probe](../../../../tools/balance_probe.gd) after P1
-Task 6, across 12 seeds per strategy:
+**Set supports is the load-bearing addition.** Without it, the only lever is
+stop-or-continue and the optimal stopping round can be solved once and replayed
+forever. With it, the player is trading tempo against risk under a stamina
+ceiling, and the right answer moves depending on the survey, the crew, and how
+far the target still is.
 
-| Strategy | Wins |
+It is also the most historically exact element here: it is the Crane Ridge
+decision, in miniature, every round.
+
+## Risk model
+
+A single accumulating value, **ground stress `S`**, rather than a round counter —
+because supports must be able to reduce it.
+
+```
+p_bust = clamp(BUST_BASE + BUST_COEFF * S, 0.0, BUST_CAP)
+BUST_BASE  = 0.02
+BUST_COEFF = 0.025
+BUST_CAP   = 0.55
+```
+
+Evaluated after the round is chosen, before its footage banks. `S` floors at 0.
+
+**Q1 — curve shape: escalating, driven by stress.** Under uninterrupted Full
+rounds `S = 2n`, so `p = 0.02 + 0.05n`: round 1 is 7%, round 4 is 22%, round 7 is
+37%. Early rounds are nearly safe, the middle rounds are where the decision
+lives, and the tail is punishing without being absurd.
+
+**Q4 — round ceiling: stamina, with a hard backstop.** Stamina is the real
+limiter (below). A hard cap of **12 rounds** exists only to bound session length
+in arcade mode; ordinary play never reaches it.
+
+**Q7 — stamina.** The shift's budget is `crew_wellbeing` at open, clamped to
+3–10, supplied in config. Costs are in the table above. When stamina reaches
+zero the shift **ends and banks normally** — this is not a bust. Running out of
+crew must never be worse than not having played, or a depleted crew makes the
+minigame a trap and the rational move is to stop opening it.
+
+## Busting
+
+**Q2 — partial loss, and the fraction is the hazard.** Which of the three
+existing hazards occurred determines what it costs. This answers the original
+draft's open question about bust text: the minigame **draws from the same three
+hazard cards**, and severity is intrinsic to the hazard rather than invented.
+
+| Hazard | Loses | Why |
+|---|---|---|
+| [h1_powder_blast](../../../../content/cards/h1_powder_blast.md) | the current round only | Premature detonation. The heading is damaged; the muck is out. |
+| [h2_rockfall_in_the_heading](../../../../content/cards/h2_rockfall_in_the_heading.md) | half of banked footage | The heading is partly filled and must be cleared again. |
+| [h3_cave_in](../../../../content/cards/h3_cave_in.md) | all banked footage; shift ends | The heading is closed. It has to be re-driven. |
+
+Partial loss also flattens the expected-value curve, which is what stops a single
+stopping round from dominating — see the bands below.
+
+**On tone.** Bust prose is the hazard card's authored text, unchanged. No score
+flourish, no "you lost" framing, no animation that reads as a fail state. The
+Mitchell Shaft card is the standard this project already set for how it treats
+injury, and this minigame does not get to lower it. A cave-in ends the shift
+immediately and quietly.
+
+**These hazards stay in the campaign deck.** The pace-risk roll and the
+Heading's bust are different events at different scales — one is what happens
+between turns, the other is what happens inside a shift — and the campaign roll
+cannot be retired, because minigames are optional by invariant. A player who
+skips every minigame must still face risk.
+
+## The survey
+
+**Q5 — Slot 2 (Probe the Face) changes decisions, not just numbers.** A good
+survey does two things:
+
+- **Lowers starting stress** `S₀`, which shifts the whole curve right.
+- **Names the ground's likely hazard**, which tells the player whether a bust
+  will be cheap or ruinous.
+
+The second matters more than the first. Knowing the ground is prone to cave-in
+rather than powder blast changes how deep to push and how often to spend a round
+on supports — it changes play, where a flat probability tweak only changes
+arithmetic. A player with no survey pushes blind and should feel it.
+
+## Output and tiers
+
+**Q6 — tiers are relative to the driving card's own historical anchor**, not to
+absolute footage, so the same minigame serves cards with different targets.
+
+```
+strong :  footage >= target_feet
+fair   :  footage >= 0.6 * target_feet
+poor   :  below that
+```
+
+For [The 803-Foot Month](../../../../content/cards/11_the_803_foot_month.md),
+`target_feet = 803` — the record September of 1926. Full-round footage scales to
+`target_feet / 6`, so the record is reachable in six or seven clean rounds and
+sits deep in the risky part of the curve. **A record month should feel like the
+gamble it was.** Fair is reachable in four.
+
+**Tier → choice mapping.** Tiers select among the driving card's authored
+`EventChoice`s; they do not introduce new consequence text. The 803-Foot Month
+card has two choices, so the mapping is many-to-one:
+
+| Tier | Choice |
 |---|---|
-| all steady | 11/12 |
-| rest when crew ≤ 3 | 11/12 |
-| push first 4 turns | 3/12 |
-| push while crew ≥ 6 | 1/12 |
-| all pushed | 0/12 |
+| strong | *Chase the record* |
+| fair, poor | *Hold a sustainable pace* |
 
-**Pace is not a decision — STEADY strictly dominates.** The cause is structural,
-not a tuning error, and reducing the hazard rates does not fix it (tested:
-PUSHED 0.30→0.15 moved `push while crew>=6` from 1/12 to 2/12).
+No content change is required for this card. If a future driving card wants
+three distinct outcomes it must author a third choice — that is a historian
+matter, not a minigame one.
 
-The 15 fixed spine cards form a **dependency chain** — card 04 requires card
-01's flag, 05 requires 04's, and so on to Pulgas. Only one link can fire per
-turn, so the campaign has a hard floor of roughly 15 turns *whatever the pace*.
-Mileage gates nothing. Pushing therefore buys no schedule at all while costing
-crew, remediation spending, and hazard exposure, and the dominant failure across
-every pushing strategy is `bond_crisis`.
+**Result payload.** `footage_feet`, `tier`, `hazard_id` (empty when no bust),
+`rounds_taken`, `stamina_spent`. `Journey` converts footage to front progress and
+applies the hazard; the minigame writes nothing.
 
-**This slot is the fix.** §4.1 already specifies that tunnel footage comes from
-The Heading rather than a pace multiplier, and that `work_pace` becomes the
-minigame's risk dial. That is what finally gives `miles_built` a job and gives
-pushing an upside — but only if the design here answers:
+**Footage is additive.** Passive accrual continues exactly as it does now. The
+Heading adds on top, paid for in crew stamina — a converter from crew wellbeing
+into progress, which is what stops it being free mileage and what gives
+`improve_camp` a second reason to exist. Skipping the minigame remains a complete
+way to play.
 
-**Does progress through the spine depend on footage?** If the chain still
-advances one card per turn regardless, The Heading will make miles *feel*
-earned while changing nothing about pacing, and PUSHED will still be dominated.
-Something must connect footage to spine progression — a milestone card that
-requires a footage threshold, or a delay when footage falls short.
+## Verification bands
 
-Do not design this slot without answering that question.
+**Q8 — what `minigame_sim` must be able to detect.** Many seeded trials per
+policy, asserting:
 
-## Must be decided
+1. **No dominant stopping round.** The best three fixed stopping rounds must sit
+   within **15%** of each other on expected banked footage. If one round is
+   clearly correct, the press-your-luck decision is fake.
+2. **Not a coin flip.** Under competent play each tier must appear at least
+   **10%** of the time. A distribution that is nearly all `fair` means the
+   decision does not matter.
+3. **Supports must earn their place.** A policy that never sets supports must
+   underperform an otherwise identical policy that does, by a margin outside
+   noise. If they tie, the fourth action is decoration and the slot is a
+   two-button game.
+4. **Bust rate in band.** A "stop once fair is reached" policy should bust
+   between **20% and 45%** of shifts. Below that there is no tension; above it,
+   trying is worse than not.
+5. **The survey must matter.** A surveyed shift must beat an unsurveyed one on
+   expected footage, or Slot 2 has no reason to exist.
 
-Answer every one of these before writing the implementation plan.
+Plus the standing requirement: **campaign `sim_test` still completes with this
+minigame skipped entirely.**
 
-1. **Bust curve shape.** Linear, escalating, or stepped? What is the
-   per-round bust probability at round 1, and how does it climb?
-2. **Partial or total loss on bust?** Does busting cost the whole shift's banked
-   footage or a fraction? This changes push aggression more than any other
-   single choice.
-3. **What the player actually manipulates each round.** Number of drill holes?
-   Powder load? Timber-or-advance? There must be a *decision* per round, not
-   just a "push again" button — otherwise it is a slot machine.
-4. **Round count ceiling.** Is there a hard cap per shift, or does the curve
-   alone end it?
-5. **How the survey result feeds in.** Slot 2 (Sound the Rock) is specified to
-   de-risk this one. What exactly does a good survey change — starting bust
-   probability, curve slope, or advance warning of a specific hazard?
-6. **Tier thresholds.** What footage totals map to `poor` / `fair` / `strong`,
-   and how do those map onto the driving card's authored choices?
-7. **Crew stamina cost per round**, and what happens when it runs out mid-shift.
-8. **Failure modes to test against:** a dominant strategy (one stopping point
-   always correct) and a coin flip (no real decision). The `minigame_sim` band
-   check must be able to detect both. Define the bands.
+## Numbers are a starting point, not a result
 
-## Research feeding this slot
+Every constant above — `BUST_BASE`, `BUST_COEFF`, the stress costs, the footage
+multipliers, the 0.6 fair threshold — is a first estimate chosen to put the
+expected-value peak around round four with a near-flat top. They are meant to be
+measured and moved by `minigame_sim`, and the bands above are the acceptance
+test, not the constants.
 
-The press-your-luck research prompt is
-[Appendix A of the parent spec](../2026-07-27-minigames-and-campaign-restructure-design.md#appendix-a--press-your-luck-research-prompt).
-It covers the canonical designs, the tuning math, partial-vs-total loss, mining
-game feel, and the real 1920s drill-blast-muck cycle. **Its findings should be
-summarised into this file** before the design is written.
+**The bands are the specification. The constants are a guess.** If they cannot be
+made to satisfy the bands, that is a design failure to report, not a band to
+lower.
 
-## Verification this slot must ship with
+## Inherited rules this slot does not revisit
 
-- `minigame_sim` runs many seeded trials and asserts the outcome distribution
-  sits in band — specifically that no single stopping round dominates and that
-  variance is not coin-flip.
-- Campaign `sim_test` still completes with this minigame skipped entirely.
+- Never reads or writes `GameState`. `MinigameConfig` in, `MinigameResult` out.
+- Never gates progress. Passive accrual is always the fallback.
+- Never adds a resource. Outputs map onto the existing five metrics.
+- Failing never subtracts readiness. Poor play fails to *earn*.
+- Result tiers select among a card's authored choices; prose stays in `content/`.
+- Any historical liberty is recorded in the driving card's `assumption_note`.
+
+## Still open, for the implementation plan rather than this design
+
+- **The framework types do not exist yet.** There is no `MinigameConfig`,
+  `MinigameResult`, or module contract anywhere in the tree. P2 builds them, and
+  this slot is their first consumer — so the plan must define them before
+  building this.
+- **Arcade mode's default config**: which `target_feet` and `S₀` a title-screen
+  launch uses, absent a driving card.
+- **Stub first.** Per the standing rule, this ships as a stub — context plus a
+  Resolve button returning a valid `MinigameResult` — before any of the above is
+  implemented.

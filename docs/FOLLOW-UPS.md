@@ -16,7 +16,7 @@ whole rather than about a minigame.
 
 ## For the historian
 
-These go out as one packet. Sending five separate asks wastes goodwill — with
+These go out as one packet. Sending six separate asks wastes goodwill — with
 one exception: **H5 blocks art that is otherwise ready to commission**, so it is
 worth asking early rather than holding it for the packet.
 
@@ -108,6 +108,31 @@ touches [21_first_drop_at_pulgas.md](../content/cards/21_first_drop_at_pulgas.md
 the map's sixth milestone icon, and the end screens.
 
 **Effort: small to answer, and it unblocks a lot.** One question, one photo.
+
+### H6 — Three questions that block two minigame slots
+
+Slot-specific design lives in [specs/minigames/](superpowers/specs/minigames/),
+but these three are historical questions, so they belong in the packet.
+
+1. **What did a construction camp actually run short of, and what happened when
+   it did?** [Keep the Line Open](superpowers/specs/minigames/04-keep-the-line-open.md)
+   is blocked without a documented consequence of a camp going short. Its
+   original premise — near camps had wagon-road fallback, far camps did not — is
+   contradicted by cards 02 and 09 and has been withdrawn.
+2. **Who actually contested the 1932 bond, and in what terms?**
+   [The Bond Vote](superpowers/specs/minigames/05-the-bond-vote.md) had a
+   five-bloc roster that could not be established; two entries fail outright. The
+   alternative, if the archival work is not worth it, is to drop the bargaining
+   mechanic and have the player assemble a case from documented public concerns
+   — which needs no roster. **Either answer unblocks the slot**, including "the
+   record does not support naming the parties."
+3. **Did crews probe ahead of the face, and how?**
+   [Probe the Face](superpowers/specs/minigames/02-sound-the-rock.md) is
+   buildable without this — it is presented as a schematic, not a documented
+   shift — but an answer would let it be specific instead of careful.
+
+**Effort: 1 and 2 may need archival work; 3 is a nice-to-have.** Questions 1 and
+2 are the two blocking the P3 slate.
 
 ---
 
