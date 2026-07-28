@@ -1,9 +1,14 @@
 # Hetchy Trail — Technical Design (v2)
 
+> **Agents: this document describes the system as built.** If it contradicts
+> the code, the code is right and this file is a bug — report it rather than
+> changing code to match. Last reconciled against the tree: 2026-07-27,
+> P1.5 Task 2.
+
 A 2D historical resource-management journey for Godot 4.7: build the 167-mile
 Hetch Hetchy aqueduct from the Sierra Nevada to San Francisco (1914–1934),
 balancing five metrics — Funds/Bonds, Public Support, Water Readiness, Crew
-Wellbeing, and Time/Season.
+Wellbeing, and Time/Phase.
 
 Hetchy Trail is a **teaching game**. Gameplay may deviate from the historical
 record for the sake of play, but every deviation is recorded: each encounter
@@ -16,7 +21,7 @@ Tone target: readable, modest, warm. Every system below serves the five meters
 and the mile counter. Nothing else is simulated.
 
 > **v2 changes** (from the mapping brief): Water Balance became Water
-> Readiness with a campaign-flag completion rule; the turn became one season;
+> Readiness with a campaign-flag completion rule; the turn became one construction phase;
 > the event system gained fixed historical cards alongside weighted draws; the
 > map became six sections that light up rather than a marker that crawls west.
 
@@ -77,15 +82,15 @@ model: card deltas run roughly −3…+3 (1 minor, 2 substantial, 3 severe).
 
 | Metric | Field | Scale | Meaning | Modified by |
 |---|---|---|---|---|
-| Funds/Bonds | `funds` | int, starts 10, no cap | Cash, bond authority, contracts, land, equipment | Winter payroll, bond/outreach/camp actions, card effects |
+| Funds/Bonds | `funds` | int, starts 30, no cap | Cash, bond authority, contracts, land, equipment | `PHASE_OVERHEAD` charged every phase, bond/outreach/camp actions, card effects. `issue_bond` is capped at `MAX_BOND_ISSUES` (2) at `BOND_FUNDS_GAIN` (20). `outreach` and `improve_camp` escalate via `action_cost()`. |
 | Public Support | `public_support` | 0–10, starts 6 | Voter confidence and willingness to approve bonds | Bond and outreach actions, card effects |
 | Water Readiness | `water_readiness` | 0 → ~30 target | **System readiness and future capacity — not delivered water.** Completed structures raise it; nothing is delivered until the system is connected. | Card effects only |
 | Crew Wellbeing | `crew_wellbeing` | 0–10, starts 7 | Safety, fatigue, housing, morale, retention | Work pace drift, camp action, card effects |
-| Time/Season | `year` / `season` | Spring 1914 onward | One turn = one season; one card time-point = one season | `advance_turn()` and card `time_delta_seasons` |
+| Time/Phase | `turn` / `phase` | 1914 onward | One turn = one construction phase. `GameState.turn` counts player decisions against `TURNS_TOTAL` (24). `GameState.phase` counts calendar time. `current_year()` derives the year from `phase` and `CALENDAR_PHASES` (30). Seasons are narrative framing in card prose only; the game does not simulate weather. | `advance_turn()` and card `time_delta_seasons` |
 
 Progress (`miles_built`, 0–167) is the sixth owned value but not a player
 meter: it moves only inside `_build_miles()` (pace × segment modifier × crew
-factor, with winter penalties in Sierra segments).
+factor; Sierra divisions build at `NO_RAILROAD_FACTOR` until `railroad_operational` — division-scoped, not calendar-scoped).
 
 ### The water model and the completion rule
 
@@ -102,7 +107,7 @@ alameda_siphon_complete, bay_crossing_complete, pulgas_connected
 This makes the final Pulgas encounter mechanically meaningful: every structure
 may be complete, but the city receives nothing until the chain functions as
 one system. The urgency the old draining water-clock provided now lives where
-it historically lived: funds pressure, winter payroll, and Depression-era
+it historically lived: funds pressure, `PHASE_OVERHEAD`, and Depression-era
 funding events.
 
 ### Campaign flags
@@ -125,28 +130,30 @@ summary.
 
 ## IV. The Core Loop
 
-One turn = one season, starting Spring 1914. Historically the system connected
-in ~81 seasons; the win screen grades the finish against October 1934
-(`completion_grade()`: ahead of / matched / behind history). Hard loss only at
-1940 — a warm grade beats a harsh clock in a teaching game.
+One turn = one construction phase, starting 1914. `GameState.turn` counts player
+decisions against `TURNS_TOTAL` (24). `GameState.phase` counts calendar time.
+`current_year()` derives the year from `phase` and `CALENDAR_PHASES` (30). The
+win screen grades the finish against 1934 (`completion_grade()`: ahead of /
+matched / behind history). Hard loss only at 1940 — a warm grade beats a harsh
+clock in a teaching game.
 
 Each turn, Journey runs four phases:
 
 1. **DECIDE** — the player sets a work pace (Rest / Steady / Pushed) and may
-   take one action: issue a bond (funds +3, support −1, needs support ≥ 4),
-   community outreach (funds −1, support +2), improve the camps (funds −1,
-   crew +2).
+   take one action: issue a bond (capped at `MAX_BOND_ISSUES` = 2, +20 funds, -1 support),
+   community outreach, or improve the camps (costs escalate via `action_cost()`).
 2. **RESOLVE** — `GameState.advance_turn()`: miles build, crew drifts with
-   pace, winter turns charge payroll (plus a surcharge if the pumped Coast
+   pace, `PHASE_OVERHEAD` charged every phase (plus a surcharge if the pumped Coast
    Range alternative was chosen), the calendar advances.
-3. **EVENT** — `EventManager.try_draw()`. Fixed cards due this turn fire
-   first; otherwise a weighted random draw may occur. The player picks a
-   choice; `resolve_choice()` applies it through `GameState.apply_choice()`.
+3. **EVENT** — `EventManager.try_draw_queue() -> Array[EventCard]`. Returns 0–2
+   cards, hazard first. The pace-risk roll runs **every** turn. Fixed cards due
+   this turn fire in order; otherwise a weighted random draw may occur. The player
+   picks a choice; `resolve_choice()` applies it through `GameState.apply_choice()`.
 4. **CHECK** — end conditions, then the next turn.
 
 Card time effects: positive `time_delta_seasons` advances the calendar with
-payroll but no construction (lost seasons); negative deltas bank immediate
-bonus mileage (schedule gained).
+payroll but no construction; negative deltas bank immediate bonus mileage
+(schedule gained).
 
 **Win:** `hetch_hetchy_water_delivered` (granted only by the Pulgas card,
 which requires the other seven system flags).
@@ -160,7 +167,7 @@ moves on). Each maps to exactly one meter.
 
 ### Two draw modes
 
-- **Fixed cards** are the campaign spine — 15 of the 21 cards. As soon as a
+- **Fixed cards** are the campaign spine — 15 of the 26 cards. As soon as a
   fixed card's mile and flag conditions are met, it fires automatically (one
   card per turn), in filename order. The brief is explicit that Mitchell Shaft
   must be a fixed historical event, never a random draw or a preventable
@@ -197,7 +204,7 @@ deviations, all noted on the cards themselves:
 
 Card art resolves by filename convention — `assets/art/cards/<event_id>.png`,
 falling back to `<event_id>.placeholder.png` — via `EventCard.art_path()` and
-`load_art()`. There is no stored texture property, so art and card text never
+`load_art()`. Stored texture properties are removed, so art and card text never
 collide in the same file. SFPUC archival originals live in
 `assets/art/archival/` and must be listed in `CREDITS.md` there.
 
@@ -218,7 +225,7 @@ is presentation data, not a system.
   `apply_choice(choice)`, `grant_flag/has_flag`, `is_system_connected()`,
   `current_segment()`, `completion_grade()`, `new_game()`.
 - **[Core Variables]** `funds`, `public_support`, `water_readiness`,
-  `crew_wellbeing`, `miles_built`, `year`, `season`, `work_pace`, `flags`,
+  `crew_wellbeing`, `miles_built`, `turn`, `phase`, `work_pace`, `flags`,
   `segments`. All balance numbers are named tuning constants at the top of the
   file.
 - **[Key Interactions]** Loads `data/segments/`; emits one signal per metric
@@ -230,16 +237,17 @@ is presentation data, not a system.
   firing order), fires due fixed cards, performs weighted draws, and applies
   resolved choices through GameState.
 - **[Core Variables]** `deck`, `drawn_ids`, `event_chance`.
-- **[Key Interactions]** `try_draw()` called by Journey each EVENT phase;
+- **[Key Interactions]** `try_draw_queue()` called by Journey each EVENT phase;
   emits `event_drawn(card)`; `resolve_choice(card, index)` applies the pick
   and re-arms `repeat_card` choices.
 
 ### EventCard / EventChoice — narrative as data
-- **[Node Type]** `Resource` scripts; 21 `.tres` instances in `data/events/`.
+- **[Node Type]** `Resource` scripts; 26 cards: 15 fixed spine, 6 texture, 5 hazards.
+  Authored as Markdown in `content/cards/`; `import_cards.gd` generates the `.tres`.
 - **[Script Purpose]** One historical encounter with 1–3 choices and the full
   teaching layer. Choices carry the five deltas, granted flags, and
-  `repeat_card`. `EventCard.is_available(miles, is_winter, flags)` implements
-  mile gating, expiry, season, and flag requirements.
+  `repeat_card`. `EventCard.is_available(miles, flags)` implements mile gating,
+  expiry, and flag requirements.
 - **[Key Interactions]** Read only by EventManager; effects can only touch the
   five metrics and flags — a structural guard against scope creep.
 
@@ -251,27 +259,30 @@ is presentation data, not a system.
 - **[Key Interactions]** GameState uses the modifier and winter flag for build
   math; Map draws and lights segments.
 
-### Scenes (to be built next — scripts and data above are complete)
+### Scenes
+
+HUD, DecisionPanel, EventPanel and Journey exist. The route map, title screen and
+end screen do not.
 
 - **Main** (`scenes/main/`) — root `Node`, swaps title / journey / end
   screens; listens to `game_ended`; new game = `GameState.new_game()` +
   `EventManager.reset()`.
 - **Journey** (`scenes/journey/`) — `Node2D` turn conductor running
   DECIDE → RESOLVE → EVENT → CHECK; the only caller of `advance_turn()` and
-  `try_draw()`.
+  `try_draw_queue()`.
 - **Map** (`scenes/map/`) — `Node2D` drawing the six divisions as a route
   line; each segment lights when its `completion_flag` is granted (listens to
   `flag_granted`), with a subtle front marker driven by `miles_changed`. The
   full line "flows" on `is_system_connected()`.
 - **HUD** (`scenes/ui/hud.tscn`) — `CanvasLayer` with five readouts (readiness
   displayed as `n / 30` with a "not yet delivered" treatment until
-  connection), date/season, and miles.
+  connection), year, and miles.
 - **DecisionPanel** (`scenes/ui/`) — pace selector + three action buttons;
   emits `decisions_confirmed(pace, action)`; disables unaffordable actions by
   reading GameState.
-- **EventPanel** (`scenes/ui/`) — letterpress-style card: title, archival
-  photo, description, choice buttons, and the expandable "What really
-  happened" section (`historical_fact` + notes).
+- **EventPanel** (`scenes/ui/`) — letterpress-style card: title, card art (resolved
+  by convention via `load_art()`), description, choice buttons, and the expandable
+  "What really happened" section (`historical_fact` + notes).
 
 ---
 
@@ -290,7 +301,7 @@ Hetchy-Trail/
 │   ├── event_choice.gd            # class_name EventChoice
 │   └── route_segment.gd           # class_name RouteSegment
 ├── data/
-│   ├── events/                    # 21 encounter cards, 01_...tres – 21_...tres
+│   ├── events/                    # 26 encounter cards (15 fixed spine, 6 texture, 5 hazards)
 │   └── segments/                  # the six divisions, 01–06
 ├── scenes/
 │   ├── main/  journey/  map/  ui/ # to be built in the editor (Section VI)
