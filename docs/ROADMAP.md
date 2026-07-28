@@ -49,6 +49,10 @@ It fixes five defects: empty turns, an unbounded bond/outreach loop that
 disarms four of five loss conditions, two metrics that do no work, `.tres`
 being unauthorable by a historian, and art coupled to card data.
 
+[**Follow-ups**](FOLLOW-UPS.md) — real but unscheduled items, with the reasoning
+kept so a future session need not re-derive it. Four are for the historian and
+go out as one packet; the rest are content opportunities and project hygiene.
+
 ## How to work here
 
 ### Worker/reviewer mode
