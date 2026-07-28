@@ -1,0 +1,83 @@
+name: Verify
+
+# The same four checks the worker/reviewer loop runs by hand, on every push.
+# See docs/ROADMAP.md -- a failing harness is never committed.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.7"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot binary
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot-bin
+          key: godot-${{ env.GODOT_VERSION }}-linux
+
+      - name: Download Godot ${{ env.GODOT_VERSION }}
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p ~/godot-bin
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          FILE="Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          curl -fLsS -o /tmp/godot.zip "${BASE}/${FILE}.zip"
+          unzip -q -o /tmp/godot.zip -d ~/godot-bin
+          mv ~/godot-bin/"${FILE}" ~/godot-bin/godot
+          chmod +x ~/godot-bin/godot
+
+      - name: Add Godot to PATH
+        run: echo "$HOME/godot-bin" >> "$GITHUB_PATH"
+
+      - name: Report version
+        run: godot --headless --version
+
+      # .godot/ is gitignored, so a fresh clone has no import cache. The first
+      # import pass can report errors for resources whose dependencies are not
+      # imported yet; the second pass resolves them. Neither pass is a
+      # verification step, so failures here are tolerated deliberately.
+      - name: Import project
+        run: |
+          godot --headless --import || true
+          godot --headless --import || true
+
+      - name: Smoke test
+        run: godot --headless res://tools/smoke_test.tscn
+
+      - name: Simulation
+        run: godot --headless res://tools/sim_test.tscn
+
+      - name: Layout
+        run: godot --headless res://tools/layout_test.tscn
+
+      # The content pipeline must be idempotent: rebuilding the .tres files from
+      # the Markdown that generated them has to produce byte-identical output.
+      # If this fails, the historian's edits are not round-tripping cleanly.
+      - name: Content pipeline round-trip
+        run: |
+          set -euo pipefail
+          godot --headless res://tools/import_cards.tscn
+          if ! git diff --quiet -- data/events; then
+            echo "::error::import_cards is not idempotent -- rebuilding changed data/events"
+            git --no-pager diff --stat -- data/events
+            exit 1
+          fi
+          echo "content pipeline is idempotent"
+
+      # Measurement, not a gate: balance_probe always exits 0. Printed so the
+      # win-rate table appears in the log of every run and drift is visible.
+      - name: Balance probe (informational)
+        run: godot --headless res://tools/balance_probe.tscn
