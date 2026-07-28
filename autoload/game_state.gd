@@ -45,9 +45,15 @@ const FINAL_DEADLINE_YEAR := 1940     # hard loss: the city turns elsewhere
 const TURNS_TOTAL := 24
 ## Calendar phases consumed by canonical play. The year is derived from this,
 ## NOT from TURNS_TOTAL: card delays advance the calendar without granting a
-## turn, so canonical play costs about 30 phases against 24 turns. Calibrated
-## in Task 1b Step 7 so canonical play lands on HISTORICAL_FINISH_YEAR.
-const CALENDAR_PHASES := 35
+## turn, so canonical play costs about 32 phases against 24 turns. Calibrated
+## so canonical play lands on HISTORICAL_FINISH_YEAR; recalibrated in Batch B
+## Session 3, when two-card chaining shortened canonical play from 35 phases to
+## 32 and left it finishing in 1932.
+##
+## At 20 years over ~32 phases the matched-history band is under two phases
+## wide, so this cannot be centred: canonical play sits at the top of the band
+## and ANY change that shortens the campaign needs this recalibrated with it.
+const CALENDAR_PHASES := 32
 const YEARS_SPAN := HISTORICAL_FINISH_YEAR - START_YEAR   # 1914 -> 1934
 
 # --- Tuning knobs -----------------------------------------------------------
