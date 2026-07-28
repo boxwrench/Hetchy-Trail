@@ -593,7 +593,7 @@ Both are mechanical and fail loudly. Do them in one session, commit separately.
 
 **Files:** `scenes/ui/decision_panel.gd`, `scenes/ui/hud.gd`, `tools/smoke_test.gd`
 
-- [ ] **Step 1: Add a front selector to the DecisionPanel**
+- [x] **Step 1: Add a front selector to the DecisionPanel**
 
 In `scenes/ui/decision_panel.gd`, replace:
 
@@ -699,7 +699,7 @@ func _refresh_fronts() -> void:
 				break
 ```
 
-- [ ] **Step 2: Route the choice through Journey**
+- [x] **Step 2: Route the choice through Journey**
 
 In `scenes/journey/journey.gd`, replace:
 
@@ -718,7 +718,7 @@ func _on_decisions(pace: int, action: StringName, front: int) -> void:
 	GameState.set_front(front)
 ```
 
-- [ ] **Step 3: Update the smoke test's UI call**
+- [x] **Step 3: Update the smoke test's UI call**
 
 In `tools/smoke_test.gd`, inside `_check_ui_scenes()`, replace:
 
@@ -732,7 +732,7 @@ with:
 	journey._on_decisions(GameState.Pace.STEADY, &"none", 0)
 ```
 
-- [ ] **Step 4: Show front progress on the HUD**
+- [x] **Step 4: Show front progress on the HUD**
 
 The miles label has **two** writers — `_refresh()` and the `miles_changed`
 lambda in `_ready()`. `_recompute_miles()` emits `miles_changed` on every worked
@@ -782,7 +782,7 @@ func _fronts_done() -> int:
 	return n
 ```
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -795,7 +795,7 @@ godot --headless res://tools/layout_test.tscn
 `LAYOUT PASS` — the DecisionPanel is wider now. If it fails horizontally, STOP
 and report; do not shrink anything without saying so.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 **Stage explicit paths — never `git add -A`.** It has twice swept
 work-in-progress into an unrelated commit.
@@ -815,7 +815,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **Files:** `tools/balance_probe.gd`
 
-- [ ] **Step 1: Give every strategy a front policy**
+- [x] **Step 1: Give every strategy a front policy**
 
 In `tools/balance_probe.gd`, replace the `_run()` signature and its pace line:
 
@@ -869,7 +869,7 @@ func _bay_first_front() -> int:
 	return _lowest_open_front()
 ```
 
-- [ ] **Step 2: Add front-allocation strategies**
+- [x] **Step 2: Add front-allocation strategies**
 
 In `_ready()`, add after the existing `_run(...)` calls:
 
@@ -880,7 +880,7 @@ In `_ready()`, add after the existing `_run(...)` calls:
 		func() -> int: return _bay_first_front())
 ```
 
-- [ ] **Step 3: Run it and report**
+- [x] **Step 3: Run it and report**
 
 ```bash
 godot --headless res://tools/balance_probe.tscn
@@ -890,7 +890,7 @@ Expected: `BALANCE PROBE DONE` and eight `BALANCE` lines.
 **Do not tune anything.** Copy all eight lines into your report — the reviewer
 compares them against the spec's success criteria.
 
-- [ ] **Step 4: Full harness and commit**
+- [x] **Step 4: Full harness and commit**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
