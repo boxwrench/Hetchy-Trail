@@ -1,4 +1,4 @@
-# Hetchy Trail — Technical Design (v2)
+# Hetchy Trail — Technical Design (v3)
 
 > **Agents: this document describes the system as built.** If it contradicts
 > the code, the code is right and this file is a bug — report it rather than
@@ -21,9 +21,18 @@ Tone target: readable, modest, warm. Every system below serves the five meters
 and the mile counter. Nothing else is simulated.
 
 > **v2 changes** (from the mapping brief): Water Balance became Water
-> Readiness with a campaign-flag completion rule; the turn became one construction phase;
+> Readiness with a campaign-flag completion rule; the turn became one season;
 > the event system gained fixed historical cards alongside weighted draws; the
 > map became six sections that light up rather than a marker that crawls west.
+>
+> **v3 changes** (P1, 2026-07-27): the turn became one construction phase and
+> the seasonal calendar was removed; `turn` split from `phase`; bond issuance
+> was capped; card content moved to Markdown in `content/cards/`; card art moved
+> to filename convention.
+
+Both blockquotes above are a **record of what changed when**, not a description
+of the current system. They stay as written even when superseded — the sections
+below are the current state.
 
 ---
 
@@ -36,8 +45,10 @@ and the mile counter. Nothing else is simulated.
 2. **Custom Resources for data.** Events and route segments are `.tres` files
    extending [event_card.gd](../resources/event_card.gd),
    [event_choice.gd](../resources/event_choice.gd), and
-   [route_segment.gd](../resources/route_segment.gd). Narrative and history are
-   authored in the Inspector, not the scene tree.
+   [route_segment.gd](../resources/route_segment.gd). **Card `.tres` files are
+   generated, not hand-authored** — narrative and history live in Markdown in
+   `content/cards/`, and `tools/import_cards.gd` builds the resources from them.
+   Route segments are still authored directly.
 3. **Signal-driven UI.** The HUD and Map connect to GameState signals
    (`funds_changed`, `flag_granted`, …) and never mutate state directly.
 
@@ -63,9 +74,9 @@ mile counter — decide when the system works.
 
 | Phase | Miles | Historical geography | Years | Build modifier |
 |---|---|---|---|---|
-| 1. High Sierra Access and Dam | 0–12 | Hetch Hetchy Valley to Early Intake | 1914–1923 | 0.8, winter-sensitive |
-| 2. Mountain Tunnel and Moccasin | 12–33 | Early Intake to Priest and Moccasin | 1917–1925 | 0.7, winter-sensitive |
-| 3. Western Foothills | 33–49 | Moccasin to Oakdale Portal | 1925–1929 | 0.8, winter-sensitive |
+| 1. High Sierra Access and Dam | 0–12 | Hetch Hetchy Valley to Early Intake | 1914–1923 | 0.8, railroad-dependent |
+| 2. Mountain Tunnel and Moccasin | 12–33 | Early Intake to Priest and Moccasin | 1917–1925 | 0.7, railroad-dependent |
+| 3. Western Foothills | 33–49 | Moccasin to Oakdale Portal | 1925–1929 | 0.8, railroad-dependent |
 | 4. San Joaquin Valley | 49–97 | Oakdale Portal to Tesla Portal | 1931–1932 | 1.6 |
 | 5. Coast Range | 97–126 | Tesla Portal to Alameda Creek and Irvington | 1927–1934 | 0.45 |
 | 6. Bay and Peninsula | 126–167 | Irvington, Bay Crossing, Pulgas, Crystal Springs | 1922–1934 | 1.2 |
@@ -152,7 +163,7 @@ Each turn, Journey runs four phases:
 4. **CHECK** — end conditions, then the next turn.
 
 Card time effects: positive `time_delta_seasons` advances the calendar with
-payroll but no construction; negative deltas bank immediate bonus mileage
+phase overhead but no construction; negative deltas bank immediate bonus mileage
 (schedule gained).
 
 **Win:** `hetch_hetchy_water_delivered` (granted only by the Pulgas card,
@@ -256,7 +267,7 @@ is presentation data, not a system.
 - **[Core Variables]** `segment_name`, `phase_id`, `start_mile`, `end_mile`,
   `year_start/end`, `build_rate_modifier`, `winter_sensitive`,
   `completion_flag`, `blurb`.
-- **[Key Interactions]** GameState uses the modifier and winter flag for build
+- **[Key Interactions]** GameState uses the modifier and the railroad-dependence flag for build
   math; Map draws and lights segments.
 
 ### Scenes
@@ -304,7 +315,7 @@ Hetchy-Trail/
 │   ├── events/                    # 26 encounter cards (15 fixed spine, 6 texture, 5 hazards)
 │   └── segments/                  # the six divisions, 01–06
 ├── scenes/
-│   ├── main/  journey/  map/  ui/ # to be built in the editor (Section VI)
+│   ├── main/  journey/  map/  ui/ # journey + ui built; main and map are not
 ├── assets/
 │   ├── art/
 │   │   └── archival/CREDITS.md    # SFPUC images + mandatory credit rows
