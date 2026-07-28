@@ -67,6 +67,19 @@ const PUSHED_CREW_DRIFT := -1         # crew change per pushed phase
 const REST_CREW_DRIFT := 1            # crew change per rest phase
 const PHASE_OVERHEAD := 1             # funds spent every phase
 const PUMPING_SURCHARGE := 1          # extra per-phase cost if pumps were chosen
+## October 1934 is a binding milestone, not a cliff and not merely a score.
+## Passing it begins pressure that arrives at the EXISTING loss conditions on
+## its own -- no new loss condition, and no sixth resource.
+##
+## Grace first: canonical play lands on CALENDAR_PHASES exactly, so without a
+## buffer any slippage at all would punish a correctly-paced run.
+const OVERRUN_GRACE_PHASES := 2
+## Extra funds of phase overhead per year past HISTORICAL_FINISH_YEAR. Linear
+## and legible on purpose -- the player should be able to read the HUD and say
+## "this is costing me two funds a phase".
+const OVERRUN_FUNDS_PER_YEAR := 1
+## While overrunning, public support slips by one every this many phases.
+const OVERRUN_SUPPORT_INTERVAL := 3
 ## Fronts beyond the railhead build slower until the railroad runs. Kept mild:
 ## railroad_operational comes from a weighted texture card that may never be
 ## drawn, so this must be an incentive, not a trap.
@@ -302,6 +315,15 @@ func is_system_connected() -> bool:
 	return true
 
 
+## Years past October 1934, after the grace phases. Zero while on schedule.
+## The single source of overrun pressure: both the funds and support terms read
+## it, and the HUD displays it, so there is one definition to reason about.
+func overrun_years() -> int:
+	if phase <= CALENDAR_PHASES + OVERRUN_GRACE_PHASES:
+		return 0
+	return maxi(0, current_year() - HISTORICAL_FINISH_YEAR)
+
+
 ## Display year derived from the phase counter: 24 phases span 1914-1934.
 ## Overrunning the campaign keeps advancing the year toward FINAL_DEADLINE_YEAR.
 func current_year() -> int:
@@ -365,7 +387,14 @@ func _advance_calendar() -> void:
 	var overhead := PHASE_OVERHEAD
 	if has_flag(&"pumped_alternative_chosen"):
 		overhead += PUMPING_SURCHARGE
+	# Overrun pressure rides on the CALENDAR, not on turns. apply_choice() calls
+	# this once per phase of card-inflicted delay, so a card that costs two
+	# phases is priced exactly like two slow turns -- one code path, no drift.
+	var overrun := overrun_years()
+	overhead += overrun * OVERRUN_FUNDS_PER_YEAR
 	_set_funds(funds - overhead)
+	if overrun > 0 and phase % OVERRUN_SUPPORT_INTERVAL == 0:
+		_set_support(public_support - 1)
 	turn_advanced.emit(current_year(), phase)
 
 

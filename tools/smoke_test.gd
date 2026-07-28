@@ -8,6 +8,7 @@ var failures: Array[String] = []
 
 func _ready() -> void:
 	_check_phase_calendar()
+	_check_overrun_pressure()
 	_check_workfronts()
 	_check_economy()
 	_check_content_pipeline()
@@ -417,3 +418,53 @@ func _check_workfronts() -> void:
 	check(GameState.front_progress[0] <= 1.0, "front progress never exceeds 1.0")
 	GameState.new_game()
 	EventManager.reset()
+
+
+## October 1934 as a binding milestone: a grace period, then escalating funds
+## and support pressure, with 1940 still the hard backstop.
+func _check_overrun_pressure() -> void:
+	GameState.new_game()
+	check(GameState.overrun_years() == 0, "a fresh campaign is not overrunning")
+	# On schedule, including the grace phases, costs nothing extra.
+	GameState.phase = GameState.CALENDAR_PHASES
+	check(GameState.overrun_years() == 0, "landing on the target phase is not an overrun")
+	GameState.phase = GameState.CALENDAR_PHASES + GameState.OVERRUN_GRACE_PHASES
+	check(GameState.overrun_years() == 0, "the grace phases are not an overrun")
+	# Past the grace, pressure scales with years, not phases.
+	GameState.phase = GameState.CALENDAR_PHASES + GameState.OVERRUN_GRACE_PHASES + 1
+	check(GameState.overrun_years() >= 1, "pressure begins after the grace phases")
+	var early: int = GameState.overrun_years()
+	GameState.phase = GameState.CALENDAR_PHASES * 2
+	check(GameState.overrun_years() > early, "pressure escalates the longer the overrun runs")
+	# A turn while overrunning costs more funds than a turn on schedule.
+	GameState.new_game()
+	GameState.set_front(0)
+	GameState.work_pace = GameState.Pace.STEADY
+	var funds_before: int = GameState.funds
+	GameState.advance_turn()
+	var on_schedule_cost: int = funds_before - GameState.funds
+	GameState.new_game()
+	GameState.set_front(0)
+	GameState.work_pace = GameState.Pace.STEADY
+	GameState.phase = GameState.CALENDAR_PHASES + GameState.OVERRUN_GRACE_PHASES + 1
+	funds_before = GameState.funds
+	GameState.advance_turn()
+	var overrun_cost: int = funds_before - GameState.funds
+	check(overrun_cost > on_schedule_cost,
+		"a phase spent overrunning costs more than one on schedule (%d vs %d)"
+		% [overrun_cost, on_schedule_cost])
+	# Support drains while overrunning. Run enough phases to cross an interval.
+	GameState.new_game()
+	GameState.phase = GameState.CALENDAR_PHASES + GameState.OVERRUN_GRACE_PHASES + 1
+	var support_before: int = GameState.public_support
+	for i in GameState.OVERRUN_SUPPORT_INTERVAL * 2:
+		if GameState.game_over:
+			break
+		GameState.set_front(0)
+		GameState.work_pace = GameState.Pace.STEADY
+		GameState.advance_turn()
+	check(GameState.public_support < support_before,
+		"a sustained overrun costs public support")
+	GameState.new_game()
+	EventManager.reset()
+
