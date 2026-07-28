@@ -31,24 +31,36 @@ func _ready() -> void:
 		return
 	var files := dir.get_files()
 	files.sort()
-	var built := 0
+	# Two passes, deliberately. Writing as we go left orphan .tres files behind
+	# when a later check failed -- and an orphan silently breaks the deck (27
+	# cards instead of 26). Nothing is written until every card validates.
+	var pending: Dictionary = {}          # output path -> EventCard
 	for file in files:
 		if not file.ends_with(".md"):
 			continue
 		var card := _parse(CONTENT_DIR + "/" + file)
 		if card == null:
 			continue
-		var out := EVENTS_DIR + "/" + file.trim_suffix(".md") + ".tres"
-		var err := ResourceSaver.save(card, out)
-		if err != OK:
-			errors.append("%s: could not write %s (error %d)" % [file, out, err])
-			continue
-		built += 1
+		pending[EVENTS_DIR + "/" + file.trim_suffix(".md") + ".tres"] = card
 	# A required flag nobody grants is an unreachable card -- the exact silent
-	# failure this pipeline exists to prevent.
+	# failure this pipeline exists to prevent. Only checkable once every card
+	# has been parsed, which is why writing has to wait until here.
 	for flag in required_flags:
 		if not granted_flags.has(flag):
 			errors.append("%s requires flag '%s', which no card grants and GameState does not define" % [required_flags[flag], flag])
+	if not errors.is_empty():
+		for e in errors:
+			print("IMPORT FAIL: %s" % e)
+		print("IMPORT FAIL: %d problem(s); nothing was written" % errors.size())
+		get_tree().quit(1)
+		return
+	var built := 0
+	for out in pending:
+		var err := ResourceSaver.save(pending[out], out)
+		if err != OK:
+			errors.append("could not write %s (error %d)" % [out, err])
+			continue
+		built += 1
 	if errors.is_empty():
 		print("IMPORT OK: built %d cards into %s" % [built, EVENTS_DIR])
 		get_tree().quit(0)
