@@ -861,10 +861,18 @@ func _lowest_open_front() -> int:
 
 
 ## Bay and Peninsula first -- the Spring Valley gambit. Historically real, and
-## the sharpest test of whether front choice matters. Same pending-cards rule:
-## front 6 must be worked until its cards are drawn, not until its bar fills.
+## the sharpest test of whether front choice matters.
+##
+## Pinned on PROGRESS ONLY -- deliberately unlike _lowest_open_front(), which
+## also pins on pending cards. Front 6's cards are flag-gated behind fronts 4
+## and 5 (card 19 needs coast_range_committed; card 21 needs all seven other
+## system flags), so front_has_pending_fixed(5) is permanently true here.
+## Pinning on it livelocks the strategy onto front 6 for the entire run: 34.0
+## turns, unfinished, every seed -- a probe that reports a verdict on front
+## allocation while never allocating. Front 6's cards are collected later by
+## _lowest_open_front() once the earlier fronts have granted their flags.
 func _bay_first_front() -> int:
-	if GameState.front_progress[5] < 1.0 or EventManager.front_has_pending_fixed(5):
+	if GameState.front_progress[5] < 1.0:
 		return 5
 	return _lowest_open_front()
 ```
@@ -933,7 +941,13 @@ lowering the bar.
 
 ## Definition of done
 
-- [ ] All three suites green.
-- [ ] `grep -rn "current_segment\|_build_miles" --include=*.gd .` is empty.
-- [ ] `balance_probe` meets the success criteria.
-- [ ] `data/events` and `data/segments` are untouched by the whole batch.
+- [x] All three suites green. `SMOKE PASS (347)` / `SIM PASS matched_history,
+  22 turns` / `LAYOUT PASS (265)`.
+- [x] `grep -rn "current_segment\|_build_miles" --include=*.gd .` is empty.
+- [ ] `balance_probe` meets the success criteria. **Three of four met.** Pushing
+  strategies reach 6/12 and 5/12 (criterion 1, second half — first time ever);
+  `matched_history` holds; never-pushing finishes. **Criterion 1's first half
+  fails: the best strategy wins 12/12, not 8–11.** Two-card chaining shortened
+  canonical play from 24 turns to 22, and the overhead and hazard exposure it
+  removed is what steady play used to lose to. See Session 3 notes.
+- [x] `data/events` and `data/segments` are untouched by the whole batch.

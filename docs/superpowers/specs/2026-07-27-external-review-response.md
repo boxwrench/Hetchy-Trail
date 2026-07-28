@@ -33,15 +33,38 @@ The review proposes as the minimum fix: *"let footage thresholds unlock
 milestones and allow multiple crossed milestones to queue during a productive
 phase."*
 
-**The queueing half was tested and does nothing.** Allowing two fixed cards per
-turn moved `push while crew>=6` from 1/12 wins to 0/12. The chain gates
-*availability*, not the one-per-turn rule — card 05 is not available until card
-04 resolves, so there is never a second card to queue.
+**Snapshot queueing was tested and does nothing.** Allowing two fixed cards per
+turn *from one availability snapshot* moved `push while crew>=6` from 1/12 wins
+to 0/12. The chain gates *availability*, not the one-per-turn rule — card 05 is
+not available until card 04 resolves, so the snapshot never holds a second card
+to queue.
 
 **The load-bearing half is footage thresholds replacing flag-chain
-dependencies.** Implementing the queueing alone would look like progress and
-deliver none. Recorded because a future agent reading the review without this
-note would build the ineffective half.
+dependencies.** Implementing snapshot queueing alone would look like progress
+and deliver none. Recorded because a future agent reading the review without
+this note would build the ineffective half.
+
+### Update — Batch B Session 3: a different mechanism does work
+
+The finding above is about **snapshot queueing** and still stands. It is not a
+verdict on two cards per turn as such, and the distinction is exactly where the
+mechanism lives:
+
+- **Snapshot queueing** reads `_available_cards()` once, before anything
+  resolves, and takes two. The second card's `required_flags` are not satisfied
+  yet, so there is nothing to take. Ineffective, as measured.
+- **Post-resolution chaining** resolves the first card, then *re-evaluates*
+  availability on the same front. The flag now exists, so the next card is
+  genuinely unlocked. This is what `EventManager.try_draw_followup()` does.
+
+Under workfronts the second condition is reachable, because progress thresholds
+and flag grants are separate gates: a fully worked front has met every
+threshold and is waiting only on flags its own cards supply.
+
+Measured effect: pushing strategies went from **0/12** to **5–6/12**, the first
+time pace has converted into schedule. `smoke_test._check_card_chaining()`
+guards the distinction directly — it asserts the snapshot offers exactly one
+fixed card while chaining yields two.
 
 ## Accepted as the central direction: parallel construction fronts
 
