@@ -36,5 +36,5 @@ historical_fact = "Pulgas Tunnel was begun in 1922 and carried Spring Valley wat
 choices = Array[ExtResource("2")]([SubResource("Resource_184lv"), SubResource("Resource_6s1qv")])
 is_fixed = true
 required_flags = Array[StringName]([&"dam_complete", &"mountain_tunnel_complete", &"foothill_tunnel_complete", &"san_joaquin_pipeline_complete", &"coast_range_tunnel_complete", &"alameda_siphon_complete", &"bay_crossing_complete"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, sections 5-7."
+historical_source_note = "SFPUC 2005 history, \"Hetch Hetchy Water Reaches San Francisco\", p. 42 [SFPUC-2005]. Covers both October 1934 dates. One detail is not in the cited pages; see docs/SOURCES.md, open items. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, sections 5-7."
 assumption_note = "Visual note for the completion scene: depict the temporary ceremonial structure built for the 1934 first-water celebration, not the permanent Pulgas Water Temple, which was completed in 1938. The brief's 'Water Supply +5' is applied as readiness converted to delivered water via the hetch_hetchy_water_delivered flag, which is the win condition."

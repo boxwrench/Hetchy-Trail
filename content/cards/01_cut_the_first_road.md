@@ -25,7 +25,7 @@ Road work began around Hog Ranch in 1914. A sawmill at Canyon Ranch began operat
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Early Intake Powerhouse and Lake Eleanor", p. 32 [SFPUC-2005]. Confirms the sawmill and its move to Hog Ranch. One detail is not in the cited pages; see docs/SOURCES.md, open items. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

@@ -25,7 +25,7 @@ Work required a roughly 1,000-foot diversion tunnel and deep excavation through 
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Dam & Tunnel Construction Starts in the High Sierra", p. 34 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

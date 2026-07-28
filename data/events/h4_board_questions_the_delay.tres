@@ -23,5 +23,5 @@ event_description = "An idle season draws hard questions from the city's oversee
 historical_fact = "The project ran for two decades under close political and financial scrutiny; long stretches without visible progress fed skepticism about cost and schedule at City Hall and in the press."
 choices = Array[ExtResource("2")]([SubResource("Resource_12prr")])
 hazard_kind = &"impatience"
-historical_source_note = "SFPUC historical materials; the project's political and financing history."
+historical_source_note = "Composite claim: recurring conditions across the project's two decades, not a single documented incident. No single-source citation - see docs/SOURCES.md, \"Composite and general-practice claims\". Original basis: the project's political and financing history."
 assumption_note = "A representative expression of political impatience, not a specific documented meeting."

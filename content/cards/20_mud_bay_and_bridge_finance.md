@@ -25,7 +25,7 @@ When city funds were exhausted, the Spring Valley Water Company advanced financi
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Coast Range Tunnel", p. 40 [SFPUC-2005]. Also "Bay Crossing", p. 41. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

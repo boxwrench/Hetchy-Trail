@@ -28,5 +28,5 @@ historical_fact = "Work required a roughly 1,000-foot diversion tunnel and deep 
 choices = Array[ExtResource("2")]([SubResource("Resource_8w30q")])
 is_fixed = true
 required_flags = Array[StringName]([&"high_sierra_access_complete", &"construction_power_available"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Dam & Tunnel Construction Starts in the High Sierra\", p. 34 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "There was no cheap alternative to full excavation, so this card offers a single choice. Requiring construction power first mirrors Early Intake electricity reaching the dam site before major dam construction began in 1919."

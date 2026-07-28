@@ -25,7 +25,7 @@ The project ran for two decades under close political and financial scrutiny; lo
 
 ## Source note
 
-SFPUC historical materials; the project's political and financing history.
+Composite claim: recurring conditions across the project's two decades, not a single documented incident. No single-source citation - see docs/SOURCES.md, "Composite and general-practice claims". Original basis: the project's political and financing history.
 
 ## Assumption note
 

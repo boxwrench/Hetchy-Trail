@@ -28,5 +28,5 @@ historical_fact = "The first San Joaquin pipeline extended approximately 47.5 mi
 choices = Array[ExtResource("2")]([SubResource("Resource_23a5y")])
 is_fixed = true
 required_flags = Array[StringName]([&"row_acquired"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"San Joaquin Pipelines\", p. 38 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "Single choice: the distributed-crew method is how the pipeline was actually built, and no alternative is documented in the brief."

@@ -36,5 +36,5 @@ historical_fact = "Methane was encountered during Coast Range Tunnel constructio
 choices = Array[ExtResource("2")]([SubResource("Resource_w4wnt"), SubResource("Resource_gukw7")])
 is_fixed = true
 required_flags = Array[StringName]([&"coast_range_committed"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Disastrous Explosion - 12 Lives Lost\", p. 39 [SFPUC-2005]. Confirms twelve lives lost. One detail is not in the cited pages; see docs/SOURCES.md, open items. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "Per the brief, this event always occurs and cannot be prevented by play. The immediate losses (Crew -3, Time +2, Support -1) are baked into both choices; the full stand-down partially offsets them (Funds -1, Crew +1, Support +1), matching the brief's structure."

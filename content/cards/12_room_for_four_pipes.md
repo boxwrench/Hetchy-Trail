@@ -25,7 +25,7 @@ The city obtained a right-of-way approximately 100 feet wide, providing room for
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "San Joaquin Pipelines", p. 38 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

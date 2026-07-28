@@ -25,7 +25,7 @@ City crews and contractors competed for tunneling progress. A heading advanced 8
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Foothill Tunnel", p. 37 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

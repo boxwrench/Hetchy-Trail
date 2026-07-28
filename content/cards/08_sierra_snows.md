@@ -25,7 +25,7 @@ Mountain roads to the project were regularly blocked by snow. The Hetch Hetchy R
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Early Intake Powerhouse and Lake Eleanor", p. 32 [SFPUC-2005]. Records that motor roads were snowbound. Also NPS [NPS-YOSE] on year-round rail movement. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

@@ -25,7 +25,7 @@ Pulgas Tunnel was begun in 1922 and carried Spring Valley water before the full 
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, sections 5-7.
+SFPUC 2005 history, "Hetch Hetchy Water Reaches San Francisco", p. 42 [SFPUC-2005]. Covers both October 1934 dates. One detail is not in the cited pages; see docs/SOURCES.md, open items. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, sections 5-7.
 
 ## Assumption note
 

@@ -25,7 +25,7 @@ Priest Reservoir received Mountain Tunnel water. Rattlesnake Creek was diverted 
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Mountain Tunnel", p. 35, and "Construction Begins in Sierra Foothills", p. 36 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

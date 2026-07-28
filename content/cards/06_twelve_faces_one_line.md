@@ -25,7 +25,7 @@ Mountain Tunnel was excavated from 12 faces. Access included the 786-foot Second
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Mountain Tunnel", p. 35 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

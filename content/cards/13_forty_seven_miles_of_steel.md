@@ -25,7 +25,7 @@ The first San Joaquin pipeline extended approximately 47.5 miles between Oakdale
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "San Joaquin Pipelines", p. 38 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

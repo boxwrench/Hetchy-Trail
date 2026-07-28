@@ -32,5 +32,5 @@ historical_fact = "The city constructed a 68-mile standard-gauge railroad from H
 choices = Array[ExtResource("2")]([SubResource("Resource_x3d7r"), SubResource("Resource_cgbcp")])
 weight = 3.0
 required_flags = Array[StringName]([&"high_sierra_access_complete"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Design Decisions / Groveland Headquarters\", p. 31 [SFPUC-2005]. Also NPS, \"Encroaching Civilization - Dams and Trains\" [NPS-YOSE]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "Historically the railroad was built; declining it is a gameplay counterfactual. Without the railroad_operational flag, winter build rates in Sierra segments collapse and the Sierra Snows card stays in the deck."

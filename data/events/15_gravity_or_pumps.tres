@@ -35,5 +35,5 @@ event_description = "Make the project's defining long-term decision. The gravity
 historical_fact = "Construction of the 28.5-mile Coast Range Tunnel was delayed until 1927. A pumped pipeline was discussed as an alternative, but the gravity tunnel offered greater capacity without permanent pumping costs."
 choices = Array[ExtResource("2")]([SubResource("Resource_vkcna"), SubResource("Resource_22vrm")])
 is_fixed = true
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"San Joaquin Pipelines\", p. 38 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "The pumped alternative's recurring cost is implemented as an extra funds point every winter (the pumped_alternative_chosen flag), approximating the brief's 'Funds -1 during every later operating chapter.'"

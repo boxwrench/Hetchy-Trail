@@ -35,5 +35,5 @@ event_description = "City funds are exhausted. Accept interim financing to retai
 historical_fact = "When city funds were exhausted, the Spring Valley Water Company advanced financing that helped prevent a prolonged shutdown and layoffs. Bay Crossing Pipeline No. 1 was placed in a trench through bay mud, reaching approximately 75 feet below the water surface in places. It was completed in 1925 and immediately used for local water transfers."
 choices = Array[ExtResource("2")]([SubResource("Resource_tsnw7"), SubResource("Resource_kbk8s")])
 is_fixed = true
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Coast Range Tunnel\", p. 40 [SFPUC-2005]. Also \"Bay Crossing\", p. 41. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "Historically the Bay Crossing was finished in 1925, years before the Coast Range Tunnel - construction was simultaneous, not sequential. The game's mile-order compresses this; the card text and years preserve the real chronology. The brief's separate finance and construction effects are combined into the accept choice; refusing the advance is a gameplay counterfactual."

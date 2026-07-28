@@ -25,7 +25,7 @@ Construction of the 28.5-mile Coast Range Tunnel was delayed until 1927. A pumpe
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "San Joaquin Pipelines", p. 38 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

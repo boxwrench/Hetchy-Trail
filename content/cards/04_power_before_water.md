@@ -25,7 +25,7 @@ Construction of Early Intake Powerhouse began in 1917. Generation began in May 1
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Early Intake Powerhouse", p. 33 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

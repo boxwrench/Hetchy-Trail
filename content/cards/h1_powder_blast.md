@@ -25,7 +25,7 @@ Drill-and-blast tunneling was the most dangerous work on the aqueduct. Premature
 
 ## Source note
 
-SFPUC historical materials; the project's general construction-safety record.
+Composite claim: recurring conditions across the project's two decades, not a single documented incident. No single-source citation - see docs/SOURCES.md, "Composite and general-practice claims". Original basis: the project's general construction-safety record.
 
 ## Assumption note
 

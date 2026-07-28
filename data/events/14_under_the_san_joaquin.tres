@@ -35,5 +35,5 @@ historical_fact = "Portions of the pipelines descended below sea level and passe
 choices = Array[ExtResource("2")]([SubResource("Resource_601rb"), SubResource("Resource_446ox")])
 weight = 2.0
 required_flags = Array[StringName]([&"row_acquired"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"San Joaquin Pipelines\", p. 38 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "The brief expresses skipping the favorable season as 'Crew -2 and Time +1' relative effects; the rushed choice here trades the season of waiting for the crew cost."

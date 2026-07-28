@@ -25,7 +25,7 @@ The Coast Range system connected to Irvington through a multiple-pipe inverted s
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "San Joaquin Pipelines", p. 38 [SFPUC-2005]. Describes the multiple-pipe inverted siphon across Alameda Creek. One detail is not in the cited pages; see docs/SOURCES.md, open items. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

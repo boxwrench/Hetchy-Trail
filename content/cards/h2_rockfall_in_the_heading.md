@@ -25,7 +25,7 @@ Falling rock in the tunnel headings was a constant threat; crews timbered and la
 
 ## Source note
 
-SFPUC historical materials; general tunnel-construction practice of the era.
+Composite claim: recurring conditions across the project's two decades, not a single documented incident. No single-source citation - see docs/SOURCES.md, "Composite and general-practice claims". Original basis: general tunnel-construction practice of the era.
 
 ## Assumption note
 

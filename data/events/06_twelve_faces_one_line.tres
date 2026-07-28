@@ -38,5 +38,5 @@ historical_fact = "Mountain Tunnel was excavated from 12 faces. Access included 
 choices = Array[ExtResource("2")]([SubResource("Resource_yv0fo"), SubResource("Resource_dv2jw")])
 is_fixed = true
 required_flags = Array[StringName]([&"construction_power_available"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Mountain Tunnel\", p. 35 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "The brief lists Water Readiness +2 only for the all-headings choice; both choices grant it here because the tunnel is completed either way, only slower."

@@ -34,5 +34,5 @@ event_description = "Heavy work cannot begin until the city builds mountain acce
 historical_fact = "Road work began around Hog Ranch in 1914. A sawmill at Canyon Ranch began operating in July 1915, approximately 4.5 miles from the dam site. The sawmill and its later replacement at Hog Ranch produced millions of board feet of construction lumber."
 choices = Array[ExtResource("2")]([SubResource("Resource_pnwcp"), SubResource("Resource_vvsqr")])
 is_fixed = true
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Early Intake Powerhouse and Lake Eleanor\", p. 32 [SFPUC-2005]. Confirms the sawmill and its move to Hog Ranch. One detail is not in the cited pages; see docs/SOURCES.md, open items. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "Resource values are game-balancing numbers, not historical measurements. The brief's 'Time -1 on two later High Sierra cards' is consolidated into a single immediate time gain."

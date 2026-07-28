@@ -25,7 +25,7 @@ San Francisco residents were taken on project excursions, helping residents see 
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Early Intake Powerhouse and Lake Eleanor", p. 32 [SFPUC-2005]. Records that excursion trains ran to build support for the bond issues, and that passengers paid 7 1/2 cents per mile. See docs/SOURCES.md, open item 5. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

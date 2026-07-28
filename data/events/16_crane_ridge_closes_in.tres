@@ -35,5 +35,5 @@ historical_fact = "At Crane Ridge, approximately 2,500 feet below the surface, s
 choices = Array[ExtResource("2")]([SubResource("Resource_diikm"), SubResource("Resource_q0032")])
 weight = 2.0
 required_flags = Array[StringName]([&"coast_range_committed"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Coast Range Tunnel\", p. 39 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "Both choices grant the same readiness because the section was ultimately completed either way; the difference is time and crew cost."

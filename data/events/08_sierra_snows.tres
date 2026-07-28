@@ -24,5 +24,5 @@ historical_fact = "Mountain roads to the project were regularly blocked by snow.
 choices = Array[ExtResource("2")]([SubResource("Resource_j6lau")])
 weight = 3.0
 blocked_by_flags = Array[StringName]([&"railroad_operational"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Early Intake Powerhouse and Lake Eleanor\", p. 32 [SFPUC-2005]. Records that motor roads were snowbound. Also NPS [NPS-YOSE] on year-round rail movement. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "This card is gameplay-derived rather than a specific documented incident: it exists so the railroad decision has a visible consequence. The underlying condition (snowbound roads, railroad as the winter lifeline) is historical."

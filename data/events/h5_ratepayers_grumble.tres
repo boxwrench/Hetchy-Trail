@@ -22,5 +22,5 @@ event_description = "With no water flowing yet, the public wonders where the yea
 historical_fact = "San Franciscans paid for the project for twenty years before a drop of Hetch Hetchy water arrived, and public patience was not unlimited during the long build."
 choices = Array[ExtResource("2")]([SubResource("Resource_6mv35")])
 hazard_kind = &"impatience"
-historical_source_note = "SFPUC historical materials; the project's public-financing history."
+historical_source_note = "Composite claim: recurring conditions across the project's two decades, not a single documented incident. No single-source citation - see docs/SOURCES.md, \"Composite and general-practice claims\". Original basis: the project's public-financing history."
 assumption_note = "A representative expression of public impatience, not a specific documented episode."

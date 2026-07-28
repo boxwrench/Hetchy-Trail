@@ -25,7 +25,7 @@ Methane was encountered during Coast Range Tunnel construction. On July 17, 1931
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Disastrous Explosion - 12 Lives Lost", p. 39 [SFPUC-2005]. Confirms twelve lives lost. One detail is not in the cited pages; see docs/SOURCES.md, open items. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

@@ -28,5 +28,5 @@ historical_fact = "Construction of Early Intake Powerhouse began in 1917. Genera
 choices = Array[ExtResource("2")]([SubResource("Resource_ak2co")])
 is_fixed = true
 required_flags = Array[StringName]([&"high_sierra_access_complete"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"Early Intake Powerhouse\", p. 33 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "The brief's 'then Time -2 across Mountain Tunnel cards' is consolidated into the Mountain Tunnel card's canonical choice. Construction power is a prerequisite flag for tunnel and dam work."

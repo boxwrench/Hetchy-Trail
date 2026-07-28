@@ -25,7 +25,7 @@ At Crane Ridge, approximately 2,500 feet below the surface, swelling ground sque
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Coast Range Tunnel", p. 39 [SFPUC-2005]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

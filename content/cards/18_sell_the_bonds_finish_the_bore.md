@@ -25,7 +25,7 @@ Financial shortages temporarily suspended portions of the tunnel work. A 1932 bo
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Coast Range Tunnel", p. 40 [SFPUC-2005]. The $6.5 million 1932 issue is listed among the seven Hetch Hetchy bond issues in "Hetch Hetchy Water Reaches San Francisco", p. 42. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 

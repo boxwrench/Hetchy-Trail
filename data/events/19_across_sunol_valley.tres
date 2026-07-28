@@ -27,5 +27,5 @@ historical_fact = "The Coast Range system connected to Irvington through a multi
 choices = Array[ExtResource("2")]([SubResource("Resource_ymiei")])
 is_fixed = true
 required_flags = Array[StringName]([&"coast_range_committed"])
-historical_source_note = "SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
+historical_source_note = "SFPUC 2005 history, \"San Joaquin Pipelines\", p. 38 [SFPUC-2005]. Describes the multiple-pipe inverted siphon across Alameda Creek. One detail is not in the cited pages; see docs/SOURCES.md, open items. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5."
 assumption_note = "The brief's timing nuance (finishing before the tunnel frees a crew for reassignment) is noted here but not mechanized, to keep the turn loop simple."

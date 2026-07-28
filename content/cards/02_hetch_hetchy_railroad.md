@@ -25,7 +25,7 @@ The city constructed a 68-mile standard-gauge railroad from Hetch Hetchy Junctio
 
 ## Source note
 
-SFPUC historical materials, summarized in docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
+SFPUC 2005 history, "Design Decisions / Groveland Headquarters", p. 31 [SFPUC-2005]. Also NPS, "Encroaching Civilization - Dams and Trains" [NPS-YOSE]. Design mapping: docs/Hetchy Trail Historical Game Mapping.pdf, section 5.
 
 ## Assumption note
 
