@@ -25,6 +25,17 @@ campaign broken up by Oregon-Trail-style minigames, playable in one sitting.
    `docs/Hetchy Trail Historical Game Mapping.pdf` for the historical research
    the campaign data is built from.
 
+## Licence
+
+Code is [MIT](LICENSE) — free use with attribution.
+
+**The MIT grant covers the software only.** SFPUC archival photographs in
+`assets/art/archival/` are third-party materials with their own rights, recorded
+per file in [CREDITS.md](assets/art/archival/CREDITS.md); they are not
+redistributable under MIT. Any font, audio, or artwork added later carries its
+own licence alongside it. See the scope note at the bottom of
+[LICENSE](LICENSE).
+
 ## Layout
 
 - `autoload/` - GameState and EventManager singletons (all game logic)
