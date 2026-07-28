@@ -33,7 +33,9 @@ func _ready() -> void:
 	GameState.readiness_changed.connect(_set_water)
 	GameState.flag_granted.connect(_on_flag)
 	GameState.miles_changed.connect(func(_v: float): _set_miles())
-	GameState.turn_advanced.connect(func(y: int, _p: int): labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, y])
+	GameState.turn_advanced.connect(func(y: int, _p: int):
+		labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, y]
+		_update_cost_cue())
 	_refresh()
 
 
@@ -72,12 +74,20 @@ func _on_flag(_f: StringName) -> void:
 	_update_cost_cue()
 
 
+## Ongoing drains, in one line. Both are per-phase costs the player cannot see
+## in any single number, so surfacing them is what makes them a lesson rather
+## than an unexplained decline.
 func _update_cost_cue() -> void:
+	var cues: Array[String] = []
 	if GameState.has_flag(&"pumped_alternative_chosen"):
-		cost_label.text = "Pumping: -%d funds every phase" % GameState.PUMPING_SURCHARGE
-		cost_label.visible = true
-	else:
-		cost_label.visible = false
+		cues.append("Pumping: -%d funds every phase" % GameState.PUMPING_SURCHARGE)
+	var overrun: int = GameState.overrun_years()
+	if overrun > 0:
+		cues.append("Behind schedule %d year%s: -%d funds every phase, support slipping"
+			% [overrun, "" if overrun == 1 else "s",
+			overrun * GameState.OVERRUN_FUNDS_PER_YEAR])
+	cost_label.text = "  ·  ".join(cues)
+	cost_label.visible = not cues.is_empty()
 
 
 func _warn(label: Label, on: bool) -> void:
