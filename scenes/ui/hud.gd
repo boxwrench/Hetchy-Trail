@@ -32,7 +32,7 @@ func _ready() -> void:
 	GameState.crew_changed.connect(_set_crew)
 	GameState.readiness_changed.connect(_set_water)
 	GameState.flag_granted.connect(_on_flag)
-	GameState.miles_changed.connect(func(v: float): labels["miles"].text = "Mile %.1f of 167" % v)
+	GameState.miles_changed.connect(func(_v: float): _set_miles())
 	GameState.turn_advanced.connect(func(y: int, _p: int): labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, y])
 	_refresh()
 
@@ -41,7 +41,7 @@ func _refresh() -> void:
 	_set_funds(GameState.funds)
 	_set_support(GameState.public_support)
 	_set_crew(GameState.crew_wellbeing)
-	labels["miles"].text = "Mile %.1f of 167" % GameState.miles_built
+	_set_miles()
 	labels["date"].text = "Turn %d  ·  %d" % [GameState.turn, GameState.current_year()]
 	_set_water(GameState.water_readiness)
 	_update_cost_cue()
@@ -85,3 +85,20 @@ func _warn(label: Label, on: bool) -> void:
 		label.add_theme_color_override("font_color", WARN_COLOR)
 	else:
 		label.remove_theme_color_override("font_color")
+
+
+## The label's only writer. A front counts as done when its progress is full AND
+## it owes no fixed cards -- the same test the DecisionPanel uses for
+## "(complete)", so the HUD cannot report 6/6 while a card is still pending.
+func _set_miles() -> void:
+	labels["miles"].text = "Mile %.1f of 167  ·  %d/%d fronts done" % [
+		GameState.miles_built, _fronts_done(), GameState.front_count()]
+
+
+func _fronts_done() -> int:
+	var n := 0
+	for i in GameState.front_count():
+		if GameState.front_progress[i] >= 1.0 and not EventManager.front_has_pending_fixed(i):
+			n += 1
+	return n
+

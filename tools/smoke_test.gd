@@ -139,7 +139,7 @@ func _check_ui_scenes() -> void:
 	check(journey.hud != null and journey.hud.labels.size() == 6, "Journey builds HUD with 6 labels")
 	check(journey.decision_panel.end_button != null, "Journey builds DecisionPanel")
 	check(not journey.event_panel.visible, "EventPanel starts hidden")
-	journey._on_decisions(GameState.Pace.STEADY, &"none")
+	journey._on_decisions(GameState.Pace.STEADY, &"none", 0)
 	check(GameState.miles_built > 0.0, "one turn advances the construction front")
 	check(journey.event_panel.visible, "turn 1 shows a card")
 	journey.event_panel._on_choice(0)

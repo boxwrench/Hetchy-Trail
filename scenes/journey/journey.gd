@@ -34,9 +34,10 @@ func _begin_decide() -> void:
 	decision_panel.set_enabled(true)
 
 
-func _on_decisions(pace: int, action: StringName) -> void:
+func _on_decisions(pace: int, action: StringName, front: int) -> void:
 	decision_panel.set_enabled(false)
 	GameState.work_pace = pace
+	GameState.set_front(front)
 	if action != &"none":
 		GameState.take_action(action)
 	GameState.advance_turn()
