@@ -19,12 +19,19 @@ func _ready() -> void:
 	await get_tree().process_frame
 	var vp := get_viewport().get_visible_rect().size
 	_check_on_screen("DecisionPanel bar", _first_control_child(journey.decision_panel), vp)
-	journey.event_panel.show_card(EventManager.deck[0])
-	await get_tree().process_frame
-	_check_on_screen("EventPanel body", _first_control_child(journey.event_panel), vp)
-	journey.event_panel._on_choice(0)
-	await get_tree().process_frame
-	_check_on_screen("Consequence beat", _first_control_child(journey.event_panel), vp)
+	# Every card, in both states. The consequence beat is the tallest the panel
+	# ever gets -- outcome text, deltas, historical fact and assumption note all
+	# at once -- and the worst case is whichever card has the longest combined
+	# prose, which is not card 01. Testing one card would not find it.
+	for card in EventManager.deck:
+		journey.event_panel.show_card(card)
+		await get_tree().process_frame
+		_check_on_screen("EventPanel body [%s]" % card.event_id,
+			_first_control_child(journey.event_panel), vp)
+		journey.event_panel._on_choice(0)
+		await get_tree().process_frame
+		_check_on_screen("Consequence beat [%s]" % card.event_id,
+			_first_control_child(journey.event_panel), vp)
 	if failures.is_empty():
 		print("LAYOUT PASS (%d checks)" % passed)
 	else:
