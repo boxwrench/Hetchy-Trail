@@ -24,11 +24,15 @@ func _ready() -> void:
 		return GameState.Pace.PUSHED if t < 4 else GameState.Pace.STEADY)
 	_run("rest when crew<=3", func(_t: int) -> int:
 		return GameState.Pace.REST if GameState.crew_wellbeing <= 3 else GameState.Pace.STEADY)
+	_run("bay first, steady", func(_t: int) -> int: return GameState.Pace.STEADY,
+		func() -> int: return _bay_first_front())
+	_run("bay first, push", func(_t: int) -> int: return GameState.Pace.PUSHED,
+		func() -> int: return _bay_first_front())
 	print("BALANCE PROBE DONE")
 	get_tree().quit(0)
 
 
-func _run(label: String, picker: Callable) -> void:
+func _run(label: String, picker: Callable, front_picker: Callable = Callable()) -> void:
 	var tally := {"wins": 0, "turns": 0, "hazards": 0, "ahead": 0}
 	var modes := {}
 	for s in SEEDS:
@@ -52,6 +56,10 @@ func _run(label: String, picker: Callable) -> void:
 			GameState.work_pace = picker.call(turns)
 			turns += 1
 			_take_sensible_action()
+			if front_picker.is_valid():
+				GameState.set_front(front_picker.call())
+			else:
+				GameState.set_front(_lowest_open_front())
 			GameState.advance_turn()
 			if GameState.game_over:
 				break
@@ -84,3 +92,32 @@ func _take_sensible_action() -> void:
 		GameState.take_action(&"improve_camp")
 	elif GameState.public_support <= 3 and GameState.can_take_action(&"outreach"):
 		GameState.take_action(&"outreach")
+
+
+## Historical order: the lowest-numbered open front that is either unfinished or
+## still owes fixed cards. This MUST match sim_test._pick_front() exactly -- it
+## is the baseline every other strategy is measured against, and if the two
+## differ the probe and the sim are playing different games.
+##
+## The pending-cards clause is load-bearing, not defensive. Only one fixed card
+## is drawn per turn, so a front can reach 100%% still owing its completion card.
+## Abandoning it there strands that card forever, the campaign can never satisfy
+## SYSTEM_FLAGS, and every strategy reports 0/12 -- a probe that measures nothing
+## while looking like a verdict on the design.
+func _lowest_open_front() -> int:
+	for i in GameState.front_count():
+		if not GameState.front_is_open(i):
+			continue
+		if GameState.front_progress[i] < 1.0 or EventManager.front_has_pending_fixed(i):
+			return i
+	return 0
+
+
+## Bay and Peninsula first -- the Spring Valley gambit. Historically real, and
+## the sharpest test of whether front choice matters. Same pending-cards rule:
+## front 6 must be worked until its cards are drawn, not until its bar fills.
+func _bay_first_front() -> int:
+	if GameState.front_progress[5] < 1.0 or EventManager.front_has_pending_fixed(5):
+		return 5
+	return _lowest_open_front()
+
