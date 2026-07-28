@@ -58,9 +58,28 @@ checking it.** Plans are written for this: every step is explicit, every
 verification is a command with an expected result, and no step requires a design
 judgment call.
 
-**Current plan:** [Batch B — Workfront Progression](superpowers/plans/2026-07-27-batch-b-workfronts.md)
-— Task 1 (the workfront model) is complete and committed; Session 2 is Tasks 2
-and 3. ([P1 — Foundations](superpowers/plans/2026-07-27-p1-foundations.md) and
+[Overrun Pressure](superpowers/plans/2026-07-28-overrun-pressure.md) is
+implemented and committed — October 1934 now costs funds and public support
+once passed. Design:
+[overrun pressure spec](superpowers/specs/2026-07-28-overrun-pressure-design.md).
+
+**It is not yet validated, and must not be tuned until it is.** Review
+measurement found the mechanism is correct but unreached: pressure cannot begin
+before phase 34, because `current_year()` does not return 1935 until then, and
+no strategy the balance probe plays exceeds phase 32. The probe output at the
+post-pressure commit is byte-identical to the pre-pressure commit across all ten
+rows. Only the degenerate all-rest baseline ever crosses, and it is already
+losing when it does.
+
+This is a reachability question, not a tuning question. The open question is
+whether a rational, resource-safe policy can finish the project after phase 34
+at all. Until that is measured, changing any `OVERRUN_*` constant would be
+fitting a number to an instrument that cannot see it.
+
+[Batch B — Workfront Progression](superpowers/plans/2026-07-27-batch-b-workfronts.md)
+is implemented and committed, meeting three of its four success criteria; the
+best-strategy band still fails and its ledger records why.
+([P1 — Foundations](superpowers/plans/2026-07-27-p1-foundations.md) and
 [P1.5 — Review Fixes](superpowers/plans/2026-07-27-p1.5-review-fixes.md) are
 both complete.)
 
@@ -143,7 +162,8 @@ to `docs/` whenever a field, method, or system disappears.
 | M1.5 | Decision weight | Pace-risk, hazard deck, risk telegraph, HUD warnings | Harness + sim hazard probes | **Done** |
 | P1 | Foundations | 24-turn restructure, economy fix, content pipeline, art decoupling | Harness + exploit probe + historian can edit a card | **Done** |
 | P1.5 | Review fixes | End-screen crash + UI end test, design-doc rewrite, reveal-after-choice, validator hardening | Harness + four broken cards rejected by name | **Done** |
-| B | Progression model | Parallel workfronts on paper; Pareto-dominance probe over card choices | A model that makes pace a decision | **In progress** — Task 1 done; Tasks 2–3 next |
+| B | Progression model | Parallel workfronts on paper; Pareto-dominance probe over card choices | A model that makes pace a decision | **Built** — 3 of 4 criteria met; pace now buys schedule |
+| B.1 | Overrun pressure | 1934 becomes a binding milestone; pressure escalates to the existing loss conditions | `balance_probe` — slow and badly-allocated play must start losing | **Built, not validated** — mechanism verified by `smoke_test`, but no probe strategy reaches its trigger |
 | P2 | Minigame framework + The Heading | Module contract, arcade mode, press-your-luck tuning | Harness + `minigame_sim` band check | After B |
 | P3 | The remaining four | Minesweeper, Pipe Dream, lane-dodge, Bond Vote set piece | Harness + per-minigame sim | After P2 |
 | M2 | The lighting map | Six divisions drawn, lighting as flags land | Harness + visual check | Folded into B — the map is the workfront UI |

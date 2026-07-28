@@ -55,7 +55,7 @@ godot --headless res://tools/layout_test.tscn
 ```
 `LAYOUT PASS (265 checks)`
 
-- [ ] **Step 0: Confirm all three.** If any fails, STOP and report.
+- [x] **Step 0: Confirm all three.** If any fails, STOP and report.
 
 **STOP and report — do not improvise — when:** a verification fails twice after
 your best fix; a step's expected output does not match what you see; quoted
@@ -66,7 +66,7 @@ plan does not spell out.
 
 ## Task 1: The overrun model
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `tools/smoke_test.gd`, add `_check_overrun_pressure()` to `_ready()`
 immediately after `_check_phase_calendar()`, and add this at the end of the
@@ -122,7 +122,7 @@ func _check_overrun_pressure() -> void:
 	EventManager.reset()
 ```
 
-- [ ] **Step 2: Run it and confirm it fails**
+- [x] **Step 2: Run it and confirm it fails**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -130,7 +130,7 @@ godot --headless res://tools/smoke_test.tscn
 Expected: `SMOKE FAIL`, or a parse error naming `overrun_years` /
 `OVERRUN_GRACE_PHASES`.
 
-- [ ] **Step 3: Add the constants**
+- [x] **Step 3: Add the constants**
 
 In `autoload/game_state.gd`, add immediately after this line:
 
@@ -156,7 +156,7 @@ const OVERRUN_FUNDS_PER_YEAR := 1
 const OVERRUN_SUPPORT_INTERVAL := 3
 ```
 
-- [ ] **Step 4: Add `overrun_years()`**
+- [x] **Step 4: Add `overrun_years()`**
 
 In `autoload/game_state.gd`, add immediately above `func current_year() -> int:`
 
@@ -170,7 +170,7 @@ func overrun_years() -> int:
 	return maxi(0, current_year() - HISTORICAL_FINISH_YEAR)
 ```
 
-- [ ] **Step 5: Apply the pressure in the calendar**
+- [x] **Step 5: Apply the pressure in the calendar**
 
 In `autoload/game_state.gd`, replace:
 
@@ -208,7 +208,7 @@ Do **not** add an end-condition check here. `advance_turn()` and
 `bond_crisis` (funds below zero) and `project_cancelled` (support at zero) will
 pick this up unchanged.
 
-- [ ] **Step 6: Run the harness**
+- [x] **Step 6: Run the harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -229,7 +229,7 @@ godot --headless res://tools/layout_test.tscn
 ```
 Expected: `LAYOUT PASS (265 checks)`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add autoload/game_state.gd tools/smoke_test.gd
@@ -257,7 +257,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 An invisible penalty teaches nothing. This is a teaching game, so the player
 must be able to see what falling behind costs.
 
-- [ ] **Step 1: Widen the HUD cost cue**
+- [x] **Step 1: Widen the HUD cost cue**
 
 In `scenes/ui/hud.gd`, replace:
 
@@ -289,7 +289,7 @@ func _update_cost_cue() -> void:
 	cost_label.visible = not cues.is_empty()
 ```
 
-- [ ] **Step 2: Refresh the cue as the calendar moves**
+- [x] **Step 2: Refresh the cue as the calendar moves**
 
 The cue currently updates only on `_refresh()` and on a granted flag, so an
 overrun that begins mid-campaign would never appear. In `scenes/ui/hud.gd`,
@@ -307,7 +307,7 @@ with:
 		_update_cost_cue())
 ```
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -320,7 +320,7 @@ godot --headless res://tools/layout_test.tscn
 `LAYOUT PASS` — the cue line is longer now. If it fails horizontally, STOP and
 report; do not shorten the text without saying so.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scenes/ui/hud.gd
@@ -337,7 +337,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 ## Task 3: Re-measure
 
-- [ ] **Step 1: Run the probe**
+- [x] **Step 1: Run the probe**
 
 ```bash
 godot --headless res://tools/balance_probe.tscn
@@ -353,14 +353,14 @@ badly-allocated ones (`bay first`, whose cost currently shows only in grade)
 should start paying for it in wins. If **nothing** moves, the grace boundary is
 too generous and the reviewer needs to know that, not a fix.
 
-- [ ] **Step 2: Report**
+- [x] **Step 2: Report**
 
 **STOP.** Report all ten BALANCE lines, the three harness outputs, and the two
 commit hashes.
 
 ## Definition of done
 
-- [ ] All three suites green.
-- [ ] `sim_test` still `matched_history` and unchanged at 22 turns.
-- [ ] Ten `BALANCE` lines reported verbatim, untuned.
-- [ ] `data/events` and `data/segments` untouched.
+- [x] All three suites green.
+- [x] `sim_test` still `matched_history` and unchanged at 22 turns.
+- [x] Ten `BALANCE` lines reported verbatim, untuned.
+- [x] `data/events` and `data/segments` untouched.
