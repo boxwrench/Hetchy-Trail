@@ -133,6 +133,18 @@ func _available_cards() -> Array[EventCard]:
 	return out
 
 
+## Whether any of a card's choices grants the given flag. Flags live on
+## EventChoice, not EventCard -- a card grants a flag only through an option the
+## player picks.
+func _grants(card: EventCard, flag: StringName) -> bool:
+	if flag == &"":
+		return false
+	for choice in card.choices:
+		if choice.granted_flags.has(flag):
+			return true
+	return false
+
+
 ## True when the card's own front has advanced far enough to earn it.
 ## Evenly spread across the front: three cards fire at 1/3, 2/3 and completion;
 ## two at 1/2 and completion. The first card requires REAL progress -- a zero
@@ -144,7 +156,20 @@ func _threshold_reached(card: EventCard) -> bool:
 	var position := siblings.find(card)
 	if position < 0 or siblings.is_empty():
 		return true
-	var needed := float(position + 1) / float(siblings.size())
+	# The card that grants this front's completion flag lands at 1.0 wherever it
+	# sits in filename order. Front 2 is the one place these differ: card 06
+	# grants mountain_tunnel_complete but card 07 is last, so without this the
+	# Mountain Tunnel was declared complete at 50%% of its own front.
+	var completion: StringName = GameState.segments[front].completion_flag
+	if _grants(card, completion):
+		return GameState.front_progress[front] >= 1.0 - 0.0001
+	var rank := position
+	for other in siblings:
+		if other == card:
+			break
+		if _grants(other, completion):
+			rank -= 1
+	var needed := float(rank + 1) / float(siblings.size())
 	return GameState.front_progress[front] >= needed - 0.0001
 
 

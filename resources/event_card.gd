@@ -11,8 +11,10 @@ extends Resource
 @export var location_name: String = ""
 
 ## Game-design stationing on the 0-167 mile alignment, not survey stations.
-## The card becomes available once the construction front reaches mile_start.
-## Non-fixed cards expire once the front passes mile_end.
+## mile_start assigns the card to one of the six workfronts; EventManager reads
+## it once, at load, to decide which front owns the card. It is NOT an
+## availability gate -- a card is eligible when its own front is being worked.
+## mile_end is retained for authoring reference only and gates nothing.
 @export var mile_start: int = 0
 @export var mile_end: int = 167
 @export var historical_year_start: int = 0

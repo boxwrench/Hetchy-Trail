@@ -47,7 +47,7 @@ const TURNS_TOTAL := 24
 ## NOT from TURNS_TOTAL: card delays advance the calendar without granting a
 ## turn, so canonical play costs about 30 phases against 24 turns. Calibrated
 ## in Task 1b Step 7 so canonical play lands on HISTORICAL_FINISH_YEAR.
-const CALENDAR_PHASES := 33
+const CALENDAR_PHASES := 35
 const YEARS_SPAN := HISTORICAL_FINISH_YEAR - START_YEAR   # 1914 -> 1934
 
 # --- Tuning knobs -----------------------------------------------------------
@@ -57,13 +57,6 @@ const START_CREW := 7
 const METER_MAX := 10                 # cap for support and crew
 const READINESS_TARGET := 30          # display scale for water readiness
 
-## TUNING KNOB. Task 1 Step 10 adjusts STEADY only; PUSHED is always
-## STEADY * 1.6, rounded to one decimal.
-const MILES_PER_PHASE := {
-	Pace.REST: 0.0,
-	Pace.STEADY: 6.5,
-	Pace.PUSHED: 10.4,
-}
 const PUSHED_CREW_DRIFT := -1         # crew change per pushed phase
 const REST_CREW_DRIFT := 1            # crew change per rest phase
 const PHASE_OVERHEAD := 1             # funds spent every phase
