@@ -48,4 +48,15 @@ The developer runs one command to rebuild the game's data from these files:
     godot --headless res://tools/import_cards.tscn
 
 If anything in a file is malformed, that command stops and names the file and
-line, so a mistake is always caught rather than silently ignored.
+line, so a mistake is always caught rather than silently ignored. It will
+refuse to build if you:
+
+- misspell an effect name (`fund:` instead of `funds:`)
+- misspell or invent a frontmatter key
+- add a section heading that is not one of the four above or `## Choice: <name>`
+- give an effect a number outside -5 to +5, or something that is not a number
+- reuse an `event_id` that another card already has
+- require a flag that no card ever grants
+
+You cannot break the game by editing prose. The build step catches everything
+else before it reaches the game.
