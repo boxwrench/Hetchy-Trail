@@ -42,11 +42,11 @@ extends Resource
 @export_multiline var assumption_note: String = ""
 
 
-func is_available(miles: float, flags: Dictionary) -> bool:
-	if miles < float(mile_start):
-		return false
-	if not is_fixed and miles > float(mile_end):
-		return false
+## Flag gating only. Location is now the card's FRONT, checked by EventManager:
+## mile_start still assigns a card to its front, but the 0-167 counter is an
+## aggregate of six parallel fronts and cannot say where work is happening.
+## Expiring cards on it would retire the railroad card before it could fire.
+func is_available(flags: Dictionary) -> bool:
 	for flag in required_flags:
 		if not flags.has(flag):
 			return false

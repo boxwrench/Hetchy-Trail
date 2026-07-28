@@ -29,12 +29,13 @@ func _ready() -> void:
 			break
 		turns += 1
 		GameState.work_pace = GameState.Pace.STEADY
-		if GameState.funds <= 2 and GameState.public_support >= GameState.BOND_MIN_SUPPORT:
+		if GameState.funds <= 8 and GameState.public_support >= GameState.BOND_MIN_SUPPORT:
 			GameState.take_action(&"issue_bond")
 		elif GameState.public_support <= 3 and GameState.funds >= 2:
 			GameState.take_action(&"outreach")
 		elif GameState.crew_wellbeing <= 3 and GameState.funds >= 2:
 			GameState.take_action(&"improve_camp")
+		GameState.set_front(_pick_front())
 		GameState.advance_turn()
 		if GameState.game_over:
 			break
@@ -91,6 +92,7 @@ func _probe(pace: int, kind: StringName) -> int:
 		if GameState.game_over:
 			break
 		GameState.work_pace = pace
+		GameState.set_front(_pick_front())
 		GameState.advance_turn()
 		if GameState.game_over:
 			break
@@ -116,6 +118,19 @@ func _exploit_probe() -> int:
 			GameState.take_action(&"issue_bond")
 		else:
 			GameState.take_action(&"outreach")
+		GameState.set_front(_pick_front())
 		GameState.advance_turn()
 		peak = maxi(peak, GameState.funds)
 	return peak
+
+
+## Canonical allocation: work the lowest-numbered open, unfinished front. This
+## follows the historical build order and is the baseline the balance probe
+## measures other strategies against.
+func _pick_front() -> int:
+	for i in GameState.front_count():
+		if not GameState.front_is_open(i):
+			continue
+		if GameState.front_progress[i] < 1.0 or EventManager.front_has_pending_fixed(i):
+			return i
+	return 0

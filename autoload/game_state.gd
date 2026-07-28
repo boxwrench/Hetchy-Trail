@@ -68,17 +68,34 @@ const PUSHED_CREW_DRIFT := -1         # crew change per pushed phase
 const REST_CREW_DRIFT := 1            # crew change per rest phase
 const PHASE_OVERHEAD := 1             # funds spent every phase
 const PUMPING_SURCHARGE := 1          # extra per-phase cost if pumps were chosen
-## Sierra divisions build at this fraction until the railroad is operational.
-## Division-scoped, not calendar-scoped -- it is what makes the railroad worth
-## building now that the game no longer tracks winter.
-const NO_RAILROAD_FACTOR := 0.4
+## Fronts beyond the railhead build slower until the railroad runs. Kept mild:
+## railroad_operational comes from a weighted texture card that may never be
+## drawn, so this must be an incentive, not a trap.
+const NO_RAILROAD_FACTOR := 0.7
+
+## TUNING KNOB (Task 1 Step 9). Progress a front gains in one STEADY turn
+## before its build_rate_modifier and crew factor apply. Six fronts across a
+## 24-turn budget means roughly four turns each.
+const FRONT_BASE_PROGRESS := 0.45
+const PACE_FACTOR := {
+	Pace.REST: 0.0,
+	Pace.STEADY: 1.0,
+	Pace.PUSHED: 1.6,
+}
+## Fronts 2 and 3 wait on power earlier fronts provide. Fronts 4, 5 and 6 are
+## deliberately ungated: historically they were gated by money and political
+## priority, not permission, which the funds and turn budget already model.
+const FRONT_REQUIRES := {
+	1: &"construction_power_available",
+	2: &"moccasin_power_available",
+}
 
 const BOND_MIN_SUPPORT := 4           # support needed to issue a bond
 ## A campaign authorizes two major bond measures, echoing the 1910 and 1928
 ## issues -- large and rare, not an unlimited supply of small ones. This is
 ## what funds a 24-phase campaign against -34 funds of canonical card costs
 ## and -24 of phase overhead.
-const BOND_FUNDS_GAIN := 20
+const BOND_FUNDS_GAIN := 18
 const BOND_SUPPORT_COST := 1
 const MAX_BOND_ISSUES := 2
 const OUTREACH_FUNDS_COST := 1
@@ -110,7 +127,9 @@ var funds: int = START_FUNDS
 var public_support: int = START_SUPPORT
 var water_readiness: int = 0
 var crew_wellbeing: int = START_CREW
-var miles_built: float = 0.0
+var miles_built: float = 0.0          # derived aggregate; see _recompute_miles()
+var front_progress: Array[float] = [] # 0.0-1.0 per segment, parallel to segments
+var current_front: int = 0            # the front the player works this turn
 var phase: int = 0                    # calendar time: turns + card delays
 var turn: int = 0                     # player decisions taken
 var work_pace: int = Pace.STEADY
@@ -133,6 +152,10 @@ func new_game() -> void:
 	water_readiness = 0
 	crew_wellbeing = START_CREW
 	miles_built = 0.0
+	front_progress.clear()
+	for i in segments.size():
+		front_progress.append(0.0)
+	current_front = 0
 	phase = 0
 	turn = 0
 	work_pace = Pace.STEADY
@@ -143,13 +166,44 @@ func new_game() -> void:
 	_emit_all()
 
 
+func front_count() -> int:
+	return segments.size()
+
+
+## A front is workable once the flag that opens it has been granted. Fronts
+## without an entry in FRONT_REQUIRES are open from turn one.
+func front_is_open(index: int) -> bool:
+	if index < 0 or index >= segments.size():
+		return false
+	if not FRONT_REQUIRES.has(index):
+		return true
+	return has_flag(FRONT_REQUIRES[index])
+
+
+## Chooses the front to work this turn. Returns false when the front is closed
+## or out of range, so the caller can refuse the input.
+func set_front(index: int) -> bool:
+	if game_over or not front_is_open(index):
+		return false
+	current_front = index
+	return true
+
+
+## Every front finished. Not the win condition -- that stays SYSTEM_FLAGS.
+func all_fronts_complete() -> bool:
+	for p in front_progress:
+		if p < 1.0:
+			return false
+	return true
+
+
 ## Advances one phase: build, crew drift, phase overhead, calendar, end check.
 ## Called once per turn by Journey, after the player's decisions are applied.
 func advance_turn() -> void:
 	if game_over:
 		return
 	turn += 1
-	_build_miles(1)
+	_work_front(1)
 	match work_pace:
 		Pace.PUSHED:
 			_set_crew(crew_wellbeing + PUSHED_CREW_DRIFT)
@@ -227,7 +281,7 @@ func apply_choice(choice: EventChoice) -> void:
 		for i in choice.time_delta_seasons:
 			_advance_calendar()
 	elif choice.time_delta_seasons < 0:
-		_build_miles(-choice.time_delta_seasons)
+		_work_front(-choice.time_delta_seasons)
 	_check_end_conditions()
 
 
@@ -247,13 +301,6 @@ func is_system_connected() -> bool:
 		if not flags.has(flag):
 			return false
 	return true
-
-
-func current_segment() -> RouteSegment:
-	for segment in segments:
-		if segment.contains(miles_built):
-			return segment
-	return segments.back() if not segments.is_empty() else null
 
 
 ## Display year derived from the phase counter: 24 phases span 1914-1934.
@@ -280,15 +327,32 @@ func completion_grade() -> String:
 
 # --- internals ---------------------------------------------------------------
 
-func _build_miles(phase_count: int) -> void:
-	var segment := current_segment()
-	if segment == null:
+## Advances the front the player chose this turn. Only that front moves.
+func _work_front(phase_count: int) -> void:
+	if current_front < 0 or current_front >= segments.size():
 		return
-	var rate: float = MILES_PER_PHASE[work_pace] * segment.build_rate_modifier
-	rate *= _crew_factor()
-	if segment.winter_sensitive and not has_flag(&"railroad_operational"):
-		rate *= NO_RAILROAD_FACTOR
-	miles_built = minf(miles_built + rate * phase_count, TOTAL_MILES)
+	if not front_is_open(current_front):
+		return
+	var segment := segments[current_front]
+	var gain: float = FRONT_BASE_PROGRESS * float(PACE_FACTOR[work_pace])
+	gain *= segment.build_rate_modifier
+	gain *= _crew_factor()
+	# Front 0 is the railhead itself; only fronts beyond it wait on the line.
+	if current_front > 0 and segment.winter_sensitive and not has_flag(&"railroad_operational"):
+		gain *= NO_RAILROAD_FACTOR
+	front_progress[current_front] = minf(
+		front_progress[current_front] + gain * float(phase_count), 1.0)
+	_recompute_miles()
+
+
+## miles_built is the length-weighted sum of front progress -- an honest
+## aggregate of what has been built, not an independent counter.
+func _recompute_miles() -> void:
+	var total := 0.0
+	for i in segments.size():
+		var seg := segments[i]
+		total += front_progress[i] * float(seg.end_mile - seg.start_mile)
+	miles_built = minf(total, TOTAL_MILES)
 	miles_changed.emit(miles_built)
 
 

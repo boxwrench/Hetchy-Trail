@@ -8,6 +8,7 @@ var failures: Array[String] = []
 
 func _ready() -> void:
 	_check_phase_calendar()
+	_check_workfronts()
 	_check_economy()
 	_check_content_pipeline()
 	_check_card_art()
@@ -95,8 +96,10 @@ func _check_flag_closure() -> void:
 func _check_first_turn() -> void:
 	GameState.new_game()
 	EventManager.reset()
-	# The turn may queue a hazard ahead of the milestone, so the spine card is
-	# the LAST entry, not necessarily the only one.
+	# A card now fires because its front was worked, so work one first.
+	GameState.set_front(0)
+	GameState.work_pace = GameState.Pace.STEADY
+	GameState.advance_turn()
 	var queue := EventManager.try_draw_queue()
 	check(not queue.is_empty() and queue.back().event_id == &"cut_the_first_road",
 		"the first milestone card is Cut the First Road")
@@ -288,5 +291,54 @@ func _check_reveal_order() -> void:
 	check(panel.fact_label.text.contains(card.historical_fact),
 		"the revealed fact is the card's own")
 	panel.queue_free()
+	GameState.new_game()
+	EventManager.reset()
+
+
+## The six fronts, their gating, and the progress model.
+func _check_workfronts() -> void:
+	GameState.new_game()
+	check(GameState.front_count() == 6, "six workfronts (got %d)" % GameState.front_count())
+	check(GameState.front_progress.size() == 6, "one progress entry per front")
+	for p in GameState.front_progress:
+		check(p == 0.0, "every front starts at zero progress")
+	# Fronts 1, 4, 5 and 6 (0-indexed 0, 3, 4, 5) are open from turn one.
+	check(GameState.front_is_open(0), "front 1 is open immediately")
+	check(GameState.front_is_open(3), "front 4 is open immediately")
+	check(GameState.front_is_open(4), "front 5 is open immediately")
+	check(GameState.front_is_open(5), "front 6 is open immediately")
+	# Fronts 2 and 3 are gated on flags earlier fronts grant.
+	check(not GameState.front_is_open(1), "front 2 is closed until power exists")
+	check(not GameState.front_is_open(2), "front 3 is closed until Moccasin power exists")
+	check(not GameState.set_front(1), "a closed front cannot be selected")
+	GameState.grant_flag(&"construction_power_available")
+	check(GameState.front_is_open(1), "granting power opens front 2")
+	check(GameState.set_front(1), "an open front can be selected")
+	# Working a front advances only that front.
+	GameState.new_game()
+	GameState.set_front(0)
+	GameState.work_pace = GameState.Pace.STEADY
+	GameState.advance_turn()
+	check(GameState.front_progress[0] > 0.0, "working front 1 advances it")
+	check(GameState.front_progress[3] == 0.0, "working front 1 leaves front 4 alone")
+	check(GameState.miles_built > 0.0, "front progress raises the mile aggregate")
+	# Pushing beats steady on the same front.
+	GameState.new_game()
+	GameState.set_front(0)
+	GameState.work_pace = GameState.Pace.STEADY
+	GameState.advance_turn()
+	var steady: float = GameState.front_progress[0]
+	GameState.new_game()
+	GameState.set_front(0)
+	GameState.work_pace = GameState.Pace.PUSHED
+	GameState.advance_turn()
+	check(GameState.front_progress[0] > steady, "pushing advances a front faster than steady")
+	# A front caps at 1.0 and never exceeds it.
+	GameState.new_game()
+	GameState.set_front(0)
+	for i in 40:
+		GameState.work_pace = GameState.Pace.PUSHED
+		GameState.advance_turn()
+	check(GameState.front_progress[0] <= 1.0, "front progress never exceeds 1.0")
 	GameState.new_game()
 	EventManager.reset()

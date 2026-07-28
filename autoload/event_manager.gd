@@ -28,6 +28,36 @@ const LOW_SUPPORT_THRESHOLD := 4        # support at/below this amplifies impati
 const LOW_METER_RISK_BONUS := 0.25      # added chance when the relevant meter is low
 # ----------------------------------------------------------------------------
 
+## Which front a card belongs to, derived from its mile_start. Verified against
+## the deck: this distributes the 15 fixed cards 3/2/2/2/3/3 across the six
+## fronts, with each front's last card granting that front's completion_flag.
+func front_of_card(card: EventCard) -> int:
+	for i in GameState.segments.size():
+		if GameState.segments[i].contains(float(card.mile_start)):
+			return i
+	return GameState.segments.size() - 1
+
+
+## True while a front still owes fixed cards, whatever its progress. A front
+## that completes faster than its cards can fire -- only one fixed card is drawn
+## per turn -- must stay selectable, or its last card is locked out forever.
+## That is how the Pulgas connection became unreachable while every front read
+## 100%% complete.
+func front_has_pending_fixed(front: int) -> bool:
+	for card in _fixed_cards_for_front(front):
+		if not drawn_ids.has(card.event_id):
+			return true
+	return false
+
+
+## The fixed cards belonging to one front, in filename order.
+func _fixed_cards_for_front(front: int) -> Array[EventCard]:
+	var out: Array[EventCard] = []
+	for card in deck:
+		if card.is_fixed and front_of_card(card) == front:
+			out.append(card)
+	return out
+
 var deck: Array[EventCard] = []
 var drawn_ids: Dictionary = {}        # StringName -> true
 
@@ -77,18 +107,46 @@ func resolve_choice(card: EventCard, choice_index: int) -> void:
 	GameState.apply_choice(choice)
 
 
-# --- internals ---------------------------------------------------------------
-
+## Cards eligible this turn. Fixed cards are gated by progress on their OWN
+## front rather than by a global mile counter: a front with three cards fires
+## them at 1/3, 2/3 and completion. This is what makes working a front, rather
+## than waiting for the next link in a chain, the thing that advances the game.
 func _available_cards() -> Array[EventCard]:
 	var out: Array[EventCard] = []
 	for card in deck:
 		if card.hazard_kind != &"":
-			continue   # hazards are drawn only by the pace-risk roll (see try_draw)
+			continue
 		if drawn_ids.has(card.event_id):
 			continue
-		if card.is_available(GameState.miles_built, GameState.flags):
-			out.append(card)
+		# A card belongs to a front, and is only eligible while that front is the
+		# one being worked. Mile-based availability is incoherent now that
+		# miles_built is an aggregate across six parallel fronts rather than the
+		# position of a single moving front -- under it, the railroad card
+		# (mile_end 20) would expire as soon as any two fronts totalled 20 miles.
+		if front_of_card(card) != GameState.current_front:
+			continue
+		if not card.is_available(GameState.flags):
+			continue
+		if card.is_fixed and not _threshold_reached(card):
+			continue
+		out.append(card)
 	return out
+
+
+## True when the card's own front has advanced far enough to earn it.
+## Spread across the front: the FIRST card fires as soon as the front is worked
+## at all, the LAST at completion, the rest evenly between. Requiring progress
+## before the first card would mean no front could ever start.
+func _threshold_reached(card: EventCard) -> bool:
+	var front := front_of_card(card)
+	var siblings := _fixed_cards_for_front(front)
+	var position := siblings.find(card)
+	if position < 0 or siblings.is_empty():
+		return true
+	if siblings.size() == 1:
+		return GameState.front_progress[front] >= 1.0 - 0.0001
+	var needed := float(position) / float(siblings.size() - 1)
+	return GameState.front_progress[front] >= needed - 0.0001
 
 
 func _draw(card: EventCard) -> EventCard:
@@ -148,7 +206,7 @@ func _hazard_pool(kind: StringName) -> Array[EventCard]:
 			continue
 		if drawn_ids.has(card.event_id):
 			continue
-		if card.is_available(GameState.miles_built, GameState.flags):
+		if card.is_available(GameState.flags):
 			out.append(card)
 	return out
 
