@@ -45,7 +45,7 @@ godot --headless res://tools/layout_test.tscn
 ```
 `LAYOUT PASS (265 checks)`
 
-- [ ] **Step 0: Confirm all three.** If any fails, STOP and report.
+- [x] **Step 0: Confirm all three.** If any fails, STOP and report.
 
 ## Batching
 
@@ -72,6 +72,7 @@ Everything in this task lands together. Do not commit partway.
 **Files:**
 - Modify: `autoload/game_state.gd`
 - Modify: `autoload/event_manager.gd`
+- Modify: `resources/event_card.gd`
 - Modify: `tools/smoke_test.gd`, `tools/sim_test.gd`
 
 **Interfaces produced:**
@@ -83,8 +84,10 @@ Everything in this task lands together. Do not commit partway.
 - `GameState.set_front(index: int) -> bool`
 - `EventManager.front_of_card(card: EventCard) -> int`
 - `GameState.current_segment()` and `_build_miles()` are **removed**.
+- `EventCard.is_available(flags: Dictionary) -> bool` — the `miles` parameter is
+  **removed**; location is now the card's front.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `tools/smoke_test.gd`, add `_check_workfronts()` to `_ready()` immediately
 after `_check_phase_calendar()`, and add at the end of the file:
@@ -122,7 +125,7 @@ func _check_workfronts() -> void:
 	GameState.set_front(0)
 	GameState.work_pace = GameState.Pace.STEADY
 	GameState.advance_turn()
-	var steady := GameState.front_progress[0]
+	var steady: float = GameState.front_progress[0]
 	GameState.new_game()
 	GameState.set_front(0)
 	GameState.work_pace = GameState.Pace.PUSHED
@@ -139,7 +142,7 @@ func _check_workfronts() -> void:
 	EventManager.reset()
 ```
 
-- [ ] **Step 2: Run it and confirm it fails**
+- [x] **Step 2: Run it and confirm it fails**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -338,6 +341,13 @@ func _available_cards() -> Array[EventCard]:
 			continue
 		if drawn_ids.has(card.event_id):
 			continue
+		# A card belongs to a front, and is only eligible while that front is the
+		# one being worked. Mile-based availability is incoherent now that
+		# miles_built is an aggregate across six parallel fronts rather than the
+		# position of a single moving front -- under it, the railroad card
+		# (mile_end 20) would expire as soon as any two fronts totalled 20 miles.
+		if front_of_card(card) != GameState.current_front:
+			continue
 		if not card.is_available(GameState.miles_built, GameState.flags):
 			continue
 		if card.is_fixed and not _threshold_reached(card):
@@ -347,14 +357,130 @@ func _available_cards() -> Array[EventCard]:
 
 
 ## True when the card's own front has advanced far enough to earn it.
+## Spread across the front: the FIRST card fires as soon as the front is worked
+## at all, the LAST at completion, the rest evenly between. Requiring progress
+## before the first card would mean no front could ever start.
 func _threshold_reached(card: EventCard) -> bool:
 	var front := front_of_card(card)
 	var siblings := _fixed_cards_for_front(front)
 	var position := siblings.find(card)
 	if position < 0 or siblings.is_empty():
 		return true
-	var needed := float(position + 1) / float(siblings.size())
+	if siblings.size() == 1:
+		return GameState.front_progress[front] >= 1.0 - 0.0001
+	var needed := float(position) / float(siblings.size() - 1)
 	return GameState.front_progress[front] >= needed - 0.0001
+```
+
+- [ ] **Step 6b: Stop gating cards on the aggregate mile counter**
+
+`miles_built` is now the sum of six fronts, so a card's mile range no longer
+describes where the work is. The front check added in Step 6 is the location
+gate; the mile range must stop being one.
+
+In `resources/event_card.gd`, replace `is_available()`:
+
+```gdscript
+func is_available(miles: float, flags: Dictionary) -> bool:
+	if miles < float(mile_start):
+		return false
+	if not is_fixed and miles > float(mile_end):
+		return false
+	for flag in required_flags:
+		if not flags.has(flag):
+			return false
+	for flag in blocked_by_flags:
+		if flags.has(flag):
+			return false
+	return true
+```
+
+with:
+
+```gdscript
+## Flag gating only. Location is now the card's FRONT, checked by EventManager:
+## mile_start still assigns a card to its front, but the 0-167 counter is an
+## aggregate of six parallel fronts and cannot say where work is happening.
+## Expiring cards on it would retire the railroad card before it could fire.
+func is_available(flags: Dictionary) -> bool:
+	for flag in required_flags:
+		if not flags.has(flag):
+			return false
+	for flag in blocked_by_flags:
+		if flags.has(flag):
+			return false
+	return true
+```
+
+Then in `autoload/event_manager.gd`, change **both** calls — in
+`_available_cards()` and `_hazard_pool()` — from:
+
+```gdscript
+		if not card.is_available(GameState.miles_built, GameState.flags):
+```
+
+to:
+
+```gdscript
+		if not card.is_available(GameState.flags):
+```
+
+- [ ] **Step 6c: Stop penalising the front that builds the railroad**
+
+Front 1 IS the railhead — "Cut the First Road" and "Build the Railroad" are its
+own cards. Charging it `NO_RAILROAD_FACTOR` for lacking the railroad it is
+building is circular, and at 0.4 it made front 1 take ten turns of a
+twenty-four turn budget.
+
+In `autoload/game_state.gd`, replace:
+
+```gdscript
+	if segment.winter_sensitive and not has_flag(&"railroad_operational"):
+		gain *= NO_RAILROAD_FACTOR
+```
+
+with:
+
+```gdscript
+	# Front 0 is the railhead itself; only fronts beyond it wait on the line.
+	if current_front > 0 and segment.winter_sensitive and not has_flag(&"railroad_operational"):
+		gain *= NO_RAILROAD_FACTOR
+```
+
+And soften the constant, since it now gates real progress rather than a
+mileage trickle. Replace:
+
+```gdscript
+const NO_RAILROAD_FACTOR := 0.4
+```
+
+with:
+
+```gdscript
+## Fronts beyond the railhead build slower until the railroad runs. Kept mild:
+## railroad_operational comes from a weighted texture card that may never be
+## drawn, so this must be an incentive, not a trap.
+const NO_RAILROAD_FACTOR := 0.7
+```
+
+- [ ] **Step 6d: Update the first-turn test for the new model**
+
+`_check_first_turn()` draws before any turn is worked, which encoded the old
+model where cards fired from a global chain. Under workfronts a card fires
+because you worked its front. In `tools/smoke_test.gd`, replace:
+
+```gdscript
+	var queue := EventManager.try_draw_queue()
+```
+
+with:
+
+```gdscript
+	# A card now fires because its front was worked, so work one first.
+	GameState.set_front(0)
+	GameState.work_pace = GameState.Pace.STEADY
+	GameState.advance_turn()
+	var queue := EventManager.try_draw_queue()
 ```
 
 - [ ] **Step 7: Update the sim to choose fronts**
@@ -412,7 +538,7 @@ Read the `turns` number.
 - [ ] **Step 10: Confirm nothing references the removed engine**
 
 ```bash
-grep -rn "current_segment\|_build_miles" --include=*.gd .
+grep -rn "current_segment\|_build_miles\|is_available(GameState.miles_built" --include=*.gd .
 ```
 Expected: **no output.**
 
