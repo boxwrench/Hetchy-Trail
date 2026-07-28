@@ -39,10 +39,17 @@ func _ready() -> void:
 		GameState.advance_turn()
 		if GameState.game_over:
 			break
-		for card in EventManager.try_draw_queue():
+		# Drain rather than iterate a snapshot: resolving a milestone can chain
+		# into the next one on the same front, which appends to this queue.
+		var queue := EventManager.try_draw_queue()
+		while not queue.is_empty():
 			if GameState.game_over:
 				break
+			var card: EventCard = queue.pop_front()
 			EventManager.resolve_choice(card, card.canonical_choice)
+			var followup: EventCard = EventManager.try_draw_followup(card)
+			if followup != null:
+				queue.append(followup)
 	EventManager.event_drawn.disconnect(count_hazards)
 	var final_result := result
 	var final_year := GameState.current_year()
@@ -105,10 +112,17 @@ func _probe(pace: int, kind: StringName) -> int:
 		GameState.advance_turn()
 		if GameState.game_over:
 			break
-		for card in EventManager.try_draw_queue():
+		# Drain rather than iterate a snapshot: resolving a milestone can chain
+		# into the next one on the same front, which appends to this queue.
+		var queue := EventManager.try_draw_queue()
+		while not queue.is_empty():
 			if GameState.game_over:
 				break
+			var card: EventCard = queue.pop_front()
 			EventManager.resolve_choice(card, card.canonical_choice)
+			var followup: EventCard = EventManager.try_draw_followup(card)
+			if followup != null:
+				queue.append(followup)
 	EventManager.event_drawn.disconnect(cb)
 	return seen["n"]
 

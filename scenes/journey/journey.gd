@@ -51,6 +51,11 @@ func _on_event_choice(index: int) -> void:
 	var card := current_card
 	current_card = null
 	EventManager.resolve_choice(card, index)
+	# Resolving a milestone can unlock the next one on the same front. Queue it
+	# behind whatever is already pending rather than drawing it up front.
+	var followup: EventCard = EventManager.try_draw_followup(card)
+	if followup != null:
+		pending.append(followup)
 	_show_next()
 
 

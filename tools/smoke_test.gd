@@ -17,6 +17,7 @@ func _ready() -> void:
 	_check_hazards()
 	_check_flag_closure()
 	_check_first_turn()
+	_check_card_chaining()
 	_check_ui_scenes()
 	_check_end_screens()
 	_check_reveal_order()
@@ -129,6 +130,80 @@ func _check_hazards() -> void:
 		check(not card.is_fixed, "hazard %s is not a fixed spine card" % card.event_id)
 	check(kinds[&"injury"] == 3, "exactly 3 injury hazards (got %d)" % kinds[&"injury"])
 	check(kinds[&"impatience"] == 2, "exactly 2 impatience hazards (got %d)" % kinds[&"impatience"])
+
+
+## Post-resolution chaining: a fully worked front hands over a second milestone
+## in the same turn, but never a third, and never a card it just re-armed.
+## Front progress is set directly rather than worked up to, so these stay true
+## regardless of how FRONT_BASE_PROGRESS is later tuned.
+func _check_card_chaining() -> void:
+	seed(99)
+	GameState.new_game()
+	EventManager.reset()
+	GameState.set_front(0)
+	GameState.front_progress[0] = 1.0   # every threshold on this front is met
+	var queue := EventManager.try_draw_queue()
+	# The availability snapshot can only ever offer one fixed card, because the
+	# next one waits on a flag this one has not granted yet. That is why snapshot
+	# queueing measured as doing nothing, and why chaining is a different thing.
+	var snapshot_fixed := 0
+	for card in queue:
+		if card.is_fixed:
+			snapshot_fixed += 1
+	check(snapshot_fixed == 1,
+		"the availability snapshot offers exactly one fixed card (got %d)" % snapshot_fixed)
+	var fixed_ids: Array[StringName] = []
+	while not queue.is_empty():
+		var card: EventCard = queue.pop_front()
+		if card.is_fixed:
+			fixed_ids.append(card.event_id)
+		EventManager.resolve_choice(card, card.canonical_choice)
+		var followup: EventCard = EventManager.try_draw_followup(card)
+		if followup != null:
+			queue.append(followup)
+	check(fixed_ids.size() == 2,
+		"resolving the first milestone unlocks a second one (got %d)" % fixed_ids.size())
+	check(fixed_ids.size() <= EventManager.MAX_FIXED_PER_TURN,
+		"a turn never resolves more than %d fixed cards" % EventManager.MAX_FIXED_PER_TURN)
+	check(fixed_ids.size() < 2 or fixed_ids[0] != fixed_ids[1],
+		"the chained card is a different card, not the same one twice")
+
+	# A repeat_card choice un-draws its own card. Chaining must not hand it
+	# straight back, or a failed bond vote would be re-run inside its own turn.
+	GameState.new_game()
+	EventManager.reset()
+	GameState.set_front(4)
+	GameState.front_progress[4] = 1.0
+	var repeat_id := &"sell_the_bonds_finish_the_bore"
+	var target: EventCard = null
+	for card in EventManager.deck:
+		if card.event_id == repeat_id:
+			target = card
+		elif card.is_fixed and EventManager.front_of_card(card) == 4:
+			EventManager.drawn_ids[card.event_id] = true   # isolate the fixture
+	check(target != null, "the repeat_card fixture card is in the deck")
+	if target == null:
+		return
+	for flag in target.required_flags:
+		GameState.grant_flag(flag)
+	var repeat_index := -1
+	for i in target.choices.size():
+		if target.choices[i].repeat_card:
+			repeat_index = i
+	check(repeat_index >= 0, "the fixture card still has a repeat_card choice")
+	if repeat_index < 0:
+		return
+	var drew_target := false
+	for card in EventManager.try_draw_queue():
+		if card.event_id == repeat_id:
+			drew_target = true
+	check(drew_target, "the repeat_card fixture card is drawn when its front is complete")
+	EventManager.resolve_choice(target, repeat_index)
+	check(not EventManager.drawn_ids.has(repeat_id), "a repeat_card choice re-arms its card")
+	check(EventManager.try_draw_followup(target) == null,
+		"a card re-armed by repeat_card is not redrawn in the same turn")
+	GameState.new_game()
+	EventManager.reset()
 
 
 func _check_ui_scenes() -> void:

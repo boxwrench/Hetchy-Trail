@@ -58,8 +58,18 @@ func _fixed_cards_for_front(front: int) -> Array[EventCard]:
 			out.append(card)
 	return out
 
+## A turn resolves at most this many fixed (milestone) cards. The second is
+## never taken from the same availability snapshot as the first -- it is drawn
+## by post-resolution chaining, see try_draw_followup().
+const MAX_FIXED_PER_TURN := 2
+
 var deck: Array[EventCard] = []
 var drawn_ids: Dictionary = {}        # StringName -> true
+var _fixed_drawn_this_turn: int = 0
+## Every id drawn this turn, including hazards and cards a repeat_card choice
+## has since re-armed. Chaining excludes these so a card cannot come back in
+## the turn it was just resolved.
+var _ids_drawn_this_turn: Dictionary = {}
 
 
 func _ready() -> void:
@@ -68,6 +78,8 @@ func _ready() -> void:
 
 func reset() -> void:
 	drawn_ids = {}
+	_fixed_drawn_this_turn = 0
+	_ids_drawn_this_turn = {}
 
 
 ## Cards to resolve this turn, in order. Empty, one, or two entries.
@@ -79,6 +91,8 @@ func reset() -> void:
 ## and a hazard never costs the player a turn.
 func try_draw_queue() -> Array[EventCard]:
 	var queue: Array[EventCard] = []
+	_fixed_drawn_this_turn = 0
+	_ids_drawn_this_turn = {}
 	if GameState.game_over:
 		return queue
 	var available := _available_cards()
@@ -96,6 +110,38 @@ func try_draw_queue() -> Array[EventCard]:
 		return queue
 	queue.append(_draw(_weighted_pick(available)))
 	return queue
+
+
+## The second milestone of a turn, or null. Called AFTER a fixed card resolves.
+##
+## Why chaining rather than taking two cards from _available_cards(): most fixed
+## cards require a flag the preceding card grants, and that snapshot is computed
+## before the first card resolves, so a two-card loop over it finds nothing to
+## add. That is exactly why snapshot queueing was measured as doing nothing
+## under the old linear spine. Re-evaluating after resolution is a different
+## mechanism -- the flag now exists, so the next card is genuinely unlocked.
+##
+## Deliberately narrow, so a productive turn cannot become a history lecture:
+## fixed cards only (no hazard reroll, no texture card), the worked front only,
+## at most MAX_FIXED_PER_TURN in a turn, and never a card already drawn this
+## turn -- a repeat_card choice un-draws its card, and without that guard the
+## failed bond vote would be handed straight back in the same turn.
+func try_draw_followup(resolved: EventCard) -> EventCard:
+	if GameState.game_over:
+		return null
+	if resolved == null or not resolved.is_fixed:
+		return null
+	if _fixed_drawn_this_turn >= MAX_FIXED_PER_TURN:
+		return null
+	for card in _fixed_cards_for_front(GameState.current_front):
+		if drawn_ids.has(card.event_id) or _ids_drawn_this_turn.has(card.event_id):
+			continue
+		if not card.is_available(GameState.flags):
+			continue
+		if not _threshold_reached(card):
+			continue
+		return _draw(card)
+	return null
 
 
 ## Applies the player's chosen option and re-arms the card if the choice
@@ -175,6 +221,9 @@ func _threshold_reached(card: EventCard) -> bool:
 
 func _draw(card: EventCard) -> EventCard:
 	drawn_ids[card.event_id] = true
+	_ids_drawn_this_turn[card.event_id] = true
+	if card.is_fixed:
+		_fixed_drawn_this_turn += 1
 	event_drawn.emit(card)
 	return card
 
