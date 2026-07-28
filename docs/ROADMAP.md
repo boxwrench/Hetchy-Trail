@@ -58,7 +58,8 @@ checking it.** Plans are written for this: every step is explicit, every
 verification is a command with an expected result, and no step requires a design
 judgment call.
 
-**Current plan:** [P1 — Foundations](superpowers/plans/2026-07-27-p1-foundations.md)
+**Current plan:** [P1.5 — Review Fixes](superpowers/plans/2026-07-27-p1.5-review-fixes.md)
+([P1 — Foundations](superpowers/plans/2026-07-27-p1-foundations.md) is complete.)
 
 **If you are the worker:**
 
@@ -112,6 +113,24 @@ godot --headless res://tools/sim_test.tscn
 
 Both must exit 0. A failing harness is never committed.
 
+```bash
+godot --headless res://tools/balance_probe.tscn
+```
+
+Measurement, not a test — always exits 0. Plays six pace strategies across 12
+seeds and reports win rate, grade, and failure modes. Use it when tuning, and to
+check whether a change actually made pace a decision.
+
+### Documentation is load-bearing here
+
+Worker agents read docs as instruction, so a stale document actively causes
+deleted concepts to be restored. `technical_design.md` drifted a whole release
+behind during P1 and had to be rewritten in P1.5.
+
+**When a task removes or renames a concept, grep the docs for it in the same
+task.** The code-level greps in these plans exist for that reason; extend them
+to `docs/` whenever a field, method, or system disappears.
+
 ## Milestones
 
 | # | Milestone | Deliverable | Verified by | Status |
@@ -120,11 +139,23 @@ Both must exit 0. A failing harness is never committed.
 | M1 | First playable loop | HUD, DecisionPanel, EventPanel, Journey | Harness + manual playthrough | **Done** |
 | M1.5 | Decision weight | Pace-risk, hazard deck, risk telegraph, HUD warnings | Harness + sim hazard probes | **Done** |
 | P1 | Foundations | 24-turn restructure, economy fix, content pipeline, art decoupling | Harness + exploit probe + historian can edit a card | **Done** |
-| P2 | Minigame framework + The Heading | Module contract, arcade mode, press-your-luck tuning | Harness + `minigame_sim` band check | After P1 |
+| P1.5 | Review fixes | End-screen crash + UI end test, design-doc rewrite, reveal-after-choice, validator hardening | Harness + four broken cards rejected by name | Next |
+| B | Progression model | Parallel workfronts on paper; Pareto-dominance probe over card choices | A model that makes pace a decision | After P1.5 — **strong model, not a worker** |
+| P2 | Minigame framework + The Heading | Module contract, arcade mode, press-your-luck tuning | Harness + `minigame_sim` band check | After B |
 | P3 | The remaining four | Minesweeper, Pipe Dream, lane-dodge, Bond Vote set piece | Harness + per-minigame sim | After P2 |
-| M2 | The lighting map | Six divisions drawn, lighting as flags land | Harness + visual check | Deferred behind P1–P3 |
+| M2 | The lighting map | Six divisions drawn, lighting as flags land | Harness + visual check | Folded into B — the map is the workfront UI |
 | M3 | Framing screens | Title (with arcade entry), end screen, replay | Harness + manual win/loss | Folded into P2 |
-| M4 | Balance & content polish | Archival photos, audio, export | Harness + historian sign-off | Last |
+| M4 | Content, framing & release | Source traceability, framing layer, archival photos, audio, export preset, licence, CI | Harness + historian sign-off | Last |
+
+**Why B exists and why it sits before P2.** An external review
+([response](superpowers/specs/2026-07-27-external-review-response.md)) confirmed
+what the balance probe already showed: pace has one correct answer, because the
+15 fixed spine cards form a dependency chain that floors the campaign near 15
+turns at any pace. Mileage gates nothing. The fix is parallel construction
+fronts — which is also what the project's own historical brief asked for, and
+what `SYSTEM_FLAGS` already claims the game is about. The Heading's design
+depends on whether footage drives progression, so building it before B means
+designing it twice.
 
 **P1 first, deliberately.** It depends on no minigame design and it unblocks the
 two tracks that run in parallel with everything else: historian review of
