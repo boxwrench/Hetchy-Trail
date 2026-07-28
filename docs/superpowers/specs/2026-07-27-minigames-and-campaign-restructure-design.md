@@ -181,15 +181,27 @@ implementation, and each is historically grounded rather than reskinned.
 | # | Minigame | Classic DNA | Where | Feeds | Cadence |
 |---|---|---|---|---|---|
 | 1 | **The Heading** | Press-your-luck (Can't Stop) | Tunnel divisions 2, 3, 5 | Miles, crew | Recurring |
-| 2 | **Sound the Rock** | Minesweeper | Precedes a Heading run | De-risks #1, readiness | Recurring |
+| 2 | **Probe the Face** | Minesweeper | Precedes a Heading run | De-risks #1, readiness | Recurring |
 | 3 | **Forty-Seven Miles** | Pipe Dream / Pipe Mania | Valley + bay divisions 4, 6 | Miles, funds | Recurring |
-| 4 | **Keep the Line Open** | Frogger / lane-dodge | High Sierra division 1 | Crew, time | Recurring |
+| 4 | **Keep the Line Open** | Loading / allocation puzzle | High Sierra division 1 | Crew | Recurring |
 | 5 | **The Bond Vote** | The King's Dilemma | Card 18, once | Funds, support, obligations | Set piece |
 
-The slate spans five distinct mental modes — greed/risk, deduction, spatial
-planning under time pressure, reflex, and allocation. For a showcase where the
-player might be an engineer, a comms lead, or someone's kid, a player who
-bounces off one will find another.
+> **Amended 2026-07-28**, after external research review. Slot 2 was
+> *Sound the Rock*; slot 4 was a Frogger-style lane-dodge. Both changed for
+> reasons recorded in §4.2 and §4.4. The slot file
+> [02-sound-the-rock.md](minigames/02-sound-the-rock.md) keeps its old filename
+> until implementation, so the path still resolves.
+
+The slate spans four distinct mental modes — greed/risk, deduction, spatial
+planning under time pressure, and allocation. For a showcase where the player
+might be an engineer, a comms lead, or someone's kid, a player who bounces off
+one will find another.
+
+**The slate no longer contains a reflex mode**, and that is a known cost of the
+slot 4 change rather than an oversight. All four recurring minigames are now
+deliberative. If playtesting shows the slate needs a hands-on moment, slot 4 is
+where it was going to come from, and reopening that is legitimate — but it is a
+reason to revisit slot 4, not to add a sixth minigame.
 
 #### §4.1 — The Heading (signature)
 
@@ -219,11 +231,26 @@ This is the one item on the slate requiring design research before
 implementation; the research prompt is captured in
 [appendix A](#appendix-a--press-your-luck-research-prompt).
 
-#### §4.2 — Sound the Rock
+#### §4.2 — Probe the Face
 
 Minesweeper, as geological probing. Before driving a heading, crews drilled
 probe holes ahead of the face to find fault zones, water-bearing seams, and bad
 ground — probe a grid, deduce hazards from partial information, flag them.
+
+> **Renamed 2026-07-28.** This slot was *Sound the Rock*. In period mining usage
+> "sounding" means testing roof or rock for loose material, usually by striking
+> or barring it — not drilling ahead of a face. Keeping the name would have put
+> a terminology error in front of the audience most likely to notice it.
+>
+> **A second correction, which is a claim boundary rather than a name.** That
+> crews at the represented heading drilled a *regular grid* of forward probe
+> holes is **not established** by any Hetch Hetchy record reviewed. Difficult
+> geology, groundwater, gas and swelling ground are documented
+> ([SOURCES.md](../../SOURCES.md), SFPUC 2005 history p. 39); the specific
+> forward-probe method, spacing and distance are not. Present this slot as a
+> schematic of investigating ground ahead of a heading, not as a recreation of a
+> documented shift, and do not invent a feet-ahead figure. See
+> [FOLLOW-UPS.md](../../FOLLOW-UPS.md).
 
 Chaining it into the Heading makes both better: survey well and the
 press-your-luck round is meaningfully safer. Two easy minigames combining into
@@ -247,34 +274,86 @@ is overwritable (chosen for forgiveness, since friction is the enemy here).
 
 #### §4.4 — Keep the Line Open
 
-Lane-dodging supply run up the Hetch Hetchy Railroad, in the High Sierra. Feeds
-crew wellbeing and time, and gives division 1 and the `railroad_operational`
+A supply run up the Hetch Hetchy Railroad, in the High Sierra. There is less
+haulage than the camps need, and the player decides what goes up and who goes
+short. Feeds crew wellbeing, and gives division 1 and the `railroad_operational`
 flag something to do.
 
-**This is the least-settled item and is explicitly swappable.** The module
-contract (§3) makes replacing it a one-folder change. It is kept in the slate
-because it covers a division that would otherwise be bare, not because the
-archetype is load-bearing. Mostly an art and audio problem rather than a code
-one.
+> **Archetype changed 2026-07-28.** This was a Frogger-style lane-dodge. The
+> spec itself called it the least-settled item and explicitly swappable, and it
+> was swapped: it was the least historically motivated thing on the slate, it
+> read as arcade filler on a serious subject, and the spec's own note that it was
+> "mostly an art and audio problem" meant most of the effort bought presentation
+> rather than meaning. The module contract (§3) made this the one-folder change
+> it was advertised to be.
+>
+> **Time is no longer an output.** The overrun-pressure measurement showed the
+> campaign's time economy is delicate; handing out phases from an optional
+> minigame would require re-measuring the whole balance pass to justify.
+
+**The premise is not settled and must not be built on as written.** The natural
+design — near camps have wagon-road fallback, far camps have only the railroad,
+so spending the haulage budget where it is cheapest is the wrong answer — is
+**contradicted by our own deck**.
+[02_hetch_hetchy_railroad.md](../../../content/cards/02_hetch_hetchy_railroad.md)
+has the railroad running in winter "when mountain roads could be blocked by
+snow," and
+[09_six_camps_in_the_foothills.md](../../../content/cards/09_six_camps_in_the_foothills.md)
+has city crews installing roads to the camps. Neither supports a camp-by-camp
+fallback hierarchy.
+
+**This slot needs a new source of tension before an implementation plan is
+written against it.** Recorded in [FOLLOW-UPS.md](../../FOLLOW-UPS.md).
+
+**Cargo, when it is rebuilt.** Use what the card already documents — cement,
+equipment, workers and supplies. An earlier draft used food, timber, powder and
+coal; coal is actively wrong, since the surviving locomotive documentation
+describes a fuel-oil tank, and the project ran its own sawmills, which makes
+imported timber a poor generic cargo.
 
 #### §4.5 — The Bond Vote (set piece)
 
-Fires **once**, at the 1928 bond — which is already
+Fires **once**, at the **1932** bond — which is already
 [18_sell_the_bonds_finish_the_bore.tres](../../../data/events/18_sell_the_bonds_finish_the_bore.tres).
 
-Structure, taken from The King's Dilemma: five historically real blocs enter
-with visible interests and hidden priorities. Over **two rounds** the player
-allocates limited concessions — construction jobs, ratepayer protections,
-district improvements, conservation concessions, control of contracts — then
-everyone commits and the returns come in.
+> **Corrected 2026-07-28.** This section said 1928. The card is the **3 May 1932
+> issue, $6.5 million, to complete the last five miles of the Coast Range
+> Tunnel** — confirmed in the SFPUC 2005 history, p. 42, which lists all seven
+> Hetch Hetchy bond issues. There *was* a $24 million issue in 1928, so the old
+> date was a real bond, just not this card's. A date error in a design doc
+> becomes a date error on screen.
 
-The blocs are drawn from the actual fight, not invented. The final five are
-selected during implementation, with historian input, from: the Board of
-Supervisors, ratepayers, organized labour, the conservation opposition, the
-downstream irrigation districts, and the private power interests — the last of
-which is the strongest candidate, since its conflict with the Raker Act's
-public-power requirement shaped the project for decades and is the part of this
-history most SFPUC staff will recognise.
+Structure, taken from The King's Dilemma: blocs enter with visible interests and
+hidden priorities. Over **two rounds** the player allocates limited concessions
+— construction jobs, ratepayer protections, district improvements, conservation
+concessions, control of contracts — then everyone commits and the returns come
+in.
+
+> **The bloc model is unsupported and must not be built as written.** This
+> section previously asserted that "the blocs are drawn from the actual fight,
+> not invented." External research could not establish that structure for this
+> vote, and two of the named candidates fail outright:
+>
+> - **Downstream irrigation districts — remove.** Modesto and Turlock were
+>   central to downstream water rights and the Raker Act settlement, but **they
+>   were not San Francisco voters** and could not vote on a municipal bond.
+> - **Board of Supervisors — not a voter bloc.** It is the governing body that
+>   authorises the issue, not a constituency whose votes the player buys.
+> - **Private power interests** — the long-running public-power conflict is real
+>   context, but its centrality to *this* 1932 completion measure is not
+>   established.
+> - **Organised labour** — participation is documented; the platform and any
+>   concessions are not.
+>
+> Two defensible routes, to be settled with the historian before implementation:
+> either commission the archival work that establishes each actor's 1932
+> position in its own language, or change the mechanic from bargaining with five
+> institutions to assembling a case from documented public concerns. Recorded in
+> [FOLLOW-UPS.md](../../FOLLOW-UPS.md).
+>
+> **The design intent survives either way.** Passing the bond while
+> overcommitting yourself is the point of the slot, and obligations that come due
+> later work regardless of who the counterparty is.
 
 **Two deliberate departures from the reference material:**
 

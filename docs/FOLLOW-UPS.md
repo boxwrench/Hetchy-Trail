@@ -175,7 +175,21 @@ spend their time on the soft claims.
 **Effort: medium.** It touches every card and the import schema, so it wants a
 plan rather than an afternoon.
 
-### P6 — First-play acceptance tests apply to the game as it stands
+### P6 — Two stale slot references left deliberately
+
+[art_assets.md](art_assets.md) still calls slot 2 "Sound the Rock" and reserves
+budget against the old slot 4 archetype. **Left untouched on purpose:** that file
+has substantial uncommitted work in the tree from an earlier session, and
+sweeping it into an unrelated commit is how work-in-progress gets lost.
+
+Fix it when that work lands, not before. Its guidance is already conservative —
+it says not to commission train or lane assets until the archetype settles — so
+nothing is being built against the stale name.
+
+The slot files under `specs/minigames/` also keep their old filenames, which the
+spec notes so the paths still resolve.
+
+### P7 — First-play acceptance tests apply to the game as it stands
 
 The research review proposes gates that do not need any minigame to exist:
 a first-time player acts within 8 seconds of gaining control without spoken
