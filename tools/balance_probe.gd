@@ -52,7 +52,11 @@ func _ready() -> void:
 	get_tree().quit(0)
 
 
-func _run(label: String, picker: Callable, front_picker: Callable = Callable()) -> void:
+## choice_picker takes an EventCard and returns an index into card.choices.
+## Omitted, every strategy resolves canonically exactly as before -- that
+## default is what keeps the ten existing rows comparable across this change.
+func _run(label: String, picker: Callable, front_picker: Callable = Callable(),
+		choice_picker: Callable = Callable()) -> void:
 	var tally := {"wins": 0, "turns": 0, "hazards": 0, "ahead": 0, "matched": 0, "behind": 0}
 	var modes := {}
 	for s in SEEDS:
@@ -90,7 +94,10 @@ func _run(label: String, picker: Callable, front_picker: Callable = Callable()) 
 				if GameState.game_over:
 					break
 				var card: EventCard = queue.pop_front()
-				EventManager.resolve_choice(card, card.canonical_choice)
+				var choice_index: int = card.canonical_choice
+				if choice_picker.is_valid():
+					choice_index = choice_picker.call(card)
+				EventManager.resolve_choice(card, choice_index)
 				var followup: EventCard = EventManager.try_draw_followup(card)
 				if followup != null:
 					queue.append(followup)
