@@ -63,28 +63,36 @@ implemented and committed — October 1934 now costs funds and public support
 once passed. Design:
 [overrun pressure spec](superpowers/specs/2026-07-28-overrun-pressure-design.md).
 
-**It is not yet validated, and must not be tuned until it is.** Review
-measurement found the mechanism is correct but unreached: pressure cannot begin
-before phase 34, because `current_year()` does not return 1935 until then, and
-no strategy the balance probe plays exceeds phase 32. The probe output at the
-post-pressure commit is byte-identical to the pre-pressure commit across all ten
-rows. Only the degenerate all-rest baseline ever crosses, and it is already
-losing when it does.
+**It is correct, verified, unreachable, and frozen. Do not tune any `OVERRUN_*`
+constant.** The mechanism fires, escalates and drains support exactly as
+designed — `smoke_test` proves it. Nothing a rational player does gets near it.
 
-This is a reachability question, not a tuning question. Until it is measured,
-changing any `OVERRUN_*` constant would be fitting a number to an instrument
-that cannot see it.
+The [Late-Viability Probe](superpowers/plans/2026-07-28-late-viability-probe.md)
+settled this and is complete; its ledger holds the full measurement. In short:
 
-**Current plan:** [Late-Viability Probe](superpowers/plans/2026-07-28-late-viability-probe.md)
-— answers one question before anything else is touched: *can a rational,
-resource-safe policy complete the project after phase 34 without overrun
-pressure?* It gives the probe a card-choice dimension, which it has never had —
-every strategy resolves canonically, so none can trade schedule for resources,
-which is the only lever that could carry a surviving run past the trigger. The
-comparison is pinned to `406c989` (pre-pressure) against `d9e5745`
-(post-pressure) on identical seeds. It changes no game behaviour, and if no
-policy qualifies as slow-but-competent it stops and says so rather than tuning
-pressure to meet it.
+- Pressure cannot begin before **phase 35**. Two gates, not one: the grace
+  phases, and `current_year()`, which does not return 1935 until phase 34. So
+  lowering `OVERRUN_GRACE_PHASES` to zero would change nothing.
+- No strategy reaches **phase 32**. Probe output pre-pressure (`406c989`) and
+  post-pressure (`d9e5745`) is byte-identical on identical seeds.
+- A conservative choice policy — protect the metrics, ignore time — was added to
+  test the one archetype that might run late. It finishes **earlier**: phase
+  27.9 average against canonical's 30.9.
+
+**The reason is in the content, not the constants.** Of 15 multi-choice cards,
+the resource-safest option is also the fastest on 7, time-neutral on 3, and
+genuinely costs schedule on only 5. Delay and resource loss are correlated
+rather than traded, so the cautious player who pays in schedule — the archetype
+overrun pressure exists to price — does not exist in the current deck.
+
+Headroom is not the constraint: always choosing the slowest option would add 30
+seasons. The deck can produce a long campaign. It cannot produce one as the
+consequence of playing well.
+
+**Open decision, and it is a content decision:** whether more than 5 of 15 cards
+should offer *protect the metrics, pay in seasons*. That means `time_delta_seasons`
+in `data/events/`, which is historian territory and off-limits to a worker. Until
+it is made, there is no current plan and overrun pressure stays as it is.
 
 [Batch B — Workfront Progression](superpowers/plans/2026-07-27-batch-b-workfronts.md)
 is implemented and committed, meeting three of its four success criteria; the
@@ -173,7 +181,7 @@ to `docs/` whenever a field, method, or system disappears.
 | P1 | Foundations | 24-turn restructure, economy fix, content pipeline, art decoupling | Harness + exploit probe + historian can edit a card | **Done** |
 | P1.5 | Review fixes | End-screen crash + UI end test, design-doc rewrite, reveal-after-choice, validator hardening | Harness + four broken cards rejected by name | **Done** |
 | B | Progression model | Parallel workfronts on paper; Pareto-dominance probe over card choices | A model that makes pace a decision | **Built** — 3 of 4 criteria met; pace now buys schedule |
-| B.1 | Overrun pressure | 1934 becomes a binding milestone; pressure escalates to the existing loss conditions | `balance_probe` — slow and badly-allocated play must start losing | **Built, not validated** — mechanism verified by `smoke_test`, but no probe strategy reaches its trigger |
+| B.1 | Overrun pressure | 1934 becomes a binding milestone; pressure escalates to the existing loss conditions | `balance_probe` — slow and badly-allocated play must start losing | **Built, measured, frozen** — verified by `smoke_test`; unreachable because no card choice trades schedule for safety. Blocked on a content decision, not a tuning pass |
 | P2 | Minigame framework + The Heading | Module contract, arcade mode, press-your-luck tuning | Harness + `minigame_sim` band check | After B |
 | P3 | The remaining four | Minesweeper, Pipe Dream, lane-dodge, Bond Vote set piece | Harness + per-minigame sim | After P2 |
 | M2 | The lighting map | Six divisions drawn, lighting as flags land | Harness + visual check | Folded into B — the map is the workfront UI |
