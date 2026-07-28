@@ -17,6 +17,7 @@ func _ready() -> void:
 	_check_flag_closure()
 	_check_first_turn()
 	_check_ui_scenes()
+	_check_end_screens()
 	if failures.is_empty():
 		print("SMOKE PASS (%d checks)" % passed)
 	else:
@@ -228,3 +229,33 @@ func _check_card_art() -> void:
 		var path := card.art_path()
 		check(path == "" or ResourceLoader.exists(path),
 			"card %s art path resolves or is empty" % card.event_id)
+
+
+## Forces every ending with the real Journey UI live. This is the path that
+## shipped a crash while 301 checks stayed green: nothing else ends a campaign
+## with the UI instantiated.
+func _check_end_screens() -> void:
+	var endings := {
+		&"bond_crisis": func() -> void: GameState._set_funds(-1),
+		&"project_cancelled": func() -> void: GameState._set_support(0),
+		&"work_halted": func() -> void: GameState._set_crew(0),
+		&"city_moves_on": func() -> void: GameState.phase = GameState.CALENDAR_PHASES * 4,
+		&"system_complete": func() -> void: GameState.grant_flag(&"hetch_hetchy_water_delivered"),
+	}
+	for expected in endings:
+		GameState.new_game()
+		EventManager.reset()
+		var journey: Node = load("res://scenes/journey/journey.tscn").instantiate()
+		add_child(journey)
+		var seen := {"result": &""}
+		var on_end := func(r: StringName) -> void: seen["result"] = r
+		GameState.game_ended.connect(on_end)
+		endings[expected].call()
+		GameState._check_end_conditions()
+		GameState.game_ended.disconnect(on_end)
+		check(seen["result"] == expected,
+			"ending '%s' fires (got '%s')" % [expected, seen["result"]])
+		check(GameState.game_over, "ending '%s' sets game_over" % expected)
+		journey.queue_free()
+	GameState.new_game()
+	EventManager.reset()

@@ -74,5 +74,5 @@ func _on_game_ended(result: StringName) -> void:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
 	var label := Label.new()
-	label.text = "Game over: %s (%s, %d)" % [result, GameState.completion_grade(), GameState.year]
+	label.text = "Game over: %s (%s, %d)" % [result, GameState.completion_grade(), GameState.current_year()]
 	center.add_child(label)
