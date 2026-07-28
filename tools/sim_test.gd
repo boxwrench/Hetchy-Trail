@@ -63,6 +63,15 @@ func _ready() -> void:
 	var exploit_peak := _exploit_probe()
 	print("SIM EXPLOIT: peak funds under bond/outreach alternation = %d" % exploit_peak)
 	var win := final_result == &"system_complete" and final_year <= 1940
+	# The sim prints its balance contract, so it must also enforce it, or the
+	# numbers drift and nobody notices. Session length: canonical play has to
+	# stay inside the designed 20-28 turn budget.
+	win = win and turns >= 20 and turns <= 28
+	# Schedule: canonical play must not finish BEHIND history. Deliberately not
+	# "exactly matched" -- the matched band is only two phases wide (33-34 land
+	# on 1934, 35 tips to 1935), so asserting equality would break on any tuning
+	# change and teach us to relax the test instead of fixing the game.
+	win = win and final_grade != "behind_history"
 	# Regression guard: no repeatable action loop may outrun phase overhead.
 	# Two bonds at BOND_FUNDS_GAIN is the entire authorized income; anything
 	# above that means a repeatable loop is manufacturing funds.

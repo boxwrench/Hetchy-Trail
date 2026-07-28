@@ -47,7 +47,7 @@ const TURNS_TOTAL := 24
 ## NOT from TURNS_TOTAL: card delays advance the calendar without granting a
 ## turn, so canonical play costs about 30 phases against 24 turns. Calibrated
 ## in Task 1b Step 7 so canonical play lands on HISTORICAL_FINISH_YEAR.
-const CALENDAR_PHASES := 30
+const CALENDAR_PHASES := 33
 const YEARS_SPAN := HISTORICAL_FINISH_YEAR - START_YEAR   # 1914 -> 1934
 
 # --- Tuning knobs -----------------------------------------------------------

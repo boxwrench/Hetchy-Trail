@@ -134,18 +134,17 @@ func _available_cards() -> Array[EventCard]:
 
 
 ## True when the card's own front has advanced far enough to earn it.
-## Spread across the front: the FIRST card fires as soon as the front is worked
-## at all, the LAST at completion, the rest evenly between. Requiring progress
-## before the first card would mean no front could ever start.
+## Evenly spread across the front: three cards fire at 1/3, 2/3 and completion;
+## two at 1/2 and completion. The first card requires REAL progress -- a zero
+## threshold let a REST turn fire it, and card 06 is the first card on its front
+## AND grants mountain_tunnel_complete, so zero work bought a completion flag.
 func _threshold_reached(card: EventCard) -> bool:
 	var front := front_of_card(card)
 	var siblings := _fixed_cards_for_front(front)
 	var position := siblings.find(card)
 	if position < 0 or siblings.is_empty():
 		return true
-	if siblings.size() == 1:
-		return GameState.front_progress[front] >= 1.0 - 0.0001
-	var needed := float(position) / float(siblings.size() - 1)
+	var needed := float(position + 1) / float(siblings.size())
 	return GameState.front_progress[front] >= needed - 0.0001
 
 

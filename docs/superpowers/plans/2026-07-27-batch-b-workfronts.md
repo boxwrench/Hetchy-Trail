@@ -149,7 +149,7 @@ godot --headless res://tools/smoke_test.tscn
 ```
 Expected: `SMOKE FAIL`, or a parse error naming `front_count` / `front_progress`.
 
-- [ ] **Step 3: Add the front state to GameState**
+- [x] **Step 3: Add the front state to GameState**
 
 In `autoload/game_state.gd`, add after `const NO_RAILROAD_FACTOR := 0.4`:
 
@@ -196,7 +196,7 @@ In `new_game()`, replace `miles_built = 0.0` with:
 	current_front = 0
 ```
 
-- [ ] **Step 4: Add the front API**
+- [x] **Step 4: Add the front API**
 
 Add these four functions immediately above `advance_turn()`:
 
@@ -232,7 +232,7 @@ func all_fronts_complete() -> bool:
 	return true
 ```
 
-- [ ] **Step 5: Replace the mileage engine with the front engine**
+- [x] **Step 5: Replace the mileage engine with the front engine**
 
 Delete `current_segment()` entirely. Replace `_build_miles()`:
 
@@ -288,7 +288,7 @@ In `apply_choice()`, replace `_build_miles(-choice.time_delta_seasons)` with:
 			_work_front(-choice.time_delta_seasons)
 ```
 
-- [ ] **Step 6: Re-anchor cards to front progress**
+- [x] **Step 6: Re-anchor cards to front progress**
 
 In `autoload/event_manager.gd`, add after the existing constants:
 
@@ -372,7 +372,7 @@ func _threshold_reached(card: EventCard) -> bool:
 	return GameState.front_progress[front] >= needed - 0.0001
 ```
 
-- [ ] **Step 6b: Stop gating cards on the aggregate mile counter**
+- [x] **Step 6b: Stop gating cards on the aggregate mile counter**
 
 `miles_built` is now the sum of six fronts, so a card's mile range no longer
 describes where the work is. The front check added in Step 6 is the location
@@ -425,7 +425,7 @@ to:
 		if not card.is_available(GameState.flags):
 ```
 
-- [ ] **Step 6c: Stop penalising the front that builds the railroad**
+- [x] **Step 6c: Stop penalising the front that builds the railroad**
 
 Front 1 IS the railhead — "Cut the First Road" and "Build the Railroad" are its
 own cards. Charging it `NO_RAILROAD_FACTOR` for lacking the railroad it is
@@ -463,7 +463,7 @@ with:
 const NO_RAILROAD_FACTOR := 0.7
 ```
 
-- [ ] **Step 6d: Update the first-turn test for the new model**
+- [x] **Step 6d: Update the first-turn test for the new model**
 
 `_check_first_turn()` draws before any turn is worked, which encoded the old
 model where cards fired from a global chain. Under workfronts a card fires
@@ -483,7 +483,7 @@ with:
 	var queue := EventManager.try_draw_queue()
 ```
 
-- [ ] **Step 7: Update the sim to choose fronts**
+- [x] **Step 7: Update the sim to choose fronts**
 
 In `tools/sim_test.gd`, inside the main campaign loop, immediately before
 `GameState.advance_turn()`, add:
@@ -509,7 +509,7 @@ Do the same inside `_probe()` and `_exploit_probe()` — add
 `GameState.set_front(_pick_front())` immediately before each
 `GameState.advance_turn()` call in those functions.
 
-- [ ] **Step 8: Run the harness**
+- [x] **Step 8: Run the harness**
 
 ```bash
 godot --headless res://tools/smoke_test.tscn
@@ -652,14 +652,21 @@ func _refresh_fronts() -> void:
 	for i in GameState.front_count():
 		var seg := GameState.segments[i]
 		var pct := int(round(GameState.front_progress[i] * 100.0))
+		# A front is only finished when its CARDS are done, not when its progress
+		# bar fills. Only one fixed card is drawn per turn, so a fast front can
+		# reach 100%% still owing cards -- disabling it there locked the Pulgas
+		# connection out of the game entirely while every front read complete.
+		var owed: bool = EventManager.front_has_pending_fixed(i)
 		var label := "%s — %d%%" % [seg.segment_name, pct]
-		if GameState.front_progress[i] >= 1.0:
+		if GameState.front_progress[i] >= 1.0 and not owed:
 			label += " (complete)"
+		elif GameState.front_progress[i] >= 1.0:
+			label += " (finishing up)"
 		elif not GameState.front_is_open(i):
 			label += " (waiting)"
 		front_select.add_item(label)
 		front_select.set_item_disabled(i,
-			GameState.front_progress[i] >= 1.0 or not GameState.front_is_open(i))
+			(GameState.front_progress[i] >= 1.0 and not owed) or not GameState.front_is_open(i))
 	if chosen >= 0 and chosen < GameState.front_count() \
 			and not front_select.is_item_disabled(chosen):
 		front_select.select(chosen)
