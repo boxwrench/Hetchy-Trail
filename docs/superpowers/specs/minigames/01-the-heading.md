@@ -1,6 +1,8 @@
 # Slot 1 — The Heading
 
-**Status:** DESIGN. Ready for an implementation plan to be written against it.
+**Status:** DESIGN, with measured findings folded in 2026-07-28. **The constants
+below are superseded in three places — see "Measured findings" before writing an
+implementation plan against this file.**
 **Archetype:** Press-your-luck (Can't Stop lineage)
 **Cadence:** Recurring, player-initiated
 **Priority:** First. Build this before any other minigame.
@@ -55,10 +57,15 @@ one of four actions, and this is the decision that keeps the slot from being a
 
 | Action | Footage | Stress | Stamina | Character |
 |---|---|---|---|---|
-| **Short round** | ×0.55 | +1 | 1 | Shallow pull, light powder. Cautious progress. |
-| **Full round** | ×1.0 | +2 | 1 | The standard cycle. |
-| **Deep round** | ×1.7 | +4 | 2 | Heavy powder, long pull. Overbreak risk. |
+| **Short round** | ×0.80 | +1 | 1 | Shallow pull, light powder. Cautious progress. |
+| **Full round** | ×1.00 | +2 | 1 | The standard cycle. |
+| **Deep round** | ×2.20 | +9 | 2 | Heavy powder, long pull. Overbreak risk. |
 | **Set supports** | none | −3 | 1 | Timber or steel sets. Buys back safety, costs tempo. |
+
+> **Superseded values.** This table previously read ×0.55 / ×1.0 / ×1.7 with Deep
+> at +4 stress. Those were the pre-study guess. The values above are the accepted
+> tuning study's, and Deep's +9 has since been re-measured and confirmed — see
+> "Measured findings".
 
 **Set supports is the load-bearing addition.** Without it, the only lever is
 stop-or-continue and the optimal stopping round can be solved once and replayed
@@ -77,7 +84,7 @@ because supports must be able to reduce it.
 ```
 p_bust = clamp(BUST_BASE + BUST_COEFF * S, 0.0, BUST_CAP)
 BUST_BASE  = 0.02
-BUST_COEFF = 0.025
+BUST_COEFF = 0.0175
 BUST_CAP   = 0.55
 ```
 
@@ -170,9 +177,14 @@ No content change is required for this card. If a future driving card wants
 three distinct outcomes it must author a third choice — that is a historian
 matter, not a minigame one.
 
-**Result payload.** `footage_feet`, `tier`, `hazard_id` (empty when no bust),
-`rounds_taken`, `stamina_spent`. `Journey` converts footage to front progress and
-applies the hazard; the minigame writes nothing.
+**Result payload.** `score` and `tier`. Nothing else. The five-field payload this
+file previously specified — `footage_feet`, `hazard_id`, `rounds_taken`,
+`stamina_spent` — contradicts the module contract and must not be built.
+`Journey` converts the score to front progress; the minigame writes nothing.
+
+**Credit caps at `target_feet`.** Footage above the target earns no further
+campaign credit, so drilling past `strong` is pure risk with no upside. This was
+an open question and is now decided.
 
 **Footage is additive.** Passive accrual continues exactly as it does now. The
 Heading adds on top, paid for in crew stamina — a converter from crew wellbeing
@@ -188,6 +200,10 @@ policy, asserting:
 1. **No dominant stopping round.** The best three fixed stopping rounds must sit
    within **15%** of each other on expected banked footage. If one round is
    clearly correct, the press-your-luck decision is fake.
+   **This band currently passes formally and fails in intent** — the measured
+   spread is ~8.9%, but the optimal policy never voluntarily banks at all, so the
+   band is satisfied by a game with no stopping decision in it. Reading a pass
+   here as "the slot works" would be wrong. See "Measured findings".
 2. **Not a coin flip.** Under competent play each tier must appear at least
    **10%** of the time. A distribution that is nearly all `fair` means the
    decision does not matter.
@@ -216,6 +232,45 @@ test, not the constants.
 made to satisfy the bands, that is a design failure to report, not a band to
 lower.
 
+## Measured findings — 2026-07-28
+
+Established by exact finite-horizon backward induction plus 20 000 sampled shifts
+per geology, cross-checked against an independent implementation. A browser
+prototype of this slot exists outside the tree and carries these tests inside it.
+
+**1. Credit caps at `target_feet`.** Decided; recorded above.
+
+**2. Deep round stays at +9 stress.** A prototype lowered it to +7 arguing Deep
+was "strictly dominated". It is not: under optimal play Deep is already chosen
+about **0.96 times per shift** at +9. The argument compared two pure lines (three
+Deeps against six Fulls) and optimal play mixes. Do not lower it without
+re-measuring.
+
+**3. All four actions earn their place.** Per shift under optimal play, in
+jointed rock: Short 1.03, Full 3.05, Deep 0.96, Supports 1.80. Band 3 holds.
+
+**4. Nobody ever voluntarily banks, and this is the open problem.** At the
+specified starting stamina of 8, voluntary Bank is **0.0%** in all three
+geologies; ~91% of shifts end because stamina ran out. The optimal line reaches
+the target on its last usable stamina, so the state where banking is correct is
+never reached while stamina remains.
+
+| Starting stamina | Voluntary Bank |
+|---|---:|
+| 8 | 0.0% |
+| 9 | 0.0% |
+| 10 | 21.4% |
+
+**The stopping decision only exists when the target is reachable with stamina to
+spare.** The fix is in the action economy, not the risk curve. Until it is fixed,
+**the "Can't Stop lineage" claim in this file's header is not earned** — either
+retune, or drop the claim rather than quietly keeping it.
+
+**5. Tier spread at the specified constants** (jointed rock, optimal play): poor
+21.2%, fair 13.1%, strong 65.6%, with 8.1% of shifts wiped out by ground runs.
+Band 2 holds. Geology matters: wipeouts run 4.2% in sound granite and 15.2% in
+wet ground, so band 5 holds too.
+
 ## Inherited rules this slot does not revisit
 
 - Never reads or writes `GameState`. `MinigameConfig` in, `MinigameResult` out.
@@ -233,6 +288,10 @@ lower.
   building this.
 - **Arcade mode's default config**: which `target_feet` and `S₀` a title-screen
   launch uses, absent a driving card.
+- **The stamina mapping.** Starting stamina is `crew_wellbeing` at open, but
+  `START_CREW` is 7 and `METER_MAX` is 10, so a fresh campaign crew never opens
+  this slot at the stamina where the stopping decision exists. Whether to offset
+  stamina from raw `crew_wellbeing` is undecided and touches no card data.
 - **Stub first.** Per the standing rule, this ships as a stub — context plus a
   Resolve button returning a valid `MinigameResult` — before any of the above is
   implemented.
