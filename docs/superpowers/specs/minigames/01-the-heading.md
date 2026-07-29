@@ -3,7 +3,9 @@
 **Status:** DESIGN, with measured findings folded in 2026-07-28. **The constants
 below are superseded in three places — see "Measured findings" before writing an
 implementation plan against this file.**
-**Archetype:** Press-your-luck (Can't Stop lineage)
+**Archetype:** Risk-managed allocation under a stamina ceiling.
+~~Press-your-luck (Can't Stop lineage)~~ — **claim withdrawn 2026-07-28**, on
+measurement. See finding 4.
 **Cadence:** Recurring, player-initiated
 **Priority:** First. Build this before any other minigame.
 
@@ -72,6 +74,12 @@ stop-or-continue and the optimal stopping round can be solved once and replayed
 forever. With it, the player is trading tempo against risk under a stamina
 ceiling, and the right answer moves depending on the survey, the crew, and how
 far the target still is.
+
+> **This paragraph is right about what supports prevent and was blind to what
+> they cause.** They do stop the slot being a solved stopping problem — by
+> removing the stopping decision altogether. Stress relief always beats stopping,
+> so Bank is never chosen. Measured in finding 4; the archetype claim was
+> withdrawn rather than the action removed.
 
 It is also the most historically exact element here: it is the Crane Ridge
 decision, in miniature, every round.
@@ -211,6 +219,9 @@ policy, asserting:
    underperform an otherwise identical policy that does, by a margin outside
    noise. If they tie, the fourth action is decoration and the slot is a
    two-button game.
+   **Passes at 1.80 uses per shift — and this band is in direct tension with
+   band 1's intent.** They cannot both be satisfied by these four actions; see
+   finding 4. Band 3 was kept and band 1's intent was given up.
 4. **Bust rate in band.** A "stop once fair is reached" policy should bust
    between **20% and 45%** of shifts. Below that there is no tension; above it,
    trying is worse than not.
@@ -261,10 +272,44 @@ never reached while stamina remains.
 | 9 | 0.0% |
 | 10 | 21.4% |
 
-**The stopping decision only exists when the target is reachable with stamina to
-spare.** The fix is in the action economy, not the risk curve. Until it is fixed,
-**the "Can't Stop lineage" claim in this file's header is not earned** — either
-retune, or drop the claim rather than quietly keeping it.
+**The cause is Set supports, and the claim is now withdrawn rather than fixed.**
+Bank only wins when the marginal value of drilling turns negative. Stress relief
+resets that, so it never turns negative — "reduce the risk" is always cheaper
+than "stop taking the risk," and Bank is strictly dominated. Measured, jointed
+rock, 8 000 shifts under exact backward induction:
+
+| Set supports | used per shift | voluntary Bank |
+|---|---:|---:|
+| −3 stress + brace (as specified) | 1.80 | **0.0%** |
+| −3 stress, capped at one per shift | 0.93 | 0.0% |
+| costs 2 stamina instead of 1 | 0.92 | 2.4% |
+| brace only, no stress relief | 0.00 | 45.2% |
+| removed entirely | — | 45.2% |
+
+**Band 3 and band 1's intent cannot both be satisfied by these four actions.**
+Anything that makes supports worth taking kills the stopping decision; anything
+that restores the stopping decision makes supports not worth taking. Reducing
+relief to 0 or 1 does not compromise — the action is simply never chosen, giving
+results identical to deleting it.
+
+Two other levers were tested and are dead ends. **The strong bonus is
+irrelevant**: sweeping it from 1.00 down to 0.05 changes nothing, because Bank
+is dominated at every state, not just at target. **Overflow credit above target
+is irrelevant**: the policy never has the spare stamina to overshoot with.
+
+**The ruling: keep supports, drop the genre claim.** Supports are the most
+historically exact element here — the Crane Ridge decision in miniature, every
+round. Deleting the timber decision from a game about tunnelling in order to
+earn a genre label from a board game trades the thing that teaches for the thing
+that categorises. The slot is a risk-managed allocation puzzle and is a good
+one: all four actions earn their place, every tier clears 10%, and geology moves
+wipeouts from 4.2% to 15.2%.
+
+**If a future reader wants the press-your-luck back**, the honest version is
+removing supports entirely — 45.2% voluntary banking, tiers 31.6 / 13.6 / 54.8,
+three actions. That is a real trade, not a tuning pass. One middle path remains
+untested: supports as a single strong once-per-shift brace against *every*
+hazard rather than a stress reducer.
 
 **5. Tier spread at the specified constants** (jointed rock, optimal play): poor
 21.2%, fair 13.1%, strong 65.6%, with 8.1% of shifts wiped out by ground runs.

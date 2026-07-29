@@ -205,11 +205,21 @@ implementation, and each is historically grounded rather than reskinned.
 
 | # | Minigame | Classic DNA | Where | Feeds | Cadence |
 |---|---|---|---|---|---|
-| 1 | **The Heading** | Press-your-luck (Can't Stop) | Tunnel divisions 2, 3, 5 | Miles, crew | Recurring |
+| 1 | **The Heading** | Risk-managed allocation † | Tunnel divisions 2, 3, 5 | Miles, crew | Recurring |
 | 2 | **Probe the Face** | Minesweeper | Precedes a Heading run | De-risks #1, readiness | Recurring |
 | 3 | **Forty-Seven Miles** | Pipe Dream / Pipe Mania | Valley + bay divisions 4, 6 | Miles, funds | Recurring |
 | 4 | **Keep the Line Open** | Loading / allocation puzzle | High Sierra division 1 | Crew | Recurring |
 | 5 | **Make the Case** | The King's Dilemma | Card 18, once | Funds, support, obligations | Set piece |
+
+> † **Slot 1's DNA was "Press-your-luck (Can't Stop)" and that claim is
+> withdrawn**, on measurement rather than taste. Set supports makes stress relief
+> always cheaper than stopping, so the optimal player banks voluntarily **0.0%**
+> of the time; removing supports restores it to 45.2%. Band 3 ("supports must
+> earn their place") and band 1's intent cannot both hold with these four
+> actions. Supports were kept — they are the Crane Ridge decision in miniature
+> and the most historically exact element in the slot — and the genre label was
+> given up instead. Full measurement table in
+> [01-the-heading.md](minigames/01-the-heading.md).
 
 > **Amended 2026-07-28**, after external research review. Slot 2 was
 > *Sound the Rock*; slot 4 was a Frogger-style lane-dodge. Both changed for
