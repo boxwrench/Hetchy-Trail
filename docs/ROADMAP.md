@@ -165,6 +165,22 @@ Checks that every relative link in `docs/` and the repository root resolves.
 Exits 0 or 1 like the other two. Docs are read by agents as instruction here,
 so a rotted cross-reference is a real defect, not cosmetic.
 
+```bash
+godot --headless res://tools/minigame_check.tscn
+godot --headless res://tools/minigame_sim.tscn
+```
+
+`minigame_check` validates the module contract's wiring: every binding names a
+real card, every tier maps to a choice that card actually authors, and every
+registered scene exists. `minigame_sim` drives The Heading headlessly and
+asserts its five acceptance bands.
+
+**`minigame_sim` runs fixed heuristic policies, not the exact-DP optimum.** It
+asserts the bands, never the figures recorded in
+[01-the-heading.md](superpowers/specs/minigames/01-the-heading.md) — those
+describe optimal play, and hardcoding them would produce a tool that fails for
+the wrong reason and then gets "fixed" by loosening a band.
+
 Both must exit 0. A failing harness is never committed.
 
 ```bash

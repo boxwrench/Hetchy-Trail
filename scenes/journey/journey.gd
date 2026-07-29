@@ -6,7 +6,19 @@ extends Node
 const HUD_SCENE := preload("res://scenes/ui/hud.tscn")
 const DECISION_SCENE := preload("res://scenes/ui/decision_panel.tscn")
 const EVENT_SCENE := preload("res://scenes/ui/event_panel.tscn")
-const MINIGAME_STUB_SCENE := preload("res://scenes/minigames/minigame_stub.tscn")
+
+## work_pace -> raw starting ground stress for a minigame shift. The survey
+## subtracts SURVEY_RELIEF; nothing is surveyed until slot 2 exists, so STEADY
+## currently opens at 3 rather than the 1 the spec's tables were measured at --
+## those are the SURVEYED figures. See 01-the-heading.md finding 5.
+const PACE_STRESS := {
+	GameState.Pace.REST: 1,
+	GameState.Pace.STEADY: 3,
+	GameState.Pace.PUSHED: 8,
+}
+const SURVEY_RELIEF := 2
+## Offset by one so a fresh crew at START_CREW 7 opens at the tuned 8.
+const STAMINA_OFFSET := 1
 
 # Deliberately untyped: these hold scene instances whose custom methods
 # (refresh_affordability, show_card, ...) GDScript can't see on base types.
@@ -25,10 +37,6 @@ func _ready() -> void:
 	add_child(decision_panel)
 	event_panel = EVENT_SCENE.instantiate()
 	add_child(event_panel)
-	minigame_panel = MINIGAME_STUB_SCENE.instantiate()
-	add_child(minigame_panel)
-	minigame_panel.hide()
-	minigame_panel.finished.connect(_on_minigame_finished)
 	decision_panel.decisions_confirmed.connect(_on_decisions)
 	event_panel.choice_selected.connect(_on_event_choice)
 	GameState.game_ended.connect(_on_game_ended)
@@ -88,8 +96,35 @@ func _try_open_minigame(card: EventCard) -> bool:
 	var cfg := MinigameRegistry.config_for(card.event_id)
 	if cfg == null:
 		return false
+	_fill_runtime_params(cfg)
+	var path := MinigameRegistry.scene_for(cfg.minigame_id)
+	if not ResourceLoader.exists(path):
+		return false
+	var packed: Resource = load(path)
+	if not (packed is PackedScene):
+		return false
+	# Built per shift and freed on completion: modules hold shift state, and a
+	# reused instance would carry the last shift's ground into the next one.
+	if minigame_panel != null and is_instance_valid(minigame_panel):
+		minigame_panel.queue_free()
+	minigame_panel = (packed as PackedScene).instantiate()
+	add_child(minigame_panel)
+	minigame_panel.finished.connect(_on_minigame_finished)
 	minigame_panel.open(cfg)
 	return true
+
+
+## The live campaign inputs. The module reads no game state, so everything it
+## needs about the crew and the pace is handed to it here.
+func _fill_runtime_params(cfg: MinigameConfig) -> void:
+	var crew: int = GameState.crew_wellbeing
+	cfg.params["stamina"] = clampi(crew + STAMINA_OFFSET, 3, 10)
+	var pace: int = GameState.work_pace
+	var raw: int = int(PACE_STRESS.get(pace, 3))
+	# No survey exists until slot 2 lands, so no relief is applied yet.
+	var surveyed: bool = false
+	cfg.params["surveyed"] = surveyed
+	cfg.params["s0"] = maxi(0, raw - SURVEY_RELIEF) if surveyed else raw
 
 
 func _on_minigame_finished(result: MinigameResult) -> void:

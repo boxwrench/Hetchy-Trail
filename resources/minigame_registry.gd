@@ -25,6 +25,20 @@ const BINDINGS := {
 }
 
 
+## minigame_id -> scene. The stub stands in for every slot not yet built, and
+## two of the five are blocked on historian questions, so it is kept rather than
+## deleted. An unmapped id falls back to the stub instead of failing: a missing
+## module must degrade to "resolve this card by hand", never to a dead end.
+const STUB_SCENE := "res://scenes/minigames/minigame_stub.tscn"
+const SCENES := {
+	&"the_heading": "res://scenes/minigames/the_heading/the_heading.tscn",
+}
+
+
+static func scene_for(minigame_id: StringName) -> String:
+	return SCENES.get(minigame_id, STUB_SCENE)
+
+
 static func has_binding(event_id: StringName) -> bool:
 	return BINDINGS.has(event_id)
 
