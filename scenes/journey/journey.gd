@@ -6,12 +6,14 @@ extends Node
 const HUD_SCENE := preload("res://scenes/ui/hud.tscn")
 const DECISION_SCENE := preload("res://scenes/ui/decision_panel.tscn")
 const EVENT_SCENE := preload("res://scenes/ui/event_panel.tscn")
+const MINIGAME_STUB_SCENE := preload("res://scenes/minigames/minigame_stub.tscn")
 
 # Deliberately untyped: these hold scene instances whose custom methods
 # (refresh_affordability, show_card, ...) GDScript can't see on base types.
 var hud
 var decision_panel
 var event_panel
+var minigame_panel
 var current_card: EventCard
 var pending: Array[EventCard] = []
 
@@ -23,6 +25,10 @@ func _ready() -> void:
 	add_child(decision_panel)
 	event_panel = EVENT_SCENE.instantiate()
 	add_child(event_panel)
+	minigame_panel = MINIGAME_STUB_SCENE.instantiate()
+	add_child(minigame_panel)
+	minigame_panel.hide()
+	minigame_panel.finished.connect(_on_minigame_finished)
 	decision_panel.decisions_confirmed.connect(_on_decisions)
 	event_panel.choice_selected.connect(_on_event_choice)
 	GameState.game_ended.connect(_on_game_ended)
@@ -69,7 +75,34 @@ func _show_next() -> void:
 		_begin_decide()
 		return
 	current_card = pending.pop_front()
-	event_panel.show_card(current_card)
+	if not _try_open_minigame(current_card):
+		event_panel.show_card(current_card)
+
+
+## Cards with a registry binding open their minigame instead of showing choice
+## buttons. The tier then picks one of the card's own authored choices, so the
+## consequence beat and the teaching reveal are the same either way.
+func _try_open_minigame(card: EventCard) -> bool:
+	if card == null or not MinigameRegistry.has_binding(card.event_id):
+		return false
+	var cfg := MinigameRegistry.config_for(card.event_id)
+	if cfg == null:
+		return false
+	minigame_panel.open(cfg)
+	return true
+
+
+func _on_minigame_finished(result: MinigameResult) -> void:
+	# A malformed result must never silently resolve as choice 0. Fall back to
+	# the ordinary choice buttons instead, so the player still decides.
+	if result == null or not result.is_valid() or current_card == null:
+		event_panel.show_card(current_card)
+		return
+	var index := MinigameRegistry.choice_for_tier(current_card.event_id, result.tier)
+	if index < 0 or index >= current_card.choices.size():
+		event_panel.show_card(current_card)
+		return
+	event_panel.force_choice(index)
 
 
 func _on_game_ended(result: StringName) -> void:

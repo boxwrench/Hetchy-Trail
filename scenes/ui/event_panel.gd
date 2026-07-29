@@ -92,6 +92,13 @@ func _on_choice(index: int) -> void:
 	buttons_box.add_child(cont)
 
 
+## Drive the consequence beat from outside, when a minigame tier picked the
+## choice instead of the player pressing a button. Keeps the teaching reveal
+## identical either way.
+func force_choice(index: int) -> void:
+	_on_choice(index)
+
+
 ## Second press: hide and report the choice so it is applied.
 func _on_continue(index: int) -> void:
 	hide()
