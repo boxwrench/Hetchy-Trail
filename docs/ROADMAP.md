@@ -157,6 +157,14 @@ godot --headless res://tools/smoke_test.tscn
 godot --headless res://tools/sim_test.tscn
 ```
 
+```bash
+godot --headless res://tools/docs_check.tscn
+```
+
+Checks that every relative link in `docs/` and the repository root resolves.
+Exits 0 or 1 like the other two. Docs are read by agents as instruction here,
+so a rotted cross-reference is a real defect, not cosmetic.
+
 Both must exit 0. A failing harness is never committed.
 
 ```bash
