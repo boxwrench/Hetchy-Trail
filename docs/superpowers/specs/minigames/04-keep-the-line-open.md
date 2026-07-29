@@ -100,17 +100,24 @@ about.
 
 ## Cargo and camp needs
 
-Use what the card already documents: **cement, equipment, workers and
-supplies**. Each camp has a need profile across the four, and partial supply
-gives partial benefit — no cliffs.
+Use what the card already documents: **cement, equipment and supplies**. Each
+camp has a need profile across the three, and partial supply gives partial
+benefit — no cliffs.
 
 > **Corrected 2026-07-28.** This read *food, timber, powder, coal*. **Coal is
 > actively wrong** — the surviving locomotive documentation describes a fuel-oil
 > tank — and **timber is a poor generic cargo**, because the project ran its own
 > sawmills and made lumber on site rather than hauling it up. Both would have
 > reached the art brief as commissioned assets before anyone checked them.
-> "Workers" as a haulable is not a slip: the railroad carried crews, and a camp
-> short of people is the failure this slot is about.
+> **Workers were removed from the cargo set on review, and that reversed an
+> earlier note in this file.** The railroad did carry crews, so the fact was
+> right — but a *scored* cargo class makes people a tonnage the player optimises
+> against cement and equipment, and invites the sentence "you delivered enough
+> workers." This project does not put people on that side of the ledger. The
+> crews remain in the prose and in the fiction of the line; they are not a load
+> to be graded. Camp shortfall is still the failure this slot is about, and it
+> is expressed through **crew wellbeing** in the outputs below, which is the
+> right place for it.
 
 Six camps, matching
 [Six Camps in the Foothills](../../../../content/cards/09_six_camps_in_the_foothills.md).
@@ -191,9 +198,13 @@ first estimates. **The bands are the specification.**
 - **Answered, negatively:** the near/far supply asymmetry does not hold. Nothing
   reviewed supports a camp-by-camp wagon-road fallback, and two cards cut against
   it. This is why the slot is blocked; see above.
-- **Partly answered:** cement, equipment, workers and supplies come from card 02
-  itself. Still open is whether that is the *useful* four for a puzzle — a set
-  that is documented but undifferentiated in need makes a weak allocation board.
+- **Partly answered:** cement, equipment and supplies come from card 02 itself.
+  Workers are documented on the card too but are deliberately not a scored cargo
+  class — see the correction above. Still open is whether the remaining three are
+  a *useful* set for a puzzle: a set that is documented but undifferentiated in
+  need makes a weak allocation board, and dropping to three makes that thinner,
+  not thicker. If a fourth is wanted, it has to be found in the record rather
+  than by putting people back on the manifest.
 - **Now the live question:** what did a camp actually run short of, and what
   happened when it did? A documented consequence of going short is what this slot
   needs to replace the fallback asymmetry. Recorded in
