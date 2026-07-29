@@ -206,8 +206,15 @@ reason to revisit slot 4, not to add a sixth minigame.
 #### §4.1 — The Heading (signature)
 
 Drill, load powder, blast, muck out. Each cycle yields footage and raises the
-chance of a bust — rockfall, squeezing ground, bad air, water inflow. Bank the
-footage or push one more round.
+chance of a bust. Bank the footage or push one more round.
+
+> **Corrected 2026-07-28.** This paragraph used to list the busts as "rockfall,
+> squeezing ground, bad air, water inflow". Two of those are invented — there is
+> no bad-air or water-inflow hazard card. The bust draws from the **three hazard
+> cards already in the deck**: [h1_powder_blast](../../../content/cards/h1_powder_blast.md),
+> [h2_rockfall_in_the_heading](../../../content/cards/h2_rockfall_in_the_heading.md),
+> and [h3_cave_in](../../../content/cards/h3_cave_in.md). Severity is intrinsic
+> to which one occurred, so no severity is invented either.
 
 - **Availability: player-initiated, optional**, whenever the front is in a
   tunnel division. Passive accrual remains as the fallback, so skipping it never
@@ -215,18 +222,38 @@ footage or push one more round.
   players want to open it.
 - **Crew wellbeing is the ammunition.** Each round costs crew stamina, so
   grinding it has a real price.
-- **It gives `miles_built` a job.** Tunnel footage comes from the minigame
-  rather than accruing from a pace multiplier, so the mile counter becomes the
-  thing the player actively fights for, and `work_pace` becomes the risk dial on
-  the minigame rather than a dropdown multiplying a constant.
+- **It gives `miles_built` a job.** Tunnel footage from the minigame adds to
+  front progress, so the mile counter becomes something the player actively
+  fights for rather than only a readout.
+
+  > **Corrected 2026-07-28.** This bullet used to say footage comes from the
+  > minigame *rather than* accruing from a pace multiplier, and that `work_pace`
+  > becomes the risk dial *rather than* a multiplier. **Both halves are
+  > withdrawn.** `PACE_FACTOR` is live in `autoload/game_state.gd` at
+  > REST 0.0 / STEADY 1.0 / PUSHED 1.6 and is applied to front progress every
+  > turn; removing it would undo a measured Batch B balance result.
+  > `work_pace` does **both** jobs — it keeps multiplying passive front progress
+  > **and** it sets the Heading's starting ground stress `S₀`. One dial, two
+  > readings, nothing removed. This was a live contradiction with
+  > [01-the-heading.md](minigames/01-the-heading.md), which refused the clause;
+  > the slot doc was right and this file is now aligned to it.
 - Historically anchored in the record already in the deck: the competing
   headings, the 803-foot September of 1926
   ([11_the_803_foot_month.tres](../../../data/events/11_the_803_foot_month.tres)),
   and Crane Ridge's squeezing ground.
 
 **Tuning is the risk.** Press-your-luck lives or dies on whether the stopping
-decision is genuinely hard. The two failure modes to test against are a dominant
+decision is genuinely hard. The two failure modes named here were a dominant
 strategy (one stopping point always correct) and a coin flip (no real decision).
+
+> **A third failure mode, found 2026-07-28, which passes both of those tests.**
+> The stopping decision may never be *taken* at all. Measured by exact backward
+> induction: at the specified starting stamina the optimal policy banks
+> voluntarily **0.0%** of the time, because it reaches the target on its last
+> usable stamina and so never occupies a state where stopping is correct. No
+> single stopping round dominates, and the tier spread is not a coin flip — both
+> original tests pass on a slot with no stopping decision in it. Test for this
+> directly. Full numbers in [01-the-heading.md](minigames/01-the-heading.md).
 This is the one item on the slate requiring design research before
 implementation; the research prompt is captured in
 [appendix A](#appendix-a--press-your-luck-research-prompt).
