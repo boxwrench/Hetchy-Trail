@@ -270,7 +270,7 @@ would change with it — one more reason not to commission it early.
   rebuilt, the cargo is what the card documents — **cement, equipment, workers
   and supplies**. Not coal (fuel-oil tank) and not imported timber (the project
   ran its own sawmills).
-- **The Bond Vote — 1932, and the factions are withdrawn.** *(Corrected
+- **Make the Case — 1932, and the factions are withdrawn.** *(Corrected
   2026-07-28: this section said 1928, which was a real bond but not this card's.)*
   Every ballot, poster, tally sheet or newspaper prop must read **3 May 1932,
   $6.5 million, to finish the last five miles of the Coast Range Tunnel**. The
@@ -379,7 +379,7 @@ the minigame artifact and the release presentation. Slot it in like this:
 |------|--------|----------|
 | Now / before P2 | Approve the duotone treatment with 3–4 card proofs: one archival photo, one generated event, and at least one reusable hazard; prove the map-state glyphs and schedule cue | Locks the visual grammar before bulk production |
 | Alongside P2 | The Heading visual kit plus the three physical-hazard images it reuses | Supports the one minigame whose interaction is designed |
-| Alongside P3 | Build each remaining minigame kit only after that slot's interaction spec freezes. **Probe the Face and Forty-Seven Miles first; Keep the Line Open and The Bond Vote last** | Avoids commissioning assets for a discarded puzzle archetype — which has already happened once, to the lane-dodger. Slots 4 and 5 need design decisions before a spec can freeze at all |
+| Alongside P3 | Build each remaining minigame kit only after that slot's interaction spec freezes. **Probe the Face and Forty-Seven Miles first; Keep the Line Open and Make the Case last** | Avoids commissioning assets for a discarded puzzle archetype — which has already happened once, to the lane-dodger. Slots 4 and 5 need design decisions before a spec can freeze at all |
 | M4 release pass | Title art, grade-aware completion treatment, four loss screens, UI chrome/fonts, full 26-card set, map panorama and milestone icons | Finishes the campaign presentation once content and screens are stable |
 | With SFPUC delivery | Archival photos swapped in for generated placeholders, credits filled | Real photos replace stand-ins card by card |
 

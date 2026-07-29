@@ -989,7 +989,7 @@ The fix has two parts: **bond issuance is capped at 2 per campaign**, and
 `outreach` / `improve_camp` **cost more each time they are used**.
 
 > **Note for the reviewer:** the design spec §2 removes `issue_bond` entirely,
-> replacing it with the Bond Vote set piece. That set piece is P3 work, so
+> replacing it with the Make the Case set piece. That set piece is P3 work, so
 > removing it here would leave the campaign with no income. The cap is the P1
 > stand-in; P3 replaces the two issuances with the set piece.
 
@@ -2438,7 +2438,7 @@ All five boxes below must be true before P2 begins:
 
 - Renaming `RouteSegment.winter_sensitive` to `railroad_dependent` — needs a
   `.tres` migration, since renaming the export silently drops the value.
-- Replacing the two bond issuances with the Bond Vote set piece — P3.
+- Replacing the two bond issuances with the Make the Case set piece — P3.
 - Adding `minigame_id` and the tier→choice mapping to `EventCard` — P2 owns the
   minigame contract.
 - Water readiness as build quality — still an open decision in the spec.

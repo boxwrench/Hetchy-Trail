@@ -197,7 +197,7 @@ to `docs/` whenever a field, method, or system disappears.
 | B | Progression model | Parallel workfronts on paper; Pareto-dominance probe over card choices | A model that makes pace a decision | **Built** — 3 of 4 criteria met; pace now buys schedule |
 | B.1 | Overrun pressure | 1934 becomes a binding milestone; pressure escalates to the existing loss conditions | `balance_probe` — slow and badly-allocated play must start losing | **Built, measured, frozen** — verified by `smoke_test`; unreachable because no card choice trades schedule for safety. Blocked on a content decision, not a tuning pass |
 | P2 | Minigame framework + The Heading | Module contract, arcade mode, press-your-luck tuning | Harness + `minigame_sim` band check | After B |
-| P3 | The remaining four | Minesweeper, Pipe Dream, loading puzzle, Bond Vote set piece | Harness + per-minigame sim | After P2 — but slots 4 and 5 need design work first; see [FOLLOW-UPS.md](FOLLOW-UPS.md) |
+| P3 | The remaining four | Minesweeper, Pipe Dream, loading puzzle, Make the Case set piece | Harness + per-minigame sim | After P2 — but slots 4 and 5 need design work first; see [FOLLOW-UPS.md](FOLLOW-UPS.md) |
 | M2 | The lighting map | Six divisions drawn, lighting as flags land | Harness + visual check | Folded into B — the map is the workfront UI |
 | M3 | Framing screens | Title (with arcade entry), end screen, replay | Harness + manual win/loss | Folded into P2 |
 | M4 | Content, framing & release | Source traceability, framing layer, archival photos, audio, export preset, licence, CI | Harness + historian sign-off | Last |

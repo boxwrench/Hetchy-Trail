@@ -14,7 +14,7 @@ for why.
 | Probe the Face | [02-sound-the-rock.md](02-sound-the-rock.md) | — | **Yes — buildable** within its claim boundary; renamed, filename kept so links resolve | — |
 | Forty-Seven Miles | [03-forty-seven-miles.md](03-forty-seven-miles.md) | — | **Yes — buildable** | — |
 | Keep the Line Open | [04-keep-the-line-open.md](04-keep-the-line-open.md) | — | **BLOCKED** — archetype changed to a loading puzzle, but its premise is contradicted by the deck and it needs a new source of tension | — |
-| The Bond Vote | [05-the-bond-vote.md](05-the-bond-vote.md) | — | **BLOCKED** — structure is sound, the bloc set is withdrawn | — |
+| Make the Case | [05-make-the-case.md](05-make-the-case.md) | — | **BLOCKED** — structure is sound, the bloc set is withdrawn | — |
 
 **"Design written" is not "ready to build."** Slots 4 and 5 have complete designs
 that are blocked on a historical question, and their files say so at the top.

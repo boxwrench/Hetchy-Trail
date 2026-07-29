@@ -127,7 +127,7 @@ Consequences for existing code:
 ### §2 — Economy fix
 
 The bond/outreach loop is closed by removing `issue_bond` as a repeatable
-per-turn action. Bond authorization becomes the **Bond Vote set piece** (§4.5),
+per-turn action. Bond authorization becomes the **Make the Case set piece** (§4.5),
 which fires once. All other funds come from minigame payouts (§4) and card
 choices — there is no longer any repeatable action that generates funds.
 
@@ -149,18 +149,43 @@ Every minigame is a self-contained module that **never reads or writes
 MinigameConfig  (in)  →  [ minigame scene ]  →  MinigameResult (out)
 ```
 
-- `MinigameConfig` carries difficulty inputs (rock hardness, crew stamina,
-  target footage, grid size, time limit).
-- `MinigameResult` carries `score`, a `tier` (`&"poor"` / `&"fair"` /
-  `&"strong"`), and typed outputs (footage, injuries, funds).
+- `MinigameConfig` carries `minigame_id`, the `event_id` that opened it, a
+  `params` dictionary of module-specific inputs (rock hardness, crew stamina,
+  target footage, grid size, time limit), and a `seed`.
+- `MinigameResult` carries **`score` and `tier`** (`&"poor"` / `&"fair"` /
+  `&"strong"`). **Nothing else.**
 - `Journey` applies the result; the minigame does not.
+
+> **Corrected 2026-07-28, and this one had teeth.** The result bullet used to end
+> "and typed outputs (footage, injuries, funds)". Both halves were wrong.
+>
+> **Typed outputs break the contract.** The tier selects among the driving card's
+> *already authored* choices, so every consequence number is in `content/` where
+> the historian owns it. A result that carries its own footage, funds or flags is
+> a second, invisible source of consequence data. This same error was live in
+> [01-the-heading.md](minigames/01-the-heading.md) as a five-field payload and
+> was corrected there; P2 was built to the two-field contract.
+>
+> **"Injuries" should never have been on that list.** Nothing in this project
+> scores harm to people. The deck carries a memorial card for the twelve men lost
+> at Mitchell Shaft and states that it is a fixed historical event, not a player
+> failure. A minigame that returns an injury count makes people an output
+> variable. Hazards cost footage, funds and time — never bodies.
 
 **Result tiers map to authored EventChoices.** Per the architecture call already
 made in the decision-weight spec, a minigame's outcome *selects among a card's
-existing choices* — skill replaces the button click. `EventCard` gains an
-optional `minigame_id` and a tier→choice-index mapping. All consequence data
-stays authored in the card, where the historian can read and edit it, and no
-sixth resource appears.
+existing choices* — skill replaces the button click. All consequence data stays
+authored in the card, where the historian can read and edit it, and no sixth
+resource appears.
+
+> **Corrected 2026-07-28.** This said `EventCard` gains an optional
+> `minigame_id` and a tier→choice-index mapping. **It does not, and should not.**
+> That field can only be populated from `content/cards/*.md` front matter through
+> `tools/import_cards.gd`, which means editing authored content and the importer
+> for a framework change. As built in P2, the binding lives in
+> `resources/minigame_registry.gd`, keyed by `event_id` — so the framework can
+> land, and be reverted, without touching `content/` at all. Migrating onto the
+> card later is easy if the historian wants it; the reverse is not.
 
 Three things fall out of this contract:
 
@@ -184,7 +209,7 @@ implementation, and each is historically grounded rather than reskinned.
 | 2 | **Probe the Face** | Minesweeper | Precedes a Heading run | De-risks #1, readiness | Recurring |
 | 3 | **Forty-Seven Miles** | Pipe Dream / Pipe Mania | Valley + bay divisions 4, 6 | Miles, funds | Recurring |
 | 4 | **Keep the Line Open** | Loading / allocation puzzle | High Sierra division 1 | Crew | Recurring |
-| 5 | **The Bond Vote** | The King's Dilemma | Card 18, once | Funds, support, obligations | Set piece |
+| 5 | **Make the Case** | The King's Dilemma | Card 18, once | Funds, support, obligations | Set piece |
 
 > **Amended 2026-07-28**, after external research review. Slot 2 was
 > *Sound the Rock*; slot 4 was a Frogger-style lane-dodge. Both changed for
@@ -338,7 +363,7 @@ coal; coal is actively wrong, since the surviving locomotive documentation
 describes a fuel-oil tank, and the project ran its own sawmills, which makes
 imported timber a poor generic cargo.
 
-#### §4.5 — The Bond Vote (set piece)
+#### §4.5 — Make the Case (set piece)
 
 Fires **once**, at the **1932** bond — which is already
 [18_sell_the_bonds_finish_the_bore.tres](../../../data/events/18_sell_the_bonds_finish_the_bore.tres).

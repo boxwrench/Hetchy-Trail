@@ -1,4 +1,11 @@
-# Slot 5 — The Bond Vote
+# Slot 5 — Make the Case
+
+> **Renamed 2026-07-28 from "The Bond Vote"**, and the file moved from
+> `05-the-bond-vote.md`. The old name described the historical event rather than
+> what the player does, and it collided with the real bond votes in the deck —
+> the 1932 issue and the failed Coast Range vote that returns via `repeat_card`.
+> Those references are history and were deliberately left alone; searching the
+> docs for "bond vote" should now only find them.
 
 **Status:** DESIGN for the structure. **The bloc set is withdrawn, not
 provisional** — see below. No implementation plan until it is replaced.

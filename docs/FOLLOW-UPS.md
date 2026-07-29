@@ -120,7 +120,7 @@ but these three are historical questions, so they belong in the packet.
    original premise — near camps had wagon-road fallback, far camps did not — is
    contradicted by cards 02 and 09 and has been withdrawn.
 2. **Who actually contested the 1932 bond, and in what terms?**
-   [The Bond Vote](superpowers/specs/minigames/05-the-bond-vote.md) had a
+   [Make the Case](superpowers/specs/minigames/05-make-the-case.md) had a
    five-bloc roster that could not be established; two entries fail outright. The
    alternative, if the archival work is not worth it, is to drop the bargaining
    mechanic and have the player assemble a case from documented public concerns
