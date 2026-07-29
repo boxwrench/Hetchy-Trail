@@ -1,8 +1,8 @@
 # Slot 1 — The Heading
 
-**Status:** DESIGN, with measured findings folded in 2026-07-28. **The constants
-below are superseded in three places — see "Measured findings" before writing an
-implementation plan against this file.**
+**Status:** **BUILT** 2026-07-28 — `scenes/minigames/the_heading/`, all five
+bands passing under `minigame_sim`. **The constants below are superseded in three
+places — read "Measured findings" before changing any of them.**
 **Archetype:** Risk-managed allocation under a stamina ceiling.
 ~~Press-your-luck (Can't Stop lineage)~~ — **claim withdrawn 2026-07-28**, on
 measurement. See finding 4.
@@ -371,12 +371,25 @@ wet ground, so band 5 holds too.
 
 ## Still open, for the implementation plan rather than this design
 
-- **The framework types do not exist yet.** There is no `MinigameConfig`,
-  `MinigameResult`, or module contract anywhere in the tree. P2 builds them, and
-  this slot is their first consumer — so the plan must define them before
-  building this.
+- ~~The framework types do not exist yet~~ — **built and verified.**
+  `MinigameConfig`, `MinigameResult` and `MinigameRegistry` are in `resources/`;
+  `minigame_check` validates the wiring.
 - ~~Arcade mode's default config~~ — **decided, see finding 5.**
 - ~~The stamina mapping~~ — **decided, see finding 5.**
-- **Stub first.** Per the standing rule, this ships as a stub — context plus a
-  Resolve button returning a valid `MinigameResult` — before any of the above is
-  implemented.
+- ~~Stub first~~ — **superseded.** The stub shipped first and the real module
+  followed. The stub is kept as the fallback for slots 2–5.
+
+**Still genuinely open:**
+
+- **The arcade entry point.** The default config is decided (finding 5) but
+  `scenes/main/` holds only a `.gitkeep` and `run/main_scene` is `journey.tscn`,
+  so there is no title screen for it to live on. Needs a Main scene, not more
+  minigame work.
+- **The survey.** Slot 2 is blocked on historian question H6. Until it exists no
+  survey relief is applied, so an unsurveyed STEADY shift opens at S₀ **3**, not
+  the **1** every table in this file quotes — those are the *surveyed* figures.
+  The module already accepts `s0` and `surveyed` from config, so slot 2 will
+  change a number rather than the module.
+- **Band 4 has little headroom.** The stop-at-fair hazard rate measures 42.3%
+  against a 45% ceiling. If anything moves the risk curve, this is the band that
+  breaks first.

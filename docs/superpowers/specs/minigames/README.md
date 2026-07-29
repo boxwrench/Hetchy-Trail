@@ -10,7 +10,7 @@ for why.
 
 | Slot | File | Stub shipped | Design written | Implemented |
 |---|---|---|---|---|
-| The Heading | [01-the-heading.md](01-the-heading.md) | — | **Yes — buildable** | — |
+| The Heading | [01-the-heading.md](01-the-heading.md) | Yes | **Yes — built** | **Yes** — `scenes/minigames/the_heading/`, five bands pass |
 | Probe the Face | [02-sound-the-rock.md](02-sound-the-rock.md) | — | **Yes — buildable** within its claim boundary; renamed, filename kept so links resolve | — |
 | Forty-Seven Miles | [03-forty-seven-miles.md](03-forty-seven-miles.md) | — | **Yes — buildable** | — |
 | Keep the Line Open | [04-keep-the-line-open.md](04-keep-the-line-open.md) | — | **BLOCKED** — archetype changed to a loading puzzle, but its premise is contradicted by the deck and it needs a new source of tension | — |
