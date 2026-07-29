@@ -107,11 +107,12 @@ lives, and the tail is punishing without being absurd.
 limiter (below). A hard cap of **12 rounds** exists only to bound session length
 in arcade mode; ordinary play never reaches it.
 
-**Q7 — stamina.** The shift's budget is `crew_wellbeing` at open, clamped to
-3–10, supplied in config. Costs are in the table above. When stamina reaches
-zero the shift **ends and banks normally** — this is not a bust. Running out of
-crew must never be worse than not having played, or a depleted crew makes the
-minigame a trap and the rational move is to stop opening it.
+**Q7 — stamina.** The shift's budget is `clampi(crew_wellbeing + 1, 3, 10)`,
+supplied in config — **offset by one**, so a fresh crew at `START_CREW` 7 opens
+at the tuned 8. See finding 5 for why. Costs are in the table above. When stamina
+reaches zero the shift **ends and banks normally** — this is not a bust. Running
+out of crew must never be worse than not having played, or a depleted crew makes
+the minigame a trap and the rational move is to stop opening it.
 
 ## Busting
 
@@ -311,7 +312,50 @@ three actions. That is a real trade, not a tuning pass. One middle path remains
 untested: supports as a single strong once-per-shift brace against *every*
 hazard rather than a stress reducer.
 
-**5. Tier spread at the specified constants** (jointed rock, optimal play): poor
+**5. Stamina mapping, pace → S₀, and the arcade default — all three decided
+2026-07-28.** These were the last open inputs; P3 needs concrete numbers.
+
+**Stamina is offset by +1 from crew wellbeing:**
+
+```
+stamina = clampi(GameState.crew_wellbeing + 1, 3, 10)
+```
+
+`START_CREW` is 7, so a fresh crew opens the slot at the tuned **8** rather than
+at an untuned 7. Rest and camp gains push toward 10, which is where voluntary
+banking appears — so a rested crew plays a slightly different shift, and that is
+a feature rather than an accident. This touches no card data. The alternatives
+were re-tuning everything to 7, or raising `START_CREW` to 8 — the latter looks
+smallest but is campaign economy and would move `sim_test`'s `matched_history`
+grade and the Batch B balance.
+
+Stamina 7 was measured and all bands still hold (poor 27.2 / fair 17.3 /
+strong 55.5), so a worn crew degrades gracefully rather than breaking the slot.
+
+**`work_pace` sets raw S₀, and the survey subtracts 2:**
+
+| `Pace` | raw S₀ | applied, surveyed | strong % at stamina 8 |
+|---|---:|---:|---:|
+| `REST` | 1 | 0 | 67.6% |
+| `STEADY` | 3 | 1 | 66.2% ← reference config |
+| `PUSHED` | 8 | 6 | 48.1% |
+
+Measured across applied S₀ 0–8: every band holds throughout, and strong moves
+monotonically from 67.6% to 39.2%. **PUSHED is not strictly wrong** — it makes
+the heading materially harder while buying 1.6× passive front progress, which is
+a real trade.
+
+**REST and STEADY are close on S₀ and that is deliberate.** `PACE_FACTOR` for
+REST is 0.0, so resting already forfeits all passive progress; it does not also
+need a large minigame bonus. The differentiation lives in the pace's other
+effect.
+
+**Arcade default** (no driving card): `target_feet` 803, raw S₀ 4 with the survey
+applied (applied 2), stamina 8, geology drawn at random. That measures poor 23.0
+/ fair 14.5 / strong 62.5 with 8.8% wipeouts — winnable, not a formality, and
+about six to eight rounds.
+
+**6. Tier spread at the specified constants** (jointed rock, optimal play): poor
 21.2%, fair 13.1%, strong 65.6%, with 8.1% of shifts wiped out by ground runs.
 Band 2 holds. Geology matters: wipeouts run 4.2% in sound granite and 15.2% in
 wet ground, so band 5 holds too.
@@ -331,12 +375,8 @@ wet ground, so band 5 holds too.
   `MinigameResult`, or module contract anywhere in the tree. P2 builds them, and
   this slot is their first consumer — so the plan must define them before
   building this.
-- **Arcade mode's default config**: which `target_feet` and `S₀` a title-screen
-  launch uses, absent a driving card.
-- **The stamina mapping.** Starting stamina is `crew_wellbeing` at open, but
-  `START_CREW` is 7 and `METER_MAX` is 10, so a fresh campaign crew never opens
-  this slot at the stamina where the stopping decision exists. Whether to offset
-  stamina from raw `crew_wellbeing` is undecided and touches no card data.
+- ~~Arcade mode's default config~~ — **decided, see finding 5.**
+- ~~The stamina mapping~~ — **decided, see finding 5.**
 - **Stub first.** Per the standing rule, this ships as a stub — context plus a
   Resolve button returning a valid `MinigameResult` — before any of the above is
   implemented.
